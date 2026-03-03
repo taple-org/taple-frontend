@@ -1,0 +1,22 @@
+@import url('~/assets/css/reset.css');
+@import url('~/assets/css/fonts.css');
+
+:root {
+  --color-primary: #006FFD;
+  --color-secondary: #FFFFFF;
+  --color-error: #FF616D;
+  --color-neutral-lm: #E8E9F1;
+  --color-neutral-ld: #D4D6DD;
+  --color-neu
+  --color-label: #1A1A2E;
+
+  --font-base: "StyreneALC", sans-serif;
+
+  --transition-base: 180ms ease;
+
+  --radius-md: 12px;
+}
+
+body {
+  font-family: var(--font-base);
+}

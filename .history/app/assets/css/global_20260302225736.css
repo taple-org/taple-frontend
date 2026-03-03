@@ -1,0 +1,33 @@
+@import url('~/assets/css/reset.css');
+@import url('~/assets/css/fonts.css');
+
+:root {
+  --color-primary: #006FFD;
+  --color-secondary: #FFFFFF;
+  --color-error: #FF616D;
+  /* Neutral/Light/Medium */
+  --color-neutral-lm: #E8E9F1;
+  --color-neutral-ld: #D4D6DD;
+  /* Neutral/Dark/Darkest */
+  --color-neutral-dd: #1F2024;
+  /* Neutral/Dark/Lightest */
+  --color-neutral-dl: #1A1A2E;
+  /* Neutral/Dark/Medium */
+  --color-neutral-dm: #494A50;
+  /* Highlight/Lightest */
+  --color-highlight-l: #EAF2FF;
+  /*  */
+  --color-highlight
+  /* Neutral/Light/Lightest */
+  --color-neutral-ll: #ffffff;
+
+  --font-base: "StyreneALC", sans-serif;
+
+  --transition-base: 180ms ease;
+
+  --radius-md: 12px;
+}
+
+body {
+  font-family: var(--font-base);
+}

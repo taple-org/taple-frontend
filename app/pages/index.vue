@@ -1,14 +1,19 @@
 <script setup lang="ts">
 
+definePageMeta({
+  title: "Home",
+  layout: 'default'
+})
+const {$api} = useNuxtApp();
+const {} = useAsyncData("login", () => $api.auth.login())
+
 </script>
 
+
+
 <template>
-  <u-container>
-    <u-button variant="link">
-      
-      Button
-    </u-button>
-  </u-container> 
 </template>
 
-<style scoped></style>
+<style scoped>
+
+</style>
