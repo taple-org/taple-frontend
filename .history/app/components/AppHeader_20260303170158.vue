@@ -47,4 +47,5 @@ function openDialog(){
     font-size: 24px;
     font-weight: 700;
 }
+
 </style>

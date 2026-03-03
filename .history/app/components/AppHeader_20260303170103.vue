@@ -47,4 +47,18 @@ function openDialog(){
     font-size: 24px;
     font-weight: 700;
 }
+.links{
+    display: flex;
+}
+.links__link{
+    padding: 9.5px 12px;
+
+}
+.link{
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-black);
+    text-decoration: none;
+}
+
 </style>

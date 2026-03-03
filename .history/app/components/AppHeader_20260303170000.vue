@@ -6,11 +6,7 @@ const links: TemplateLink[] = [
     { to: '/tariffs', label: 'Тарифы' },
     { to: '/api', label: 'API' }
 ]
-const isOpen = ref(false)
-
-function openDialog(){
-    isOpen.value = true
-}
+const open = ref(fa) 
 
 
 </script>
@@ -20,11 +16,11 @@ function openDialog(){
             <section class="content">
                 <h1 class="logo" @click="console.log('here')">TAPLE</h1>
                 <app-header-links :links />
-                <ui-button class="login-btn" @click="openDialog">Войти</ui-button>
+                <ui-button class="login-btn" @click="() => open = true">Войти</ui-button>
             </section>
         </ui-container>
     </header>
-    <ui-dialog v-model:open="isOpen" title="Вход" description="Добро пожаловать в Taple.kz">
+    <ui-dialog v-model:open="open" title="Вход" description="Добро пожаловать в Taple.kz">
         <template #default>
             <login-form />
         </template>
@@ -47,4 +43,18 @@ function openDialog(){
     font-size: 24px;
     font-weight: 700;
 }
+.links{
+    display: flex;
+}
+.links__link{
+    padding: 9.5px 12px;
+
+}
+.link{
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-black);
+    text-decoration: none;
+}
+
 </style>
