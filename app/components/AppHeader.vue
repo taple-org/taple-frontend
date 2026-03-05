@@ -26,7 +26,7 @@ function openDialog(){
     </header>
     <ui-dialog v-model:open="isOpen" title="Вход" description="Добро пожаловать в Taple.kz">
         <template #default>
-            <login-form />
+            <login-form/>
         </template>
     </ui-dialog>
 </template>

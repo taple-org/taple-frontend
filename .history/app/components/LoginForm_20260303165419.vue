@@ -1,5 +1,5 @@
 
-<script lang="ts" setup>
+<script>
 const form = reactive<{ email: string, password: string, rememberMe: boolean }>({
     email: '',
     password: '',

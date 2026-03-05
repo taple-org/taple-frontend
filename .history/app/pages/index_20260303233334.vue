@@ -4,9 +4,15 @@ definePageMeta({
   title: "Home",
   layout: 'default'
 })
-
+const {$api} = useNuxtApp();
+$api.auth.login({body: { name }})
 </script>
+
+
+
 <template>
 </template>
+
 <style scoped>
+
 </style>
