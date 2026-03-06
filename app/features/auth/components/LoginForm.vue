@@ -1,42 +1,80 @@
 <script lang="ts" setup>
-import { useLoginForm } from '~/features/auth/composables/useLoginForm';
 import type { AuthStep } from '~/features/auth/composables/useAuthDialog';
 
 const emit = defineEmits<{ 'go-to': [step: AuthStep] }>()
 
-const { r$ } = useLoginForm();
+const supabase = useSupabaseClient()
+const router = useRouter()
 
-const handleSubmit = async (e: Event) => {
-    e.preventDefault()
-    const values = await r$.$validate()
-    console.log(values)
+const form = reactive({
+    email: '',
+    password: '',
+    rememberMe: false
+})
+
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+const handleLogin = async () => {
+    isLoading.value = true
+    errorMessage.value = ''
+    try {
+        const { error } = await supabase.auth.signInWithPassword({
+            email: form.email,
+            password: form.password,
+        })
+        if (error) throw error
+        router.push('/')
+    } catch (error: any) {
+        errorMessage.value = error.message || 'Ошибка входа'
+    } finally {
+        isLoading.value = false
+    }
+}
+
+const handleRegister = async () => {
+    isLoading.value = true
+    errorMessage.value = ''
+    try {
+        const { error } = await supabase.auth.signUp({
+            email: form.email,
+            password: form.password,
+        })
+        if (error) throw error
+        alert("Регистрация успешна! Проверьте email (если включено подтверждение) или выполните вход.")
+    } catch (error: any) {
+        errorMessage.value = error.message || 'Ошибка регистрации'
+    } finally {
+        isLoading.value = false
+    }
 }
 </script>
 <template>
-    <form class="login-form" @submit="handleSubmit">
+    <form class="login-form" @submit.prevent="handleLogin">
         <ui-form-field
         type="text" 
-        v-model="r$.$value.email" 
+        v-model="form.email" 
         placeholder="Введите email" 
-        :error="r$.email.$errors[0]"
+        required
         />
         <ui-form-field 
         type="password" 
-        v-model="r$.$value.password" 
+        v-model="form.password" 
         placeholder="Введите пароль" 
-        :error="r$.password.$errors[0]"
+        required
         />
         <div class="inline">
             <ui-form-field 
-            type="checkbox" 
-            v-model="r$.$value.rememberMe" 
-            :error="r$.rememberMe.$errors[0]"
-            label="Запомнить меня" />
+            type="checkbox"
+            v-model="form.rememberMe"
+            label="Запомнить меня"
+            />
             <nuxt-link to="" @click.prevent="emit('go-to', 'forgot-password')" class="forget-password">Забыли пароль?</nuxt-link>
         </div>
-        <ui-button type="submit">Войти</ui-button>
+        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <ui-button type="submit" :disabled="isLoading">Войти</ui-button>
         <nuxt-link to="#" class="to-tutorial">Впервые на нашем сайте?</nuxt-link>
-        <ui-button variant="outline" @click="emit('go-to', 'signup')" type="button">Зарегистрироваться</ui-button>
+        <ui-button type="button" variant="outline" @click="handleRegister" :disabled="isLoading">Зарегистрироваться</ui-button>
         <ui-info-section size="sm">
             Я пользователь информационной системы «Taple», продолжая работу на портале подтверждаю свое согласие, что несу ответственность за все осуществленные действия в соответствии с законодательством Республики Казахстан
         </ui-info-section>
@@ -71,4 +109,10 @@ const handleSubmit = async (e: Event) => {
     align-items: center;
 }
 
+.error-message {
+    color: red;
+    font-size: 14px;
+    text-align: center;
+    margin: 5px 0;
+}
 </style>
