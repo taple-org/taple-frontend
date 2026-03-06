@@ -7,7 +7,10 @@ export default defineNuxtConfig({
       apiBase: "",
     },
   },
-  modules: ["@pinia/nuxt", "@regle/nuxt", "@nuxt/icon"],
+  modules: ["@pinia/nuxt", "@nuxtjs/supabase", "@nuxt/icon"],
+  supabase: {
+    redirect: false,
+  },
   icon: {
     customCollections: [
       {
