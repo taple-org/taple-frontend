@@ -1,31 +1,23 @@
-
 <script lang="ts" setup>
 import styles from '~/features/auth/index.module.css'
-import { useSignUpForm } from '~/features/auth/composables/forms';
+import { useResetPasswordForm } from '~/features/auth/composables/forms';
 import type { AuthStep } from '~/features/auth/composables/useAuthDialog';
 
 const emit = defineEmits<{ 'go-to': [step: AuthStep] }>()
 
-const {r$} = useSignUpForm()
+const { r$ } = useResetPasswordForm();
+
 const handleSubmit = async (e: Event) => {
     e.preventDefault()
     const values = await r$.$validate()
      if(!values.valid) return;
 
     console.log(values.data);
-    emit('go-to', 'reset-password');
+    emit('go-to', 'login');
 }
-
 </script>
 <template>
     <form :class="styles.form" @submit="handleSubmit">
-        <ui-form-field
-        type="text" 
-        v-model="r$.$value.email" 
-        :error="r$.email.$errors[0]"
-        placeholder="Введите email" 
-
-        />
         <ui-form-field 
         type="password" 
         v-model="r$.$value.password" 
@@ -41,16 +33,17 @@ const handleSubmit = async (e: Event) => {
         <ui-info-section size="md">
             Пароль должен состоять минимум из 8 символов и содержать (заглавную букву, цифру и специальный символ) 
         </ui-info-section>
-        <ui-form-field 
-        type="checkbox"
-        v-model="r$.$value.agree"
-        :error="r$.agree.$errors[0]"
-        label="Я ознакомился(лась) с условиями сервиса и полностью согласен(а) с ними."
-        />
-        <ui-button type="submit">Продолжить</ui-button>
-        <span :class="styles.formText">У вас уже есть учетная запись?</span>
-        <ui-button variant="outline" type="button" @click.prevent="emit('go-to', 'login')">Войти</ui-button>
+        <ui-button type="submit">Установить</ui-button>
+        <span :class="styles.formText">или</span>
+        <ui-button variant="outline" @click="emit('go-to', 'login')" type="button">Отменa</ui-button>
     </form>
 </template>
 <style scoped lang="css">
+.reset-password-form{
+    width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+}
 </style>

@@ -1,11 +1,11 @@
-export type AuthStep = 'login' | 'signup' | 'otp' | 'forgot-password'
+export type AuthStep = 'login' | 'signup' | 'forgot-password' | 'reset-password'
 
 export const useAuthDialog = defineStore('authDialog', () => {
   const isOpen = ref(false)
   const currentStep = ref<AuthStep>('login')
   const direction = ref<'forward' | 'back'>('forward')
 
-  const stepOrder: AuthStep[] = ['login', 'signup', 'otp', 'forgot-password']
+  const stepOrder: AuthStep[] = ['login', 'signup', 'forgot-password', 'reset-password']
 
   function open(step: AuthStep = 'login') {
     currentStep.value = step
