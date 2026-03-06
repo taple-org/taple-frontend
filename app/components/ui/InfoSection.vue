@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { InfoIcon } from 'lucide-vue-next'
-
 withDefaults(
   defineProps<{
     size?: 'sm' | 'md'
@@ -12,7 +10,7 @@ withDefaults(
 <template>
   <div class="info-section" :class="`info-section--${size}`" role="note">
     <div class="info-section__icon">
-      <InfoIcon :size="24" />
+      <Icon name="my-icon-info" mode="svg" :size="24" color="var(--color-primary)" />
     </div>
     <p class="info-section__text">
       <slot />
@@ -27,7 +25,7 @@ withDefaults(
   gap: 16px;
   padding: 16px;
   border-radius: var(--radius-md);
-  font-family: var(--font-base);
+  font-family: var(--font-base),serif;
   text-align: left;
   background-color: var(--color-highlight-l);
   color: var(--color-neutral-dm);
