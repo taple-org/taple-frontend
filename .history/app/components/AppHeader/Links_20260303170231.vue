@@ -29,6 +29,5 @@ const isLastLink = (index: number) => index === links.length - 1
     font-weight: 700;
     font-size: 16px;
     color: var(--color-black);
-    text-decoration: none;
 }
 </style>

@@ -2,7 +2,8 @@
 import { Field } from '@ark-ui/vue/field'
 import { fieldRegistry } from './fields/registry'
 
-type TextProps     = { type: 'text' | 'email' | 'password'; modelValue: string; placeholder?: string }
+type TextProps     = { type: 'text' | 'email'; modelValue: string; placeholder?: string }
+type PasswordProps = { type: 'password'; modelValue: string; placeholder?: string }
 type CheckboxProps = { type: 'checkbox'; modelValue: boolean }
 
 export type FieldWrapperProps = {
@@ -13,7 +14,7 @@ export type FieldWrapperProps = {
   required?: boolean
 }
 
-type FieldProps = (TextProps | CheckboxProps) & FieldWrapperProps
+type FieldProps = (TextProps | PasswordProps | CheckboxProps) & FieldWrapperProps
 
 const props = defineProps<FieldProps>()
 const emit = defineEmits<{ 'update:modelValue': [value: string | number | boolean] }>()
@@ -64,7 +65,7 @@ const inputProps = computed(() => {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
 .field__label {
