@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { useLoginForm } from '~/features/auth/composables/useLoginForm';
+import styles from '~/features/auth/index.module.css'
+import { useLoginForm } from '~/features/auth/composables/forms';
 import type { AuthStep } from '~/features/auth/composables/useAuthDialog';
 
 const emit = defineEmits<{ 'go-to': [step: AuthStep] }>()
@@ -13,7 +14,7 @@ const handleSubmit = async (e: Event) => {
 }
 </script>
 <template>
-    <form class="login-form" @submit="handleSubmit">
+    <form :class="styles.form" @submit="handleSubmit">
         <ui-form-field
         type="text" 
         v-model="r$.$value.email" 
@@ -35,7 +36,7 @@ const handleSubmit = async (e: Event) => {
             <nuxt-link to="" @click.prevent="emit('go-to', 'forgot-password')" class="forget-password">Забыли пароль?</nuxt-link>
         </div>
         <ui-button type="submit">Войти</ui-button>
-        <nuxt-link to="#" class="to-tutorial">Впервые на нашем сайте?</nuxt-link>
+        <span :class="styles.formText">Впервые на нашем сайте?</span>
         <ui-button variant="outline" @click="emit('go-to', 'signup')" type="button">Зарегистрироваться</ui-button>
         <ui-info-section size="sm">
             Я пользователь информационной системы «Taple», продолжая работу на портале подтверждаю свое согласие, что несу ответственность за все осуществленные действия в соответствии с законодательством Республики Казахстан
@@ -50,7 +51,7 @@ const handleSubmit = async (e: Event) => {
     gap: 10px;
 
 }
-.to-tutorial{
+.text-label{
     font-family: 'StyreneALC';
     font-size: 12px;
     font-weight: 300;

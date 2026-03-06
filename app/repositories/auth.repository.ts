@@ -9,5 +9,6 @@ export function buildAuthRepository(fetcher: typeof $fetch) {
     return build(fetcher, {
         login: post<User, { name: string; email: string }>("/auth/login"),
     })
+    
 }
 
