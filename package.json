@@ -12,11 +12,14 @@
   "dependencies": {
     "@ark-ui/vue": "^5.34.0",
     "@pinia/nuxt": "^0.11.3",
+    "@regle/nuxt": "1.20.1",
+    "@regle/schemas": "^1.20.1",
     "lucide-vue-next": "^0.575.0",
     "nuxt": "^4.3.1",
     "pinia": "^3.0.4",
     "vue": "^3.5.28",
-    "vue-router": "^4.6.4"
+    "vue-router": "^4.6.4",
+    "zod": "^4.3.6"
   },
   "pnpm": {
     "overrides": {

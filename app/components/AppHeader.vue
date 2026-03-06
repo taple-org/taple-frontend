@@ -1,20 +1,14 @@
 <script lang="ts" setup>
 import type { TemplateLink } from "~/interfaces/link";
-
+import { useAuthDialog, AuthDialog } from "~/features/auth";
 const links: TemplateLink[] = [
   { to: "/contacts", label: "Контакты" },
   { to: "/tariffs", label: "Тарифы" },
   { to: "/api", label: "API" },
 ];
-const isLoginOpen = ref(false);
-const isSignupOpen = ref(false);
+const { open } = useAuthDialog()
 
-function openLoginDialog() {
-  isLoginOpen.value = true;
-}
-function openSignupDialog() {
-  isSignupOpen.value = true;
-}
+
 </script>
 <template>
   <header class="header">
@@ -22,25 +16,11 @@ function openSignupDialog() {
       <section class="content">
         <h1 class="logo" @click="console.log('here')">TAPLE</h1>
         <app-header-links :links />
-        <div>
-            <ui-button class="login-btn" @click="openLoginDialog">Войти</ui-button>    
-            <ui-button class="signup-btn" @click="openSignupDialog">Зарегистрироваться</ui-button>
-        </div>
-        
-        
+        <ui-button class="login-btn" @click="() => {console.log('click'); open('login')}">Войти</ui-button> 
       </section>
     </ui-container>
   </header>
-  <ui-dialog v-model:open="isLoginOpen" title="Вход" description="Добро пожаловать в Taple.kz">
-        <template #default>
-            <login-form/>
-        </template>
-    </ui-dialog>
-    <ui-dialog v-model:open="isSignupOpen" title="Регистрация" description="Добро пожаловать в Taple.kz">
-        <template #default>
-            <sign-up-form/>
-        </template>
-    </ui-dialog>
+  <auth-dialog />
 </template>
 
 <style scoped>
@@ -59,4 +39,5 @@ function openSignupDialog() {
   font-size: 24px;
   font-weight: 700;
 }
+
 </style>

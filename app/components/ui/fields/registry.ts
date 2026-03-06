@@ -1,4 +1,3 @@
-// fields/registry.ts
 import TextField from './TextField.vue'
 import CheckBoxField from './CheckboxField.vue'
 import PasswordField from './PasswordField.vue'

@@ -7,5 +7,5 @@ export default defineNuxtConfig({
       apiBase: ''
     }
   },
-  modules: ['@pinia/nuxt'],
+  modules: ['@pinia/nuxt', '@regle/nuxt'],
 })

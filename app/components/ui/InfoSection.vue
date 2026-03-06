@@ -3,14 +3,14 @@ import { InfoIcon } from 'lucide-vue-next'
 
 withDefaults(
   defineProps<{
-    variant?: 'info' | 'warning' | 'error' | 'success'
+    size?: 'sm' | 'md'
   }>(),
-  { variant: 'info' },
+  { size: 'md' },
 )
 </script>
 
 <template>
-  <div class="info-section" :class="`info-section--${variant}`" role="note">
+  <div class="info-section" :class="`info-section--${size}`" role="note">
     <div class="info-section__icon">
       <InfoIcon :size="24" />
     </div>
@@ -25,48 +25,24 @@ withDefaults(
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 14px 16px;
+  padding: 16px;
   border-radius: var(--radius-md);
   font-family: var(--font-base);
-  font-size: 13px;
-  line-height: 1.5;
+  text-align: left;
+  background-color: var(--color-highlight-l);
+  color: var(--color-neutral-dm);
 }
 
-.info-section--info {
-  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
-  color: var(--color-neutral-dd);
+.info-section--md {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 400;
 }
 
-.info-section--info .info-section__icon {
-  color: var(--color-primary);
-  justify-content: center;
-}
-
-.info-section--warning {
-  background-color: color-mix(in srgb, #f59e0b 10%, transparent);
-  color: var(--color-neutral-dd);
-}
-
-.info-section--warning .info-section__icon {
-  color: #f59e0b;
-}
-
-.info-section--error {
-  background-color: color-mix(in srgb, var(--color-error) 10%, transparent);
-  color: var(--color-neutral-dd);
-}
-
-.info-section--error .info-section__icon {
-  color: var(--color-error);
-}
-
-.info-section--success {
-  background-color: color-mix(in srgb, #22c55e 10%, transparent);
-  color: var(--color-neutral-dd);
-}
-
-.info-section--success .info-section__icon {
-  color: #22c55e;
+.info-section--sm {
+  font-size: 10px;
+  line-height: 13px;
+  font-weight: 300;
 }
 
 .info-section__icon {
@@ -74,11 +50,10 @@ withDefaults(
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1px;
+  color: var(--color-primary);
 }
 
 .info-section__text {
   margin: 0;
-  font-weight: 400;
 }
 </style>
