@@ -2,6 +2,7 @@
 import { useAuthDialog } from '~/features/auth';
 import LoginForm from "~/features/auth/components/LoginForm.vue";
 import SignUpForm from "~/features/auth/components/SignUpForm.vue";
+import OtpForm from "~/features/auth/components/OtpForm.vue";
 
 const { goTo } = useAuthDialog()
 const { isOpen, currentStep, direction } = storeToRefs(useAuthDialog())
@@ -9,7 +10,7 @@ const { isOpen, currentStep, direction } = storeToRefs(useAuthDialog())
 const titles = {
   login: 'Вход',
   signup: 'Регистрация',
-  otp: 'Подтверждение',
+  otp: 'Подтверждение кода',
   'forgot-password': 'Восстановление пароля'
 }
 </script>
@@ -19,7 +20,7 @@ const titles = {
     <Transition :name="`slide-${direction}`" mode="out-in">
       <LoginForm    v-if="currentStep === 'login'"    :key="'login'"    @go-to="goTo" />
       <SignUpForm   v-else-if="currentStep === 'signup'"  :key="'signup'"   @go-to="goTo" />
-      <!-- <OtpForm     v-else-if="currentStep === 'otp'"    :key="'otp'"     @go-to="goTo" /> -->
+      <OtpForm     v-else-if="currentStep === 'otp'"    :key="'otp'"     @go-to="goTo" />
     </Transition>
   </ui-dialog>
 </template>
