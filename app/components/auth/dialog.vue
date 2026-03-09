@@ -1,36 +1,30 @@
 <script lang="ts" setup>
-import { useAuthDialog } from '~/features/auth';
-import LoginForm from "./LoginForm.vue";
-import SignUpForm from "./SignUpForm.vue";
-import ForgotPasswordForm from './ForgotPasswordForm.vue';
-import ResetPasswordForm from './ResetPasswordForm.vue';
+import {AuthFormLogin, AuthFormNewPassword, AuthFormPasswordRecovery, AuthFormRegister} from "#components";
 
-import type { AuthStep } from '../composables/useAuthDialog';
-
-const { goTo } = useAuthDialog()
-const { isOpen, currentStep, direction } = storeToRefs(useAuthDialog())
+const { to } = useAuthDialog()
+const { isOpen, current, direction } = storeToRefs(useAuthDialog())
 
 
-const forms: Record<AuthStep, { title: string; description: string; component: Component }> = {
-  'login': {
+const forms: Record<Step, { title: string; description: string; component: Component }> = {
+  [Step.Login]: {
     title: 'Вход',
     description: 'Добро пожаловать в Taple.kz',
-    component: LoginForm
+    component: AuthFormLogin
   },
-  'signup': {
+  [Step.Register]: {
     title: 'Регистрация',
     description: 'Введите данный для регистрации',
-    component: SignUpForm
+    component: AuthFormRegister
   },
-  'forgot-password': {
+  [Step.Recovercy]: {
     title: 'Восстановление пароля',
     description: 'Укажите вашу электронную почту',
-    component: ForgotPasswordForm
+    component: AuthFormPasswordRecovery
   },
-  'reset-password': {
+  [Step.NewPassword]: {
     title: 'Создание нового пароля',
     description: 'Придумайте ваш новый пароль',
-    component: ResetPasswordForm
+    component: AuthFormNewPassword
   },
 
 }
@@ -38,12 +32,12 @@ const forms: Record<AuthStep, { title: string; description: string; component: C
 </script>
 
 <template>
-  <ui-dialog v-model:open="isOpen" v-bind="forms[currentStep]">
+  <ui-dialog v-model:open="isOpen" v-bind="forms[current]">
     <Transition :name="`slide-${direction}`" mode="out-in">
       <component
-        :is="forms[currentStep].component"
-        :key="currentStep"
-        @go-to="goTo"
+          :is="forms[current].component"
+          :key="current"
+          @go-to="to"
       />
     </Transition>
   </ui-dialog>
@@ -60,6 +54,6 @@ const forms: Record<AuthStep, { title: string; description: string; component: C
 .slide-forward-leave-active,
 .slide-back-enter-active,
 .slide-back-leave-active {
-  transition: all 0.12s ease;
+  transition: all 0.24s ease;
 }
 </style>

@@ -4,8 +4,9 @@
     flex-direction: column;
     gap: 10px;
 }
+
 .formText{
-    font-family: 'StyreneALC';
+    font-family: var(--font-base), sans-serif;
     font-size: 12px;
     font-weight: 300;
     text-align: center;
