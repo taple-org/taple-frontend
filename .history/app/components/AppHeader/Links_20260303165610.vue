@@ -1,3 +1,0 @@
-<v-template>
-    
-</v-template>
