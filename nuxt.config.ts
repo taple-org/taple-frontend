@@ -5,8 +5,16 @@ export default defineNuxtConfig({
   debug: true,
   runtimeConfig: {
     public: {
-      apiBase: ''
-    }
+      apiBase: "",
+    },
   },
-  modules: ['@pinia/nuxt', '@regle/nuxt'],
-})
+  modules: ["@pinia/nuxt", "@regle/nuxt", "@nuxt/icon"],
+  icon: {
+    customCollections: [
+      {
+        prefix: "my-icon",
+        dir: "./app/assets/icons",
+      },
+    ],
+  },
+});

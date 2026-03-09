@@ -1,14 +1,13 @@
 <script lang="ts" setup>
-import { PasswordInput } from '@ark-ui/vue/password-input'
-import { EyeIcon, EyeOffIcon } from 'lucide-vue-next'
+import { PasswordInput } from "@ark-ui/vue/password-input";
 
 defineProps<{
-  modelValue: string
-  disabled?: boolean
-  placeholder?: string
-}>()
+  modelValue: string;
+  disabled?: boolean;
+  placeholder?: string;
+}>();
 
-defineEmits<{ 'update:modelValue': [value: string] }>()
+defineEmits<{ "update:modelValue": [value: string] }>();
 </script>
 
 <template>
@@ -18,13 +17,15 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
         class="password__input"
         :value="modelValue"
         :placeholder="placeholder"
-        @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+        @input="
+          $emit('update:modelValue', ($event.target as HTMLInputElement).value)
+        "
       />
       <PasswordInput.VisibilityTrigger class="password__trigger">
         <PasswordInput.Indicator class="password__indicator">
-          <EyeIcon :size="16" />
+          <Icon name="my-icon-eye-visible" mode="svg" :size="16" />
           <template #fallback>
-            <EyeOffIcon :size="16" />
+            <Icon name="my-icon-eye-invisible" mode="svg" :size="16"/>
           </template>
         </PasswordInput.Indicator>
       </PasswordInput.VisibilityTrigger>
@@ -64,7 +65,8 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
 
 .password__input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-primary) 15%, transparent);
 }
 
 .password__input[data-invalid] {
