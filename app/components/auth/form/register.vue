@@ -44,7 +44,7 @@ const handleSubmit = async (e: Event) => {
         :error="r$.agree.$errors[0]"
         label="Я ознакомился(лась) с условиями сервиса и полностью согласен(а) с ними."
     />
-    <ui-button type="submit">Продолжить</ui-button>
+    <ui-button type="submit" @click.prevent="emit('go-to', Step.OTP)">Продолжить</ui-button>
     <span :class="styles.formText">У вас уже есть учетная запись?</span>
     <ui-button variant="outline" type="button" @click.prevent="emit('go-to', Step.Login)">Войти</ui-button>
   </form>

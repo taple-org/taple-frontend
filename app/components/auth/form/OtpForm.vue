@@ -31,11 +31,6 @@ onUnmounted(() => {
 
 <template>
   <form class="otp-form" @submit.prevent>
-    <p class="otp-form__subtitle">
-      Введите 6-значный код подтверждения отправленный на ваш адрес электронной
-      почты
-    </p>
-
     <ui-fields-pin-input-field
       v-model="otp"
       :count="6"
@@ -45,7 +40,7 @@ onUnmounted(() => {
     <p v-if="countdown > 0" class="otp-form__timer">
       <strong>{{ countdown }}</strong> секунд
     </p>
-    <nuxt-link v-else href="" @click.prevent="startCountdown"
+    <nuxt-link v-else class="otp-form-refresh" href="" @click.prevent="startCountdown"
       >Отправить код снова</nuxt-link
     >
 
@@ -64,17 +59,17 @@ onUnmounted(() => {
   gap: 10px;
   text-align: center;
 }
-
-.otp-form__subtitle {
-  font-weight: 300;
-  font-size: 13px;
-  line-height: 14px;
-  color: var(--color-black);
+.otp-form-refresh {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 20px;
+  cursor: pointer;
+  color: var(--color-primary);
 }
-
 .otp-form__timer {
   font-size: 16px;
   font-weight: 300;
+  line-height: 34px;
   color: var(--color-black);
   letter-spacing: 0.38px;
 }
