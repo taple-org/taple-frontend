@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-const { variant = "fill", disabled } = defineProps<{
+type ButtonProps = {
   variant?: "fill" | "outline"
   disabled?: boolean
-}>()
+}
+const { variant = "fill", disabled } = defineProps<ButtonProps>()
 
 defineOptions({
   inheritAttrs: true
@@ -12,19 +13,19 @@ const emit = defineEmits<{ click: [event: MouseEvent] }>()
 
 <template>
   <button
-    class="btn"
-    :class="[`btn--${variant}`, { 'btn--disabled': disabled }]"
-    :disabled="disabled"
-    :aria-disabled="disabled"
-    @click="(e) => !disabled && emit('click', e)"
+      class="btn"
+      :class="[`btn--${variant}`, { 'btn--disabled': disabled }]"
+      :disabled="disabled"
+      :aria-disabled="disabled"
+      @click="(e) => !disabled && emit('click', e)"
   >
-    <slot />
+    <slot/>
   </button>
 </template>
 
 <style scoped>
 .btn {
-  font-family: var(--font-base);
+  font-family: var(--font-base), sans-serif;
   font-weight: 700;
   font-size: 14px;
   padding-block: 12px;

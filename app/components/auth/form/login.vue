@@ -5,12 +5,15 @@ const emit = defineEmits<{ 'go-to': [step: Step] }>()
 
 const { close } = useAuthDialog()
 const { r$ } = useLoginForm();
-
+const {$api} = useNuxtApp()
 const handleSubmit = async (e: Event) => {
   e.preventDefault()
   const values = await r$.$validate()
   if(!values.valid) return;
+  const { token } = $api.auth.login(values);
+
   close();
+
 }
 </script>
 <template>

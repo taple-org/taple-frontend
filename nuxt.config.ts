@@ -2,19 +2,20 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true,},
-  debug: true,
   runtimeConfig: {
     public: {
       apiBase: "",
     },
   },
-  modules: ["@pinia/nuxt", "@regle/nuxt", "@nuxt/icon"],
+  modules: ['@pinia/nuxt', '@regle/nuxt', '@nuxt/icon'],
   icon: {
+    mode: 'svg',
     customCollections: [
       {
-        prefix: "my-icon",
-        dir: "./app/assets/icons",
-      },
+        prefix: 'my',
+        dir: './app/assets/icons/my',
+        recursive: true,
+      }
     ],
-  },
-});
+  }
+})
