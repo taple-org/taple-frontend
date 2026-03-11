@@ -78,13 +78,31 @@ const handleVerifyOtp = async () => {
 const handleRegister = async () => {
     isLoading.value = true
     errorMessage.value = ''
+    successMessage.value = ''
     try {
-        const { error } = await supabase.auth.signUp({
+        // Register the user with email confirmation disabled
+        const { data, error } = await supabase.auth.signUp({
             email: form.email,
             password: form.password,
+            options: {
+                emailRedirectTo: `${window.location.origin}/`,
+            }
         })
         if (error) throw error
-        alert("Регистрация успешна! Проверьте email (если включено подтверждение) или выполните вход.")
+        
+        // Send OTP to email after successful registration
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+            email: form.email,
+            options: {
+                shouldCreateUser: false
+            }
+        })
+        
+        if (otpError) throw otpError
+        
+        successMessage.value = 'Регистрация успешна! OTP код отправлен на ваш email для подтверждения.'
+        showOtpInput.value = true
+        useOtpLogin.value = true
     } catch (error: any) {
         errorMessage.value = error.message || 'Ошибка регистрации'
     } finally {

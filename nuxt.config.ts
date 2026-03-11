@@ -10,6 +10,11 @@ export default defineNuxtConfig({
   modules: ["@pinia/nuxt", "@nuxtjs/supabase", "@nuxt/icon"],
   supabase: {
     redirect: false,
+    redirectOptions: {
+      login: '/login',
+      callback: '/confirm',
+      exclude: ['/', '/register'],
+    }
   },
   icon: {
     customCollections: [
