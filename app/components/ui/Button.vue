@@ -4,6 +4,9 @@ const { variant = "fill", disabled } = defineProps<{
   disabled?: boolean
 }>()
 
+defineOptions({
+  inheritAttrs: true
+})
 const emit = defineEmits<{ click: [event: MouseEvent] }>()
 </script>
 

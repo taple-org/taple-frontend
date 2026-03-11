@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { Dialog } from '@ark-ui/vue/dialog'
-import { XIcon } from 'lucide-vue-next'
 
 defineOptions({ inheritAttrs: false })
 
@@ -35,9 +34,7 @@ const open = defineModel<boolean>('open')
                   {{ description }}
                 </Dialog.Description>
               </div>
-              <!-- <Dialog.CloseTrigger class="dialog-close" aria-label="Close">
-                <XIcon :size="18" />
-              </Dialog.CloseTrigger> -->
+
             </div>
 
             <div class="dialog-body">
@@ -63,9 +60,8 @@ const open = defineModel<boolean>('open')
   backdrop-filter: blur(2px);
   will-change: opacity;
 }
-
-.dialog-backdrop[data-state='open']  { animation: dialog-backdrop-in  200ms ease forwards; }
-.dialog-backdrop[data-state='closed'] { animation: dialog-backdrop-out 200ms ease forwards; }
+.dialog-backdrop[data-state='open']  { animation: dialog-backdrop-in  150ms ease forwards; }
+.dialog-backdrop[data-state='closed'] { animation: dialog-backdrop-out 120ms ease forwards; }
 
 .dialog-positioner {
   position: fixed;
@@ -92,11 +88,12 @@ const open = defineModel<boolean>('open')
 }
 
 .dialog-content--sm { max-width: 380px; }
-.dialog-content--md { max-width: 460px; }
+.dialog-content--md { max-width: 480px; }
 .dialog-content--lg { max-width: 600px; }
 
-.dialog-content[data-state='open']   { animation: dialog-content-in  200ms ease forwards; }
-.dialog-content[data-state='closed'] { animation: dialog-content-out 200ms ease forwards; }
+
+.dialog-content[data-state='open']   { animation: dialog-content-in  150ms ease forwards; }
+.dialog-content[data-state='closed'] { animation: dialog-content-out 120ms ease forwards; }
 
 .dialog-header {
   position: relative;
@@ -127,25 +124,6 @@ const open = defineModel<boolean>('open')
   margin: 0;
 }
 
-/* .dialog-close {
-  position: fixed;
-  top: 0;
-  right: 0;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: none;
-  background-color: var(--color-neutral-lm);
-  color: var(--color-label);
-  cursor: pointer;
-  margin-top: -2px;
-  transition: background-color 200ms ease;
-} */
-
 .dialog-close:hover {
   background-color: color-mix(in srgb, var(--color-neutral-lm) 80%, var(--color-black));
 }
@@ -168,11 +146,11 @@ const open = defineModel<boolean>('open')
 @keyframes dialog-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
 
 @keyframes dialog-content-in {
-  from { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.97); }
-  to   { opacity: 1; transform: translate3d(0, 0,   0) scale(1);    }
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 @keyframes dialog-content-out {
-  from { opacity: 1; transform: translate3d(0, 0,   0) scale(1);    }
-  to   { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.97); }
+  from { opacity: 1; transform: translate3d(0, 0,   0);    }
+  to   { opacity: 0; transform: translate3d(0, 8px, 0); }
 }
 </style>
