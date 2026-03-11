@@ -8,6 +8,7 @@
   /* Neutral/Light/Medium */
   --color-neutral-lm: #E8E9F1;
   --color-neutral-ld: #D4D6DD;
+
   /* Neutral/Dark/Darkest */
   --color-neutral-dd: #1F2024;
   /* Neutral/Dark/Lightest */
@@ -27,6 +28,12 @@
   --transition-base: 180ms ease;
 
   --radius-md: 12px;
+
+  --app-header-box-shadow: 0 2px 10px 0 #0000001A;
+  --app-header-padding: 12px 0;
+  --app-footer-padding: 0 0 50px;
+  --app-footer-content-padding: 80px 0;
+  --app-footer-box-shadow: 0 -2px 10px 0 #0000001A;
 }
 
 body {

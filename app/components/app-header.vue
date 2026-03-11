@@ -13,7 +13,7 @@ const { open } = useAuthDialog()
   <header class="header">
     <ui-container>
       <section class="content">
-        <h1 class="logo" @click="console.log('here')">TAPLE</h1>
+        <h1 class="logo">TAPLE</h1>
         <app-header-links :links />
         <ui-button class="login-btn" @click="() => {console.log('click'); open(Step.Login)}">Войти</ui-button>
       </section>
@@ -24,14 +24,15 @@ const { open } = useAuthDialog()
 </template>
 
 <style scoped>
-:root {
-  --content-gap: 40px;
-}
 
+.header{
+  box-shadow: var(--app-header-box-shadow);
+  padding: var(--app-header-padding);
+
+}
 .content {
   display: flex;
-  gap: var(--content-gap);
-  padding-block: 12px;
+  gap: 40px;
   align-items: center;
   justify-content: space-between;
 }
