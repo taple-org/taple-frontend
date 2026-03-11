@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import {AuthFormLogin, AuthFormNewPassword, AuthFormPasswordRecovery, AuthFormRegister} from "#components";
+import {AuthFormOtpForm} from "#components";
 
 const { to } = useAuthDialog()
 const { isOpen, current, direction } = storeToRefs(useAuthDialog())
@@ -25,6 +26,11 @@ const forms: Record<Step, { title: string; description: string; component: Compo
     title: 'Создание нового пароля',
     description: 'Придумайте ваш новый пароль',
     component: AuthFormNewPassword
+  },
+  [Step.OTP]: {
+    title: 'Подтверждение кода',
+    description: 'Введите 6-значный код подтверждения отправленный на ваш адрес электронной почты',
+    component: AuthFormOtpForm
   },
 
 }

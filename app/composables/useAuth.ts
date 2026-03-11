@@ -3,6 +3,7 @@ export enum Step{
     Register,
     Recovercy,
     NewPassword,
+    OTP
 }
 
 enum Direction {
