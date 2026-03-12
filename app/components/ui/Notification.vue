@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Toast, Toaster } from '@ark-ui/vue/toast'
-import { InfoIcon, CircleCheckIcon, TriangleAlertIcon, CircleAlertIcon, XIcon } from 'lucide-vue-next'
 
 const { toaster } = useNotification()
 
