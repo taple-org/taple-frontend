@@ -15,6 +15,11 @@ export default defineNuxtConfig({
         prefix: 'my',
         dir: './app/assets/icons/my',
         recursive: true,
+      },
+      {
+        prefix: 'other',
+        dir: './app/assets/icons/other',
+        recursive: true,
       }
     ],
   }
