@@ -6,6 +6,8 @@ useFontsLoader()
     <nuxt-layout>
       <nuxt-page />
     </nuxt-layout>
-    <ui-notification />
+    <ClientOnly>
+      <ui-notification />
+    </ClientOnly>
 </template>
 <style src="~/assets/css/global.css"></style>
