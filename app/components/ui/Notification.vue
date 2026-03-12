@@ -8,7 +8,7 @@ const iconMap = {
   info: "other-info",
   success: "other-success",
   warning: "other-warning",
-  error: "other-error",
+  error: "other-warning",
 }
 </script>
 
