@@ -2,7 +2,7 @@
 import type { AuthStep } from "~/features/auth/composables/useAuthDialog";
 
 const emit = defineEmits<{ "go-to": [step: AuthStep] }>();
-
+const { close } = useAuthDialog()
 const otp = ref<string[]>([]);
 const countdown = ref(60);
 let timer: ReturnType<typeof setInterval> | null = null;
@@ -44,7 +44,7 @@ onUnmounted(() => {
       >Отправить код снова</nuxt-link
     >
 
-    <ui-button variant="outline" type="button" @click="emit('go-to', 'login')">
+    <ui-button variant="outline" type="button" @click="close()">
       Закрыть
     </ui-button>
   </form>

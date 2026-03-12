@@ -5,6 +5,11 @@
   --color-primary: #006FFD;
   --color-secondary: #FFFFFF;
   --color-error: #FF616D;
+  --color-error-l: #FFE2E5;
+  --color-success: #3AC0A0;
+  --color-success-l: #E7F4E8;
+  --color-warning: #FFB37C;
+  --color-warning-l: #FFF4E4;
   /* Neutral/Light/Medium */
   --color-neutral-lm: #E8E9F1;
   --color-neutral-ld: #D4D6DD;
