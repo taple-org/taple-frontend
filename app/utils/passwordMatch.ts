@@ -1,4 +1,4 @@
-import * as z from "zod";
+import type * as z from "zod";
 import type { PasswordRegister } from "~/interfaces/auth.interfaces"
 
 export function passwordMatch(password: string, confirmPassword: string, ctx:  z.core.$RefinementCtx<PasswordRegister>) {

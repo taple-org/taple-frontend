@@ -32,7 +32,7 @@ const style = computed(() => {
 </script>
 
 <template>
-  <hr :class="['separator', `separator--${orientation}`]" :style="style" />
+  <hr :class="['separator', `separator--${orientation}`]" :style="style" >
 </template>
 
 <style scoped>

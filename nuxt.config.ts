@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true,},
+  devtools: { enabled: true, },
   runtimeConfig: {
     public: {
       apiBase: "",
@@ -8,7 +8,12 @@ export default defineNuxtConfig({
       supabaseKey: process.env.SUPABASE_KEY,
     },
   },
-  modules: ['@pinia/nuxt', '@regle/nuxt', '@nuxt/icon'],
+  modules: ['@pinia/nuxt', '@regle/nuxt', '@nuxt/icon', '@nuxt/eslint',],
+  eslint: {
+    config: {
+      standalone: false  // Use our custom eslint.config.mjs
+    }
+  },
   icon: {
     mode: 'svg',
     customCollections: [
@@ -23,5 +28,6 @@ export default defineNuxtConfig({
         recursive: true,
       }
     ],
+
   }
 })

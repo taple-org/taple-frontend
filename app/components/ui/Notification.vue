@@ -13,7 +13,7 @@ const iconMap = {
 
 <template>
   <Teleport to="body">
-    <Toaster :toaster="toaster" v-slot="toast">
+    <Toaster v-slot="toast" :toaster="toaster">
       <Toast.Root class="notification" :class="`notification--${toast.type}`">
         <Icon
           :name="iconMap[toast.type?.toString() as keyof typeof iconMap]"

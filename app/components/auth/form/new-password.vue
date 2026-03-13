@@ -14,14 +14,14 @@ const handleSubmit = async (e: Event) => {
 <template>
   <form :class="styles.form" @submit="handleSubmit">
     <ui-form-field
-        type="password"
         v-model="r$.$value.password"
+        type="password"
         :error="r$.password.$errors[0]"
         placeholder="Введите пароль"
     />
     <ui-form-field
-        type="password"
         v-model="r$.$value.confirmPassword"
+        type="password"
         :error="r$.confirmPassword.$errors[0]"
         placeholder="Подтвердите пароль"
     />
@@ -30,6 +30,6 @@ const handleSubmit = async (e: Event) => {
     </ui-info-section>
     <ui-button type="submit">Установить</ui-button>
     <span :class="styles.formText">или</span>
-    <ui-button variant="outline" @click="emit('go-to', Step.Login)" type="button">Отменa</ui-button>
+    <ui-button variant="outline" type="button" @click="emit('go-to', Step.Login)">Отменa</ui-button>
   </form>
 </template>

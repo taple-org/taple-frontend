@@ -26,20 +26,20 @@ const handleSubmit = async (e: Event) => {
 <template>
   <form :class="styles.form" @submit="handleSubmit">
     <ui-form-field
-        type="text"
         v-model="r$.$value.email"
+        type="text"
         :error="r$.email.$errors[0]"
         placeholder="Введите email"
     />
     <ui-form-field
-        type="password"
         v-model="r$.$value.password"
+        type="password"
         :error="r$.password.$errors[0]"
         placeholder="Введите пароль"
     />
     <ui-form-field
-        type="password"
         v-model="r$.$value.confirmPassword"
+        type="password"
         :error="r$.confirmPassword.$errors[0]"
         placeholder="Подтвердите пароль"
     />
@@ -47,8 +47,8 @@ const handleSubmit = async (e: Event) => {
       Пароль должен состоять минимум из 8 символов и содержать (заглавную букву, цифру и специальный символ)
     </ui-info-section>
     <ui-form-field
-        type="checkbox"
         v-model="r$.$value.agree"
+        type="checkbox"
         :error="r$.agree.$errors[0]"
         label="Я ознакомился(лась) с условиями сервиса и полностью согласен(а) с ними."
     />

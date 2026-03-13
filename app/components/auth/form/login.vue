@@ -19,29 +19,29 @@ const handleSubmit = async (e: Event) => {
 <template>
   <form :class="styles.form" @submit="handleSubmit">
     <ui-form-field
-        type="text"
         v-model="r$.$value.email"
+        type="text"
         placeholder="Введите email"
         :error="r$.email.$errors[0]"
     />
     <ui-form-field
-        type="password"
         v-model="r$.$value.password"
+        type="password"
         placeholder="Введите пароль"
         :error="r$.password.$errors[0]"
     />
     <div class="inline">
       <ui-form-field
-          type="checkbox"
           v-model="r$.$value.rememberMe"
+          type="checkbox"
           :error="r$.rememberMe.$errors[0]"
           label="Запомнить меня" />
-      <nuxt-link to="" @click.prevent="emit('go-to', Step.Recovercy)" class="forget-password">Забыли пароль?</nuxt-link>
+      <nuxt-link to="" class="forget-password" @click.prevent="emit('go-to', Step.Recovercy)">Забыли пароль?</nuxt-link>
     </div>
     <ui-button type="submit">Войти</ui-button>
     
     <span :class="styles.formText">Впервые на нашем сайте?</span>
-    <ui-button variant="outline" @click="emit('go-to', Step.Register)" type="button">Зарегистрироваться</ui-button>
+    <ui-button variant="outline" type="button" @click="emit('go-to', Step.Register)">Зарегистрироваться</ui-button>
     <ui-info-section size="sm">
       Я пользователь информационной системы «Taple», продолжая работу на портале подтверждаю свое согласие, что несу ответственность за все осуществленные действия в соответствии с законодательством Республики Казахстан
     </ui-info-section>

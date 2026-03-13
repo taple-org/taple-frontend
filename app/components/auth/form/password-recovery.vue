@@ -17,13 +17,13 @@ const handleSubmit = async (e: Event) => {
 <template>
   <form :class="styles.form" @submit="handleSubmit">
     <ui-form-field
-        type="text"
         v-model="r$.$value.email"
+        type="text"
         placeholder="Введите email"
         :error="r$.email.$errors[0]"
     />
     <ui-button type="submit">Восстановить</ui-button>
     <span :class="styles.formText">или</span>
-    <ui-button variant="outline" @click="emit('go-to', Step.Login)" type="button">Отменить</ui-button>
+    <ui-button variant="outline" type="button" @click="emit('go-to', Step.Login)">Отменить</ui-button>
   </form>
 </template>

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {AuthFormLogin, AuthFormNewPassword, AuthFormPasswordRecovery, AuthFormRegister} from "#components";
-import {AuthFormOtpForm} from "#components";
+import {AuthFormLogin, AuthFormNewPassword, AuthFormPasswordRecovery, AuthFormRegister,AuthFormOtpForm} from "#components";
+
 
 const { to } = useAuthDialog()
 const { isOpen, current, direction } = storeToRefs(useAuthDialog())
