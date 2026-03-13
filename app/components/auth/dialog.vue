@@ -28,8 +28,8 @@ const forms: Record<Step, { title: string; description: string; component: Compo
     component: AuthFormNewPassword
   },
   [Step.OTP]: {
-    title: 'Подтверждение кода',
-    description: 'Введите 6-значный код подтверждения отправленный на ваш адрес электронной почты',
+    title: 'Подтверждение email',
+    description: 'Введите 8-значный код подтверждения отправленный на ваш адрес электронной почты',
     component: AuthFormOtpForm
   },
 

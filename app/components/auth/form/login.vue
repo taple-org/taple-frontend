@@ -39,6 +39,7 @@ const handleSubmit = async (e: Event) => {
       <nuxt-link to="" @click.prevent="emit('go-to', Step.Recovercy)" class="forget-password">Забыли пароль?</nuxt-link>
     </div>
     <ui-button type="submit">Войти</ui-button>
+    
     <span :class="styles.formText">Впервые на нашем сайте?</span>
     <ui-button variant="outline" @click="emit('go-to', Step.Register)" type="button">Зарегистрироваться</ui-button>
     <ui-info-section size="sm">

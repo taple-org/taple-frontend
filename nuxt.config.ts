@@ -1,10 +1,11 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true,},
   runtimeConfig: {
     public: {
       apiBase: "",
+      supabaseUrl: process.env.SUPABASE_URL,
+      supabaseKey: process.env.SUPABASE_KEY,
     },
   },
   modules: ['@pinia/nuxt', '@regle/nuxt', '@nuxt/icon'],

@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type {RegisterForm, LoginForm, NewPasswordForm, RecoveryPasswordForm} from "~/interfaces/auth.interfaces";
+import type {RegisterForm, LoginForm, NewPasswordForm, RecoveryPasswordForm, OtpRequestForm} from "~/interfaces/auth.interfaces";
 
 const passwordRegister = {
     password: z.string()
@@ -18,6 +18,8 @@ export const RegisterFormState = ref<RegisterForm>({
     confirmPassword: '',
     agree: false
 })
+
+export const OtpRequestFormState = ref<OtpRequestForm>({ email: '' })
 
 
 export const loginSchema = computed(() => inferSchema(LoginFormState, z.object({
@@ -60,3 +62,9 @@ export const registerSchema = computed(() =>
         })
     )
 )
+
+export const otpRequestSchema = computed(() => inferSchema(OtpRequestFormState, z.object({
+    email: z.string()
+        .check(z.minLength(1, { error: 'Обязательное поле' }))
+        .check(z.email({ error: 'Некорректный email' })),
+})))

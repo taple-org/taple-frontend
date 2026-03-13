@@ -4,13 +4,22 @@ import styles from '~/components/auth/form/index.module.css'
 const emit = defineEmits<{ 'go-to': [step: Step] }>()
 const { close } = useAuthDialog()
 const { r$ } = useRegisterForm()
+const otpStore = useOtpAuth()
+const { isLoading, error } = storeToRefs(otpStore)
+const { registerWithOtp } = otpStore
 
 const handleSubmit = async (e: Event) => {
   e.preventDefault()
   const values = await r$.$validate()
   if(!values.valid) return;
-  close()
-  console.log(values.data);
+  
+  // Register user and send OTP
+  const { success } = await registerWithOtp(values.data.email, values.data.password)
+  
+  if (success) {
+    // Navigate to OTP verification step
+    emit('go-to', Step.OTP)
+  }
 }
 
 </script>
@@ -21,7 +30,6 @@ const handleSubmit = async (e: Event) => {
         v-model="r$.$value.email"
         :error="r$.email.$errors[0]"
         placeholder="Введите email"
-
     />
     <ui-form-field
         type="password"
@@ -44,10 +52,25 @@ const handleSubmit = async (e: Event) => {
         :error="r$.agree.$errors[0]"
         label="Я ознакомился(лась) с условиями сервиса и полностью согласен(а) с ними."
     />
-    <ui-button type="submit" @click.prevent="emit('go-to', Step.OTP)">Продолжить</ui-button>
+    
+    <div v-if="error" class="error-message">
+      {{ error }}
+    </div>
+    
+    <ui-button type="submit" :disabled="isLoading">
+      {{ isLoading ? 'Регистрация...' : 'Продолжить' }}
+    </ui-button>
     <span :class="styles.formText">У вас уже есть учетная запись?</span>
     <ui-button variant="outline" type="button" @click.prevent="emit('go-to', Step.Login)">Войти</ui-button>
   </form>
 </template>
 <style scoped lang="css">
+.error-message {
+  color: var(--color-error, #ef4444);
+  font-size: 14px;
+  padding: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 4px;
+  text-align: center;
+}
 </style>
