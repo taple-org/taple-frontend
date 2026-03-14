@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type {RegisterForm, LoginForm, NewPasswordForm, RecoveryPasswordForm} from "~/interfaces/auth.interfaces";
+import type {RegisterForm, LoginForm, NewPasswordForm, RecoveryPasswordForm} from "~/interfaces/auth/auth.form.interfaces";
 
 const passwordRegister = {
     password: z.string()

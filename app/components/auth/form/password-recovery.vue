@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
+import type {RecoveryActionsType} from "~/interfaces/auth/auth.modal.interfaces";
 
-const emit = defineEmits<{ 'go-to': [step: Step] }>();
+const emit = defineEmits<{ 'navigate': [actions: RecoveryActionsType ] }>();
 
 const { r$ } = useRecoveryPasswordForm();
 
@@ -11,7 +12,7 @@ const handleSubmit = async (e: Event) => {
   if(!values.valid) return;
 
   console.log(values.data);
-  emit('go-to', Step.NewPassword);
+  emit('navigate', 'success');
 }
 </script>
 <template>
@@ -24,6 +25,6 @@ const handleSubmit = async (e: Event) => {
     />
     <ui-button type="submit">Восстановить</ui-button>
     <span :class="styles.formText">или</span>
-    <ui-button variant="outline" @click="emit('go-to', Step.Login)" type="button">Отменить</ui-button>
+    <ui-button variant="outline" @click="emit('navigate', 'cancel')" type="button">Отменить</ui-button>
   </form>
 </template>

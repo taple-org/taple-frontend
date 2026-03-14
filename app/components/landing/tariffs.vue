@@ -31,7 +31,7 @@ const cards: ITariffCard[] = [
 ]
 </script>
 <template>
-  <section class="tariffs">
+  <section class="tariffs" id="tariffs">
     <ui-container class="tariffs__inner" :padding="[30, 15]">
       <h3 class="tariffs__title">
         Тарифы

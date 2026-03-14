@@ -1,49 +1,25 @@
 <script lang="ts" setup>
-import {AuthFormLogin, AuthFormNewPassword, AuthFormPasswordRecovery, AuthFormRegister} from "#components";
-import {AuthFormOtpForm} from "#components";
+import { AuthModals } from "~/constants/auth.constants"
+import type { AuthModalStepType, ActionsOf, ActionFn } from "~/interfaces/auth/auth.modal.interfaces";
 
 const { to } = useAuthDialog()
-const { isOpen, current, direction } = storeToRefs(useAuthDialog())
+const { isOpen, current, direction, from } = storeToRefs(useAuthDialog())
 
-
-const forms: Record<Step, { title: string; description: string; component: Component }> = {
-  [Step.Login]: {
-    title: 'Вход',
-    description: 'Добро пожаловать в Taple.kz',
-    component: AuthFormLogin
-  },
-  [Step.Register]: {
-    title: 'Регистрация',
-    description: 'Введите данный для регистрации',
-    component: AuthFormRegister
-  },
-  [Step.Recovercy]: {
-    title: 'Восстановление пароля',
-    description: 'Укажите вашу электронную почту',
-    component: AuthFormPasswordRecovery
-  },
-  [Step.NewPassword]: {
-    title: 'Создание нового пароля',
-    description: 'Придумайте ваш новый пароль',
-    component: AuthFormNewPassword
-  },
-  [Step.OTP]: {
-    title: 'Подтверждение кода',
-    description: 'Введите 6-значный код подтверждения отправленный на ваш адрес электронной почты',
-    component: AuthFormOtpForm
-  },
-
+function onNavigate<T extends AuthModalStepType>(step: T, action: ActionsOf<T>): void;
+function onNavigate(step: AuthModalStepType, action: string) {
+  const fn = (AuthModals[step].actions as Record<string, ActionFn>)[action];
+  fn?.({ to, close }, { from: step });
 }
 
 </script>
 
 <template>
-  <ui-dialog v-model:open="isOpen" v-bind="forms[current]">
+  <ui-dialog v-model:open="isOpen" v-bind="AuthModals[current]">
     <Transition :name="`slide-${direction}`" mode="out-in">
       <component
-          :is="forms[current].component"
+          :is="AuthModals[current].component"
           :key="current"
-          @go-to="to"
+          @navigate="(action: ActionsOf<typeof current>) => onNavigate(current, action)"
       />
     </Transition>
   </ui-dialog>

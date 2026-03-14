@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { TemplateLink } from "~/interfaces/link";
 const links: TemplateLink[] = [
-  { to: "/contacts", label: "Контакты" },
-  { to: "/tariffs", label: "Тарифы" },
-  { to: "/api", label: "API" },
+  { to: "#", label: "Контакты" },
+  { to: "#tariffs", label: "Тарифы" },
+  { to: "#", label: "API" },
 ];
 const { open } = useAuthDialog()
 
@@ -15,7 +15,7 @@ const { open } = useAuthDialog()
       <section class="content">
         <h1 class="logo">TAPLE</h1>
         <app-header-links :links />
-        <ui-button class="login-btn" @click="() => {console.log('click'); open(Step.Login)}">Войти</ui-button>
+        <ui-button class="login-btn" @click="() => {console.log('click'); open('login')}">Войти</ui-button>
       </section>
     </ui-container>
   </header>

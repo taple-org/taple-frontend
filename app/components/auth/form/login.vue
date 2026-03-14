@@ -1,18 +1,14 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
+import type { LoginActionsType } from "~/interfaces/auth/auth.modal.interfaces";
+const emit = defineEmits<{ 'navigate': [actions: LoginActionsType] }>()
 
-const emit = defineEmits<{ 'go-to': [step: Step] }>()
-
-const { close } = useAuthDialog()
 const { r$ } = useLoginForm();
-const {$api} = useNuxtApp()
 const handleSubmit = async (e: Event) => {
   e.preventDefault()
   const values = await r$.$validate()
   if(!values.valid) return;
-  const { token } = $api.auth.login(values);
-
-  close();
+  emit('navigate', 'success')
 
 }
 </script>
@@ -36,11 +32,14 @@ const handleSubmit = async (e: Event) => {
           v-model="r$.$value.rememberMe"
           :error="r$.rememberMe.$errors[0]"
           label="Запомнить меня" />
-      <nuxt-link to="" @click.prevent="emit('go-to', Step.Recovercy)" class="forget-password">Забыли пароль?</nuxt-link>
+      <nuxt-link to="" @click.prevent="emit('navigate', 'recovery')" class="forget-password">Забыли пароль?</nuxt-link>
     </div>
     <ui-button type="submit">Войти</ui-button>
     <span :class="styles.formText">Впервые на нашем сайте?</span>
-    <ui-button variant="outline" @click="emit('go-to', Step.Register)" type="button">Зарегистрироваться</ui-button>
+    <ui-button variant="outline" @click="() => {
+      console.log('here')
+      emit('navigate', 'register')
+    }" type="button">Зарегистрироваться</ui-button>
     <ui-info-section size="sm">
       Я пользователь информационной системы «Taple», продолжая работу на портале подтверждаю свое согласие, что несу ответственность за все осуществленные действия в соответствии с законодательством Республики Казахстан
     </ui-info-section>

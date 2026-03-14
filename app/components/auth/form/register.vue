@@ -1,16 +1,17 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
+import type {RegisterActionsType} from "~/interfaces/auth/auth.modal.interfaces";
 
-const emit = defineEmits<{ 'go-to': [step: Step] }>()
-const { close } = useAuthDialog()
+const emit = defineEmits<{ 'navigate': [actions: RegisterActionsType] }>()
 const { r$ } = useRegisterForm()
 
 const handleSubmit = async (e: Event) => {
   e.preventDefault()
   const values = await r$.$validate()
   if(!values.valid) return;
-  close()
   console.log(values.data);
+  emit("navigate", 'success')
+
 }
 
 </script>
@@ -44,9 +45,9 @@ const handleSubmit = async (e: Event) => {
         :error="r$.agree.$errors[0]"
         label="Я ознакомился(лась) с условиями сервиса и полностью согласен(а) с ними."
     />
-    <ui-button type="submit" @click.prevent="emit('go-to', Step.OTP)">Продолжить</ui-button>
+    <ui-button type="submit" >Продолжить</ui-button>
     <span :class="styles.formText">У вас уже есть учетная запись?</span>
-    <ui-button variant="outline" type="button" @click.prevent="emit('go-to', Step.Login)">Войти</ui-button>
+    <ui-button variant="outline" type="button" @click.prevent="emit('navigate', 'login')">Войти</ui-button>
   </form>
 </template>
 <style scoped lang="css">

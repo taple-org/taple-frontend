@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
-const emit = defineEmits<{ 'go-to': [step: Step] }>()
+import type {NewPasswordActionsType} from "~/interfaces/auth/auth.modal.interfaces";
+const emit = defineEmits<{ 'navigate': [actions: NewPasswordActionsType] }>()
 
 const { r$ } = useNewPasswordForm();
 
@@ -8,7 +9,7 @@ const handleSubmit = async (e: Event) => {
   e.preventDefault()
   const values = await r$.$validate()
   if(!values.valid) return;
-  emit('go-to', Step.Login);
+  emit('navigate', 'success');
 }
 </script>
 <template>
@@ -30,6 +31,6 @@ const handleSubmit = async (e: Event) => {
     </ui-info-section>
     <ui-button type="submit">Установить</ui-button>
     <span :class="styles.formText">или</span>
-    <ui-button variant="outline" @click="emit('go-to', Step.Login)" type="button">Отменa</ui-button>
+    <ui-button variant="outline" @click="emit('navigate', 'cancel')" type="button">Отменa</ui-button>
   </form>
 </template>
