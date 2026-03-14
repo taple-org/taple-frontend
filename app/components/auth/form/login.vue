@@ -10,7 +10,7 @@ const handleSubmit = async (e: Event) => {
   e.preventDefault()
   const values = await r$.$validate()
   if(!values.valid) return;
-  const { token } = $api.auth.login(values);
+  const user = await $api.auth.login({body: values.data});
 
   close();
 
