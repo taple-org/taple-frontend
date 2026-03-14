@@ -15,14 +15,14 @@ const handleSubmit = async (e: Event) => {
 <template>
   <form :class="styles.form" @submit="handleSubmit">
     <ui-form-field
-        type="password"
         v-model="r$.$value.password"
+        type="password"
         :error="r$.password.$errors[0]"
         placeholder="Введите пароль"
     />
     <ui-form-field
-        type="password"
         v-model="r$.$value.confirmPassword"
+        type="password"
         :error="r$.confirmPassword.$errors[0]"
         placeholder="Подтвердите пароль"
     />

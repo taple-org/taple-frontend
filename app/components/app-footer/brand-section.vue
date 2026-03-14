@@ -13,7 +13,7 @@ defineProps<{
     <div class="brand__social social">
       <template v-for="{ icon, label, ...props } in links">
         <nuxt-link class="social__link" v-bind="props">
-          <icon class="social__icon" v-if="!!icon" v-bind="icon" />
+          <icon v-if="!!icon" class="social__icon" v-bind="icon" />
         </nuxt-link>
       </template>
     </div>

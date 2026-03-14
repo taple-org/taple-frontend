@@ -18,8 +18,8 @@ const handleSubmit = async (e: Event) => {
 <template>
   <form :class="styles.form" @submit="handleSubmit">
     <ui-form-field
-        type="text"
         v-model="r$.$value.email"
+        type="text"
         placeholder="Введите email"
         :error="r$.email.$errors[0]"
     />

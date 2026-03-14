@@ -15,26 +15,27 @@ const handleSubmit = async (e: Event) => {
 <template>
   <form :class="styles.form" @submit="handleSubmit">
     <ui-form-field
-        type="text"
         v-model="r$.$value.email"
+        type="text"
         placeholder="Введите email"
         :error="r$.email.$errors[0]"
     />
     <ui-form-field
-        type="password"
         v-model="r$.$value.password"
+        type="password"
         placeholder="Введите пароль"
         :error="r$.password.$errors[0]"
     />
     <div class="inline">
       <ui-form-field
-          type="checkbox"
           v-model="r$.$value.rememberMe"
+          type="checkbox"
           :error="r$.rememberMe.$errors[0]"
           label="Запомнить меня" />
       <nuxt-link to="" @click.prevent="emit('navigate', 'recovery')" class="forget-password">Забыли пароль?</nuxt-link>
     </div>
     <ui-button type="submit">Войти</ui-button>
+    
     <span :class="styles.formText">Впервые на нашем сайте?</span>
     <ui-button variant="outline" @click="() => {
       console.log('here')

@@ -19,8 +19,7 @@ const { open } = useAuthDialog()
       </section>
     </ui-container>
   </header>
-  <auth-dialog>
-  </auth-dialog>
+  <auth-dialog/>
 </template>
 
 <style scoped>
