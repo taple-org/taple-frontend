@@ -4,14 +4,14 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: "",
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabaseKey: process.env.SUPABASE_KEY,
+      supabaseUrl: "",
+      supabaseKey: "",
     },
   },
   modules: ['@pinia/nuxt', '@regle/nuxt', '@nuxt/icon', '@nuxt/eslint',],
   eslint: {
     config: {
-      standalone: false  // Use our custom eslint.config.mjs
+      standalone: false
     }
   },
   icon: {
@@ -23,8 +23,8 @@ export default defineNuxtConfig({
         recursive: true,
       },
       {
-        prefix: 'other',
-        dir: './app/assets/icons/other',
+        prefix: 'my-icon',
+        dir: './app/assets/icons',
         recursive: true,
       }
     ],

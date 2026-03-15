@@ -1,18 +1,21 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
-const emit = defineEmits<{ 'go-to': [step: Step] }>()
+import type {NewPasswordActionsType} from "~/interfaces/auth/auth.modal.interfaces";
+const emit = defineEmits<{ 'navigate': [actions: NewPasswordActionsType] }>()
 
 const { r$ } = useNewPasswordForm();
+const authStore = useAuthStore();
 
-const handleSubmit = async (e: Event) => {
-  e.preventDefault()
-  const values = await r$.$validate()
+const handleSubmit = async () => {
+  const values = await r$.$validate();
   if(!values.valid) return;
-  emit('go-to', Step.Login);
+
+  const ok = await authStore.resetPassword(values.data);
+  if(ok) emit('navigate', 'success');
 }
 </script>
 <template>
-  <form :class="styles.form" @submit="handleSubmit">
+  <form :class="styles.form" @submit.prevent="handleSubmit">
     <ui-form-field
         v-model="r$.$value.password"
         type="password"
@@ -30,6 +33,6 @@ const handleSubmit = async (e: Event) => {
     </ui-info-section>
     <ui-button type="submit">Установить</ui-button>
     <span :class="styles.formText">или</span>
-    <ui-button variant="outline" type="button" @click="emit('go-to', Step.Login)">Отменa</ui-button>
+    <ui-button variant="outline" @click="emit('navigate', 'cancel')" type="button">Отменa</ui-button>
   </form>
 </template>

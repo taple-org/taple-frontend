@@ -81,15 +81,13 @@ const open = defineModel<boolean>('open')
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: fit-content;       
+  min-width: 320px;        
+  max-width: min(600px, calc(100vw - 32px)); 
   overflow: hidden;
   pointer-events: all;
   will-change: transform, opacity;
 }
-
-.dialog-content--sm { max-width: 380px; }
-.dialog-content--md { max-width: 480px; }
-.dialog-content--lg { max-width: 600px; }
 
 
 .dialog-content[data-state='open']   { animation: dialog-content-in  150ms ease forwards; }

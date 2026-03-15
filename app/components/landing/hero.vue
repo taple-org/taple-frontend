@@ -1,10 +1,11 @@
 <script setup lang="ts">
+
 defineProps<{
   title: string;
   subtitle: string;
 }>();
 
-const { open } = useAuthDialog()
+const { open } = useAuthModal()
 </script>
 <template>
   <section class="hero">
@@ -14,7 +15,7 @@ const { open } = useAuthDialog()
         <span class="hero__subtitle">{{subtitle}}</span>
       </div>
       <div class="hero__buttons">
-        <ui-button class="register-btn" @click="open(Step.Register)">
+        <ui-button class="register-btn" @click="open('register')">
           Зарегистрироваться
         </ui-button>
         <ui-button class="contact-btn" variant="outline" @click="$router.push('')">

@@ -1,30 +1,23 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
+import type {RegisterActionsType} from "~/interfaces/auth/auth.modal.interfaces";
 
-const emit = defineEmits<{ 'go-to': [step: Step] }>()
-const { close } = useAuthDialog()
+const emit = defineEmits<{ 'navigate': [actions: RegisterActionsType] }>()
 const { r$ } = useRegisterForm()
-const otpStore = useOtpAuth()
-const { isLoading, error } = storeToRefs(otpStore)
-const { registerWithOtp } = otpStore
+const authStore = useAuthStore();
+
 
 const handleSubmit = async (e: Event) => {
-  e.preventDefault()
   const values = await r$.$validate()
   if(!values.valid) return;
-  
-  // Register user and send OTP
-  const { success } = await registerWithOtp(values.data.email, values.data.password)
-  
-  if (success) {
-    // Navigate to OTP verification step
-    emit('go-to', Step.OTP)
-  }
+  const ok = await authStore.register(values.data);
+  if(ok) emit("navigate", 'success');
+
 }
 
 </script>
 <template>
-  <form :class="styles.form" @submit="handleSubmit">
+  <form :class="styles.form" @submit.prevent="handleSubmit">
     <ui-form-field
         v-model="r$.$value.email"
         type="text"
@@ -52,16 +45,9 @@ const handleSubmit = async (e: Event) => {
         :error="r$.agree.$errors[0]"
         label="Я ознакомился(лась) с условиями сервиса и полностью согласен(а) с ними."
     />
-    
-    <div v-if="error" class="error-message">
-      {{ error }}
-    </div>
-    
-    <ui-button type="submit" :disabled="isLoading">
-      {{ isLoading ? 'Регистрация...' : 'Продолжить' }}
-    </ui-button>
+    <ui-button type="submit" >Продолжить</ui-button>
     <span :class="styles.formText">У вас уже есть учетная запись?</span>
-    <ui-button variant="outline" type="button" @click.prevent="emit('go-to', Step.Login)">Войти</ui-button>
+    <ui-button variant="outline" type="button" @click.prevent="emit('navigate', 'login')">Войти</ui-button>
   </form>
 </template>
 <style scoped lang="css">
