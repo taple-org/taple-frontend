@@ -1,30 +1,39 @@
 <script lang="ts" setup>
 import { useOTP } from "~/composables/useOTP";
 import type {ConfirmActionsType} from "~/interfaces/auth/auth.modal.interfaces";
+import styles from '~/components/auth/form/index.module.css'
 const emit = defineEmits<{ "navigate": [actions: ConfirmActionsType] }>();
+const authStore = useAuthStore();
 
-const { resend, verify, countdown, otp } = useOTP(60, ({ valueAsString }) => {
-  console.log(valueAsString);
-  emit("navigate", 'success')
-})
+const {resend, verify, countdown, otp} = useOTP(
+    60,
+    async ({valueAsString}) => {
+      // const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
+      // if (ok) emit('navigate', 'success')
+    },
+    () => authStore.resendOtp(authStore.pendingEmail)
+);
 
 </script>
 
 <template>
-  <form class="otp-form" @submit.prevent>
+  <form :class="styles.form" class="otp-form" @submit.prevent>
     <ui-fields-pin-input-field
       v-model="otp"
-      :count="6"
+      :count="8"
       @value-complete="verify"
+      :disabled="authStore.isLoading"
     />
 
     <p v-if="countdown > 0" class="otp-form__timer">
       <strong>{{ countdown }}</strong> секунд
     </p>
-    <span v-else class="otp-form-refresh" @click.prevent="resend"
-      >Отправить код снова</span>
-
-    <ui-button variant="outline" type="button" @click="emit('navigate', 'close')">
+    <span v-else class="otp-form-refresh" @click.prevent="resend">Отправить код снова</span>
+    <ui-button variant="outline"
+               type="button"
+               @click="emit('navigate', 'close')"
+               :disabled="authStore.isLoading"
+    >
       Закрыть
     </ui-button>
   </form>
@@ -32,11 +41,7 @@ const { resend, verify, countdown, otp } = useOTP(60, ({ valueAsString }) => {
 
 <style lang="css">
 .otp-form {
-  max-width: 424px;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
   text-align: center;
 }
 .otp-form-refresh {

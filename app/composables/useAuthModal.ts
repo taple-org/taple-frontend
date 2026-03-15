@@ -6,7 +6,7 @@ enum Direction {
     Back= 'back',
 }
 
-export const useAuthDialog = defineStore('auth-dialog', () => {
+export const useAuthModal = defineStore('auth-modal', () => {
     const isOpen = ref(false)
     const current = ref<AuthModalStepType>("login")
     const direction = ref<Direction>(Direction.Forward)

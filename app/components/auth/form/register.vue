@@ -4,22 +4,20 @@ import type {RegisterActionsType} from "~/interfaces/auth/auth.modal.interfaces"
 
 const emit = defineEmits<{ 'navigate': [actions: RegisterActionsType] }>()
 const { r$ } = useRegisterForm()
-const otpStore = useOtpAuth()
-const { isLoading, error } = storeToRefs(otpStore)
-const { registerWithOtp } = otpStore
+const authStore = useAuthStore();
+
 
 const handleSubmit = async (e: Event) => {
-  e.preventDefault()
   const values = await r$.$validate()
   if(!values.valid) return;
-  console.log(values.data);
-  emit("navigate", 'success')
+  const ok = await authStore.register(values.data);
+  if(ok) emit("navigate", 'success');
 
 }
 
 </script>
 <template>
-  <form :class="styles.form" @submit="handleSubmit">
+  <form :class="styles.form" @submit.prevent="handleSubmit">
     <ui-form-field
         v-model="r$.$value.email"
         type="text"

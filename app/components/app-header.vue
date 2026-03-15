@@ -5,7 +5,7 @@ const links: TemplateLink[] = [
   { to: "#tariffs", label: "Тарифы" },
   { to: "#", label: "API" },
 ];
-const { open } = useAuthDialog()
+const { open } = useAuthModal();
 
 
 </script>
@@ -19,7 +19,7 @@ const { open } = useAuthDialog()
       </section>
     </ui-container>
   </header>
-  <auth-dialog/>
+  <auth-modal />
 </template>
 
 <style scoped>

@@ -5,18 +5,19 @@ import type {RecoveryActionsType} from "~/interfaces/auth/auth.modal.interfaces"
 const emit = defineEmits<{ 'navigate': [actions: RecoveryActionsType ] }>();
 
 const { r$ } = useRecoveryPasswordForm();
-
-const handleSubmit = async (e: Event) => {
-  e.preventDefault();
+const {setPendingEmail, forgotPassword} = useAuthStore();
+const handleSubmit = async () => {
   const values = await r$.$validate();
   if(!values.valid) return;
 
-  console.log(values.data);
-  emit('navigate', 'success');
+  setPendingEmail(values.data.email);
+  const ok = await forgotPassword(values.data);
+  
+  if(ok) emit('navigate', 'success');
 }
 </script>
 <template>
-  <form :class="styles.form" @submit="handleSubmit">
+  <form :class="styles.form" @submit.prevent="handleSubmit">
     <ui-form-field
         v-model="r$.$value.email"
         type="text"

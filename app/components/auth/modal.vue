@@ -2,8 +2,8 @@
 import { AuthModals } from "~/constants/auth.constants"
 import type { AuthModalStepType, ActionsOf, ActionFn } from "~/interfaces/auth/auth.modal.interfaces";
 
-const { to } = useAuthDialog()
-const { isOpen, current, direction, from } = storeToRefs(useAuthDialog())
+const { to, close } = useAuthModal()
+const { isOpen, current, direction, from } = storeToRefs(useAuthModal())
 
 function onNavigate<T extends AuthModalStepType>(step: T, action: ActionsOf<T>): void;
 function onNavigate(step: AuthModalStepType, action: string) {

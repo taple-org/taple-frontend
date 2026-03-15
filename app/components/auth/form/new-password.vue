@@ -4,16 +4,18 @@ import type {NewPasswordActionsType} from "~/interfaces/auth/auth.modal.interfac
 const emit = defineEmits<{ 'navigate': [actions: NewPasswordActionsType] }>()
 
 const { r$ } = useNewPasswordForm();
+const authStore = useAuthStore();
 
-const handleSubmit = async (e: Event) => {
-  e.preventDefault()
-  const values = await r$.$validate()
+const handleSubmit = async () => {
+  const values = await r$.$validate();
   if(!values.valid) return;
-  emit('navigate', 'success');
+
+  const ok = await authStore.resetPassword(values.data);
+  if(ok) emit('navigate', 'success');
 }
 </script>
 <template>
-  <form :class="styles.form" @submit="handleSubmit">
+  <form :class="styles.form" @submit.prevent="handleSubmit">
     <ui-form-field
         v-model="r$.$value.password"
         type="password"

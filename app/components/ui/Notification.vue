@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { Toast, Toaster } from '@ark-ui/vue/toast'
+import type { ToastType } from "@ark-ui/vue";
 
 const { toaster } = useNotification()
 
-const iconMap = {
-  info: "other-info",
-  success: "other-success",
-  warning: "other-warning",
-  error: "other-warning",
+const iconMap: Record<ToastType, string> = {
+  info: "my-icon-info",
+  success: "my-icon-success",
+  warning: "my-icon-warning",
+  error: "my-icon-error",
+  loading: "my-icon-loading",
 }
 </script>
 
 <template>
   <Teleport to="body">
     <Toaster v-slot="toast" :toaster="toaster">
-      <Toast.Root class="notification" :class="`notification--${toast.type}`">
+      <Toast.Root class="notification" :class="`notification--${toast.type ?? 'info'}`">
         <Icon
-          :name="iconMap[toast.type?.toString() as keyof typeof iconMap]"
-          class="notification__icon"
-          size="24"
+            :name="iconMap[toast.type ?? 'info']!"
+            class="notification__icon"
+            size="24"
         />
         <div class="notification__content">
           <Toast.Title v-if="toast.title" class="notification__title">
@@ -29,7 +31,7 @@ const iconMap = {
           </Toast.Description>
         </div>
         <Toast.CloseTrigger class="notification__close">
-          <Icon name="other-close" size="12" />
+          <Icon name="my-icon-close" size="12" />
         </Toast.CloseTrigger>
       </Toast.Root>
     </Toaster>
@@ -40,7 +42,7 @@ const iconMap = {
 .notification {
   display: flex;
   align-items: center;
-  justify-self: spa;
+  justify-content: space-between;
   gap: 16px;
   padding: 16px;
   border-radius: 16px;
@@ -51,26 +53,23 @@ const iconMap = {
   translate: var(--x) var(--y);
   scale: var(--scale);
   z-index: var(--z-index);
-  /* height: var(--height); */
   opacity: var(--opacity);
   will-change: translate, opacity, scale;
   transition:
-    translate 400ms,
-    scale 400ms,
-    opacity 400ms,
-    height 400ms;
+      translate 400ms,
+      scale 400ms,
+      opacity 400ms;
   transition-timing-function: cubic-bezier(0.21, 1.02, 0.73, 1);
 }
 
 .notification[data-state='closed'] {
   transition:
-    translate 400ms,
-    scale 400ms,
-    opacity 200ms;
+      translate 400ms,
+      scale 400ms,
+      opacity 200ms;
   transition-timing-function: cubic-bezier(0.06, 0.71, 0.55, 1);
 }
 
-/* Variants */
 .notification--info {
   background-color: var(--color-highlight-l);
 }
@@ -103,12 +102,10 @@ const iconMap = {
   color: var(--color-error);
 }
 
-/* Icon */
 .notification__icon {
   flex-shrink: 0;
 }
 
-/* Content */
 .notification__content {
   flex: 1;
   display: flex;
@@ -118,7 +115,7 @@ const iconMap = {
 }
 
 .notification__title {
-  font-family: var(--font-base);
+  font-family: var(--font-base), sans-serif;
   font-weight: 500;
   font-size: 12px;
   line-height: normal;
@@ -127,7 +124,7 @@ const iconMap = {
 }
 
 .notification__description {
-  font-family: var(--font-base);
+  font-family: var(--font-base), sans-serif;
   font-weight: 300;
   font-size: 10px;
   line-height: 16px;
@@ -136,7 +133,6 @@ const iconMap = {
   margin: 0;
 }
 
-/* Close button */
 .notification__close {
   flex-shrink: 0;
   display: flex;
