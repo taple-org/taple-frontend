@@ -1,4 +1,38 @@
+import type { ApiResponse, ApiError } from '~/types/api.types'
+
 type $Fetch = typeof $fetch;
+
+/** Класс ошибки API — бросается при meta.code !== 0 */
+export class ApiException extends Error {
+    readonly code: number
+    readonly apiError: ApiError
+
+    constructor(code: number, apiError: ApiError) {
+        const msg = apiError.message?.ru ?? apiError.message?.en ?? apiError.type ?? 'Unknown API error'
+        super(msg)
+        this.name = 'ApiException'
+        this.code = code
+        this.apiError = apiError
+    }
+
+    /** Получить ошибки полей (для отображения под инпутами) */
+    get fieldErrors(): Record<string, string> | undefined {
+        if (!this.apiError.fields) return undefined
+        const result: Record<string, string> = {}
+        for (const [field, messages] of Object.entries(this.apiError.fields)) {
+            result[field] = messages.ru ?? messages.en ?? ''
+        }
+        return result
+    }
+}
+
+/** Извлекает result из обёртки { meta, result }, бросает ApiException при ошибке */
+export function unwrapApiResponse<T>(response: ApiResponse<T>): T {
+    if (response.meta.code !== 0 && response.meta.error) {
+        throw new ApiException(response.meta.code, response.meta.error)
+    }
+    return response.result
+}
 
 type PathParams<Url extends string> =
     Url extends `${infer _Start}:${infer Param}/${infer Rest}`
@@ -205,7 +239,8 @@ export function build<Contracts extends ContractsMap>(
                     },
                 })
 
-                return contract.transform ? contract.transform(raw) : raw
+                const unwrapped = unwrapApiResponse(raw as ApiResponse<unknown>)
+                return contract.transform ? contract.transform(unwrapped) : unwrapped
             } finally {
                 if (timeoutId) clearTimeout(timeoutId)
             }

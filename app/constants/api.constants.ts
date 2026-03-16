@@ -1,1 +1,2 @@
-export const TokenKey = "Auth";
+export const TokenKey = "access_token"
+export const RefreshTokenKey = "refresh_token"

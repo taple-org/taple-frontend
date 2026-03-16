@@ -1,39 +1,70 @@
-import type { User, Session } from '@supabase/supabase-js'
+import { TokenKey, RefreshTokenKey } from '~/constants/api.constants'
+import type { AuthUser } from '~/types/api.types'
+import { ApiException } from '~/repositories/repository.helpers'
 
 export const useAuthStore = defineStore('auth', () => {
     const notification = useNotification()
     const router = useRouter()
     const { $api } = useNuxtApp()
 
-    const user = ref<User | null>(null)
-    const session = ref<Session | null>(null)
+    const user = ref<AuthUser | null>(null)
     const isLoading = ref(false)
     const error = ref<string | null>(null)
+    const fieldErrors = ref<Record<string, string> | null>(null)
+    
     const pendingEmail = ref<string>('')
+    const otpType = ref<'signup' | 'recovery' | null>(null)
+    const resetToken = ref<string>('')
 
-    const isAuthenticated = computed(() => !!session.value)
+    const isAuthenticated = computed(() => !!user.value)
 
-    function setSession(s: Session | null) {
-        session.value = s
-        user.value = s?.user ?? null
+    function setAuth(authUser: AuthUser | null, accessToken?: string) {
+        user.value = authUser
+        if (import.meta.client) {
+            if (accessToken) {
+                localStorage.setItem(TokenKey, accessToken)
+            } else if (!authUser) {
+                localStorage.removeItem(TokenKey)
+            }
+        }
     }
+
+    function clearAuth() {
+        user.value = null
+        if (import.meta.client) {
+            localStorage.removeItem(TokenKey)
+            localStorage.removeItem(RefreshTokenKey)
+        }
+    }
+
     function setPendingEmail(email: string) {
         pendingEmail.value = email
     }
     function resetPendingEmail() {
         pendingEmail.value = ''
+        otpType.value = null
     }
 
     function withLoading<T extends unknown[]>(fn: (...args: T) => Promise<void>) {
         return async (...args: T): Promise<boolean> => {
             isLoading.value = true
             error.value = null
+            fieldErrors.value = null
             try {
                 await fn(...args)
                 return true
-            } catch (e: any) {
-                error.value = e.message
-                notification.error('Ошибка', e.message)
+            } catch (e: unknown) {
+                if (e instanceof ApiException) {
+                    error.value = e.message
+                    fieldErrors.value = e.fieldErrors ?? null
+                    notification.error('Ошибка', e.message)
+                } else if (e instanceof Error) {
+                    error.value = e.message
+                    notification.error('Ошибка', e.message)
+                } else {
+                    error.value = 'Неизвестная ошибка'
+                    notification.error('Ошибка', 'Неизвестная ошибка')
+                }
                 return false
             } finally {
                 isLoading.value = false
@@ -41,65 +72,89 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    const login = withLoading(async ({email, password}: {email: string, password: string}) => {
-        const { data, error: err } = await $api.auth.login(email, password)
-        if (err) throw err
-        setSession(data.session)
+    const login = withLoading(async ({ email, password }: { email: string; password: string }) => {
+        const result = await $api.auth.login({ body: { email, password } })
+        setAuth(result.user, result.tokens.access_token)
+        if (import.meta.client && result.tokens.refresh_token) {
+            localStorage.setItem(RefreshTokenKey, result.tokens.refresh_token)
+        }
         notification.success('Авторизация', 'Вы успешно вошли в аккаунт')
         await router.push('/')
     })
 
-    const register = withLoading(async ({email, password}: {email: string, password: string}) => {
+    const register = withLoading(async ({ email, password }: { email: string; password: string }) => {
         setPendingEmail(email)
-        const { data, error: err } = await $api.auth.register(email, password)
-        if (err) throw err
+        otpType.value = 'signup'
+        await $api.auth.signUp({ body: { email, password } })
         notification.success('Код подтверждения отправлен на почту!')
     })
 
     const verifyOtp = withLoading(async (email: string, token: string) => {
-        const { data, error: err } = await $api.auth.verifyOtp(email, token)
-        if (err) throw err
-        if (data.session) {
-            setSession(data.session)
+        if (otpType.value === 'signup') {
+            const result = await $api.auth.verifyEmail({ body: { email, otp_code: token } })
+            setAuth(result.user, result.tokens.access_token)
+            if (import.meta.client && result.tokens.refresh_token) {
+                localStorage.setItem(RefreshTokenKey, result.tokens.refresh_token)
+            }
             notification.success('Email подтверждён!')
             await router.push('/')
+            resetPendingEmail()
+        } 
+        else if (otpType.value === 'recovery') {
+            const result = await $api.auth.forgotPasswordVerify({ body: { email, otp_code: token } })
+            resetToken.value = result.reset_token
+            // Переход на страницу "Новый пароль" выполнится компонентом (success изнутри confirm-code)
         }
     })
 
     const resendOtp = withLoading(async (email: string) => {
-        const { error: err } = await $api.auth.resendOtp(email)
-        if (err) throw err
+        // Предположим, что для отправки кода ещё раз вы используете тот же эндпоинт отправки.
+        // Или если у бэкенда нет resendOtp, то присылайте запрос снова на \register или \forgot-password
+        if (otpType.value === 'signup') {
+            await $api.auth.resendOtp({ body: { email } })
+        } else if (otpType.value === 'recovery') {
+            await $api.auth.forgotPassword({ body: { email } })
+        }
         notification.success('Код отправлен повторно!')
     })
 
     const initSession = withLoading(async () => {
-        const { data, error: err } = await $api.auth.getSession()
-        if (err) throw err
-        setSession(data.session)
+        if (import.meta.client) {
+            const token = localStorage.getItem(TokenKey)
+            if (!token) return
+        }
+        const me = await $api.auth.me({})
+        setAuth(me)
     })
 
     const signOut = withLoading(async () => {
-        const { error: err } = await $api.auth.signOut()
-        if (err) throw err
-        setSession(null)
+        try {
+            await $api.auth.logout({})
+        } finally {
+            clearAuth()
+        }
     })
-    const forgotPassword = withLoading(async ({ email } : { email: string }) => {
-        const { error: err } = await $api.auth.forgotPassword(email)
-        if (err) throw err
-    })
-    const resetPassword = withLoading(async ({ password } : { password: string }) => {
-        const { error: err } = await $api.auth.resetPassword(password)
-        if(err) throw err
 
+    const forgotPassword = withLoading(async ({ email }: { email: string }) => {
+        setPendingEmail(email)
+        otpType.value = 'recovery'
+        await $api.auth.forgotPassword({ body: { email } })
+        notification.success('Код для восстановления пароля отправлен на почту!')
+    })
+
+    const resetPassword = withLoading(async ({ password }: { password: string }) => {
+        await $api.auth.forgotPasswordReset({ body: { password, reset_token: resetToken.value } })
         notification.success('Успешно сбросили пароль')
+        resetPendingEmail()
     })
 
     return {
         user,
-        session,
         isLoading,
         error,
+        fieldErrors,
         pendingEmail,
+        otpType,
 
         isAuthenticated,
 
@@ -112,6 +167,6 @@ export const useAuthStore = defineStore('auth', () => {
         initSession,
         signOut,
         forgotPassword,
-        resetPassword
+        resetPassword,
     }
 })

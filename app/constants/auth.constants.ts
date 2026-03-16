@@ -45,8 +45,8 @@ export const AuthModals: AuthModalsType = {
         description: 'Укажите вашу электронную почту',
         component: AuthFormPasswordRecovery,
         actions: {
-            success: ({close}) => {
-                close()
+            success: ({to}) => {
+                to("confirm-code")
             },
             cancel: ({to}) => {
                 to("login")

@@ -4,8 +4,6 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: "",
-      supabaseUrl: "",
-      supabaseKey: "",
     },
   },
   modules: ['@pinia/nuxt', '@regle/nuxt', '@nuxt/icon', '@nuxt/eslint',],
