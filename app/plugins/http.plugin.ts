@@ -21,8 +21,7 @@ export default defineNuxtPlugin({
             }
         })
         const auth = buildAuthRepository((nuxtApp.$supabase as SupabaseClient))
-        const posts = buildPostsRepository(http)
-        const api = { auth, posts }
+        const api = { auth }
         return {provide: {http, api}};
     }
 })

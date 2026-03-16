@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useOTP } from "~/composables/useOTP";
-import type {ConfirmActionsType} from "~/interfaces/auth/auth.modal.interfaces";
+import type {ConfirmActionsType} from "~/interfaces/auth/modal";
 import styles from '~/components/auth/form/index.module.css'
 const emit = defineEmits<{ "navigate": [actions: ConfirmActionsType] }>();
 const authStore = useAuthStore();
@@ -8,8 +8,8 @@ const authStore = useAuthStore();
 const {resend, verify, countdown, otp} = useOTP(
     60,
     async ({valueAsString}) => {
-      // const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
-      // if (ok) emit('navigate', 'success')
+      const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
+      if (ok) emit('navigate', 'success')
     },
     () => authStore.resendOtp(authStore.pendingEmail)
 );

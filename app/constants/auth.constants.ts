@@ -8,7 +8,7 @@ import {
 import type {
     AuthModalStepType,
     AuthModalsType,
-} from "~/interfaces/auth/auth.modal.interfaces";
+} from "~/interfaces/auth/modal";
 
 export const AuthModals: AuthModalsType = {
     "login": {

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
-import type {RegisterActionsType} from "~/interfaces/auth/auth.modal.interfaces";
+import type {RegisterActionsType} from "~/interfaces/auth/modal";
 
 const emit = defineEmits<{ 'navigate': [actions: RegisterActionsType] }>()
 const { r$ } = useRegisterForm()

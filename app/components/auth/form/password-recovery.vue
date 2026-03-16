@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
-import type {RecoveryActionsType} from "~/interfaces/auth/auth.modal.interfaces";
+import type {RecoveryActionsType} from "~/interfaces/auth/modal";
 
 const emit = defineEmits<{ 'navigate': [actions: RecoveryActionsType ] }>();
 

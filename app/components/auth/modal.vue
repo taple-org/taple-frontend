@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { AuthModals } from "~/constants/auth.constants"
-import type { AuthModalStepType, ActionsOf, ActionFn } from "~/interfaces/auth/auth.modal.interfaces";
+import type { AuthModalStepType, ActionsOf, ActionFn } from "~/interfaces/auth/modal";
 
 const { to, close } = useAuthModal()
 const { isOpen, current, direction, from } = storeToRefs(useAuthModal())

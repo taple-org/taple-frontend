@@ -86,6 +86,7 @@ export const useAuthStore = defineStore('auth', () => {
     const forgotPassword = withLoading(async ({ email } : { email: string }) => {
         const { error: err } = await $api.auth.forgotPassword(email)
         if (err) throw err
+        notification.info('Сброс пароля', 'Вам в почту скоро должно прийти сообщения по сбросу пароля')
     })
     const resetPassword = withLoading(async ({ password } : { password: string }) => {
         const { error: err } = await $api.auth.resetPassword(password)

@@ -8,7 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "generate:api": "swagger-typescript-api generate -p openapi.json -o ./app/api/generated -n api.ts --fetch"
   },
   "dependencies": {
     "@ark-ui/vue": "^5.34.0",
@@ -45,6 +46,7 @@
     "eslint": "^9.20.0",
     "eslint-plugin-no-unsanitized": "^4.1.5",
     "eslint-plugin-security": "^4.0.0",
+    "swagger-typescript-api": "^13.6.3",
     "typescript": "^5.9.3",
     "vue-eslint-parser": "^10.4.0"
   }

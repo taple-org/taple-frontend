@@ -1,4 +1,4 @@
-import type {AuthModalStepType} from "~/interfaces/auth/auth.modal.interfaces";
+import type {AuthModalStepType} from "~/interfaces/auth/modal";
 import {AuthModalPriority} from "~/constants/auth.constants";
 
 enum Direction {

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
-import type {NewPasswordActionsType} from "~/interfaces/auth/auth.modal.interfaces";
+import type {NewPasswordActionsType} from "~/interfaces/auth/modal";
 const emit = defineEmits<{ 'navigate': [actions: NewPasswordActionsType] }>()
 
 const { r$ } = useNewPasswordForm();
