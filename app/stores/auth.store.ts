@@ -10,7 +10,6 @@ export const useAuthStore = defineStore('auth', () => {
     const user = ref<AuthUser | null>(null)
     const isLoading = ref(false)
     const error = ref<string | null>(null)
-    const fieldErrors = ref<Record<string, string> | null>(null)
     
     const pendingEmail = ref<string>('')
     const otpType = ref<'signup' | 'recovery' | null>(null)
@@ -45,19 +44,24 @@ export const useAuthStore = defineStore('auth', () => {
         otpType.value = null
     }
 
-    function withLoading<T extends unknown[]>(fn: (...args: T) => Promise<void>) {
+    function withLoading<T extends unknown[]>(
+        fn: (...args: T) => Promise<void>,
+        onError?: (e: ApiException) => void
+    ) {
         return async (...args: T): Promise<boolean> => {
             isLoading.value = true
             error.value = null
-            fieldErrors.value = null
             try {
                 await fn(...args)
                 return true
             } catch (e: unknown) {
                 if (e instanceof ApiException) {
                     error.value = e.message
-                    fieldErrors.value = e.fieldErrors ?? null
-                    notification.error('Ошибка', e.message)
+                    if (onError) {
+                        onError(e)
+                    } else {
+                        notification.error('Ошибка', e.message)
+                    }
                 } else if (e instanceof Error) {
                     error.value = e.message
                     notification.error('Ошибка', e.message)
@@ -72,7 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    const login = withLoading(async ({ email, password }: { email: string; password: string }) => {
+    const login = async ({ email, password }: { email: string; password: string }) => {
         const result = await $api.auth.login({ body: { email, password } })
         setAuth(result.user, result.tokens.access_token)
         if (import.meta.client && result.tokens.refresh_token) {
@@ -80,14 +84,14 @@ export const useAuthStore = defineStore('auth', () => {
         }
         notification.success('Авторизация', 'Вы успешно вошли в аккаунт')
         await router.push('/')
-    })
+    }
 
-    const register = withLoading(async ({ email, password }: { email: string; password: string }) => {
+    const register = async ({ email, password }: { email: string; password: string }) => {
         setPendingEmail(email)
         otpType.value = 'signup'
         await $api.auth.signUp({ body: { email, password } })
         notification.success('Код подтверждения отправлен на почту!')
-    })
+    }
 
     const verifyOtp = withLoading(async (email: string, token: string) => {
         if (otpType.value === 'signup') {
@@ -135,24 +139,23 @@ export const useAuthStore = defineStore('auth', () => {
         }
     })
 
-    const forgotPassword = withLoading(async ({ email }: { email: string }) => {
+    const forgotPassword = async ({ email }: { email: string }) => {
         setPendingEmail(email)
         otpType.value = 'recovery'
         await $api.auth.forgotPassword({ body: { email } })
         notification.success('Код для восстановления пароля отправлен на почту!')
-    })
+    }
 
-    const resetPassword = withLoading(async ({ password }: { password: string }) => {
+    const resetPassword = async ({ password }: { password: string }) => {
         await $api.auth.forgotPasswordReset({ body: { password, reset_token: resetToken.value } })
         notification.success('Успешно сбросили пароль')
         resetPendingEmail()
-    })
+    }
 
     return {
         user,
         isLoading,
         error,
-        fieldErrors,
         pendingEmail,
         otpType,
 
@@ -168,5 +171,6 @@ export const useAuthStore = defineStore('auth', () => {
         signOut,
         forgotPassword,
         resetPassword,
+        withLoading,
     }
 })
