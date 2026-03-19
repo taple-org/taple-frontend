@@ -3,7 +3,6 @@ import styles from '~/components/auth/form/index.module.css'
 import type {RegisterActionsType} from "~/interfaces/auth/auth.modal.interfaces";
 import type { RegleExternalErrorTree } from '@regle/core'
 import type { RegisterForm } from '~/interfaces/auth/auth.form.interfaces'
-import { ApiException } from '~/repositories/repository.helpers'
 
 const emit = defineEmits<{ 'navigate': [actions: RegisterActionsType] }>()
 const authStore = useAuthStore();
@@ -12,21 +11,15 @@ const externalErrors = ref<RegleExternalErrorTree<RegisterForm>>({})
 const { r$ } = useRegisterForm(externalErrors)
 
 const handleSubmit = async (e: Event) => {
-  externalErrors.value = {}
   const values = await r$.$validate()
   if(!values.valid) return;
   
-  const ok = await authStore.withLoading(
+  await authStore.withLoading(
     async () => {
       await authStore.register(values.data);
       emit("navigate", 'success');
     },
-    (e: ApiException) => {
-      if (e.fieldErrors) {
-        externalErrors.value = e.fieldErrors as RegleExternalErrorTree<RegisterForm>
-      }
-      authStore.$patch({ error: e.message })
-    }
+    externalErrors
   )();
 }
 

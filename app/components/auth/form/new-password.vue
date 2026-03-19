@@ -3,7 +3,6 @@ import styles from '~/components/auth/form/index.module.css'
 import type {NewPasswordActionsType} from "~/interfaces/auth/auth.modal.interfaces";
 import type { RegleExternalErrorTree } from '@regle/core'
 import type { NewPasswordForm } from '~/interfaces/auth/auth.form.interfaces'
-import { ApiException } from '~/repositories/repository.helpers'
 
 const emit = defineEmits<{ 'navigate': [actions: NewPasswordActionsType] }>()
 
@@ -12,20 +11,15 @@ const { r$ } = useNewPasswordForm(externalErrors);
 const {resetPassword, withLoading} = useAuthStore();
 
 const handleSubmit = async () => {
-  externalErrors.value = {}
   const values = await r$.$validate();
   if(!values.valid) return;
 
-  const ok = await withLoading(
+  await withLoading(
     async () => {
       await resetPassword(values.data);
       emit('navigate', 'success');
     },
-    (e: ApiException) => {
-      if (e.fieldErrors) {
-        externalErrors.value = e.fieldErrors as RegleExternalErrorTree<NewPasswordForm>
-      }
-    }
+    externalErrors
   )();
 }
 </script>

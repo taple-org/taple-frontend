@@ -15,12 +15,12 @@ export class ApiException extends Error {
         this.apiError = apiError
     }
 
-    /** Получить ошибки полей (для отображения под инпутами) */
-    get fieldErrors(): Record<string, string> | undefined {
+    /** Получить ошибки полей (для отображения под инпутами, формат совместим с RegleExternalErrorTree) */
+    get fieldErrors(): Record<string, string[]> | undefined {
         if (!this.apiError.fields) return undefined
-        const result: Record<string, string> = {}
+        const result: Record<string, string[]> = {}
         for (const [field, messages] of Object.entries(this.apiError.fields)) {
-            result[field] = messages.ru ?? messages.en ?? ''
+            result[field] = [messages.ru ?? messages.en ?? '']
         }
         return result
     }
@@ -241,6 +241,28 @@ export function build<Contracts extends ContractsMap>(
 
                 const unwrapped = unwrapApiResponse(raw as ApiResponse<unknown>)
                 return contract.transform ? contract.transform(unwrapped) : unwrapped
+            } catch (e: unknown) {
+                // $fetch бросает FetchError при HTTP 4xx/5xx или при проблемах с сетью.
+                // Пытаемся извлечь структурированную ошибку API из тела ответа.
+                if (e && typeof e === 'object') {
+                    const fe = e as any;
+                    if (fe.data && typeof fe.data === 'object' && 'meta' in fe.data) {
+                        unwrapApiResponse(fe.data as ApiResponse<unknown>)
+                    }
+                    
+                    // Если это ошибка fetch и мы дошли сюда, значит нормального ответа от сервера нет
+                    // Причина: сервер лежит (NetworkError), CORS, или сервер вернул не JSON (например HTML 502)
+                    if (fe.name === 'FetchError' || (fe.message && fe.message.includes('<no response>'))) {
+                        throw new ApiException(503, {
+                            type: 'NetworkError',
+                            message: {
+                                ru: 'Ошибка сети. Сервер недоступен или не отвечает.',
+                                en: 'Network error. Server is unreachable or unresponsive.'
+                            }
+                        })
+                    }
+                }
+                throw e
             } finally {
                 if (timeoutId) clearTimeout(timeoutId)
             }

@@ -1,6 +1,7 @@
 import { TokenKey, RefreshTokenKey } from '~/constants/api.constants'
 import type { AuthUser } from '~/types/api.types'
 import { ApiException } from '~/repositories/repository.helpers'
+import type { RegleExternalErrorTree } from '@regle/core'
 
 export const useAuthStore = defineStore('auth', () => {
     const notification = useNotification()
@@ -46,22 +47,22 @@ export const useAuthStore = defineStore('auth', () => {
 
     function withLoading<T extends unknown[]>(
         fn: (...args: T) => Promise<void>,
-        onError?: (e: ApiException) => void
+        externalErrors?: Ref<RegleExternalErrorTree<any>>
     ) {
         return async (...args: T): Promise<boolean> => {
             isLoading.value = true
             error.value = null
+            if (externalErrors) externalErrors.value = {}
             try {
                 await fn(...args)
                 return true
             } catch (e: unknown) {
                 if (e instanceof ApiException) {
                     error.value = e.message
-                    if (onError) {
-                        onError(e)
-                    } else {
-                        notification.error('Ошибка', e.message)
+                    if (externalErrors && e.fieldErrors) {
+                        externalErrors.value = e.fieldErrors as RegleExternalErrorTree<any>
                     }
+                    notification.error('Ошибка', e.message)
                 } else if (e instanceof Error) {
                     error.value = e.message
                     notification.error('Ошибка', e.message)

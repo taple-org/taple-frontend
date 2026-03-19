@@ -3,7 +3,6 @@ import styles from '~/components/auth/form/index.module.css'
 import type { LoginActionsType } from "~/interfaces/auth/auth.modal.interfaces";
 import type { RegleExternalErrorTree } from '@regle/core'
 import type { LoginForm } from '~/interfaces/auth/auth.form.interfaces'
-import { ApiException } from '~/repositories/repository.helpers'
 
 const emit = defineEmits<{ 'navigate': [actions: LoginActionsType] }>()
 const authStore = useAuthStore();
@@ -12,21 +11,15 @@ const externalErrors = ref<RegleExternalErrorTree<LoginForm>>({})
 const { r$ } = useLoginForm(externalErrors);
 
 const handleSubmit = async () => {
-  externalErrors.value = {}
   const values = await r$.$validate()
   if(!values.valid) return;
   
-  const ok = await authStore.withLoading(
+  await authStore.withLoading(
     async () => {
       await authStore.login(values.data);
       emit('navigate', 'success');
     },
-    (e: ApiException) => {
-      if (e.fieldErrors) {
-        externalErrors.value = e.fieldErrors as RegleExternalErrorTree<LoginForm>
-      }
-      authStore.$patch({ error: e.message })
-    }
+    externalErrors
   )();
 }
 </script>
