@@ -13,7 +13,7 @@ import { AppFooterLinks } from "~/constants/nav.constants"
         />
         <app-footer-nav-section
             aria-label="Footer navigation"
-            :navLinks="AppFooterLinks.Nav"
+            :nav-links="AppFooterLinks.Nav"
         />
       </div>
     </ui-container>

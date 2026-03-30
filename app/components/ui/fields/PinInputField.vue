@@ -20,11 +20,11 @@ const emit = defineEmits<{
 
 <template>
   <PinInput.Root
+    v-model="model"
     :otp="otp"
     :count="count"
     :placeholder="placeholder"
     class="pin-input"
-    v-model="model"
     @value-complete="emit('valueComplete', $event)"
   >
     <PinInput.Control class="pin-input__control">

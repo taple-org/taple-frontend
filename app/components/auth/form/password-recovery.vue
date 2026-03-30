@@ -1,29 +1,40 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
+import type {RecoveryActionsType} from "~/interfaces/auth/auth.modal.interfaces";
+import type { RegleExternalErrorTree } from '@regle/core'
+import type { RecoveryPasswordForm } from '~/interfaces/auth/auth.form.interfaces'
 
-const emit = defineEmits<{ 'go-to': [step: Step] }>();
+const emit = defineEmits<{ 'navigate': [actions: RecoveryActionsType ] }>()
 
-const { r$ } = useRecoveryPasswordForm();
+const externalErrors = ref<RegleExternalErrorTree<RecoveryPasswordForm>>({})
+const { r$ } = useRecoveryPasswordForm(externalErrors);
+const {setPendingEmail, forgotPassword, withLoading} = useAuthStore();
 
-const handleSubmit = async (e: Event) => {
-  e.preventDefault();
+const handleSubmit = async () => {
   const values = await r$.$validate();
   if(!values.valid) return;
 
-  console.log(values.data);
-  emit('go-to', Step.NewPassword);
+  setPendingEmail(values.data.email);
+  
+  await withLoading(
+    async () => {
+      await forgotPassword(values.data);
+      emit('navigate', 'success');
+    },
+    externalErrors
+  )();
 }
 </script>
 <template>
-  <form :class="styles.form" @submit="handleSubmit">
+  <form :class="styles.form" @submit.prevent="handleSubmit">
     <ui-form-field
-        type="text"
         v-model="r$.$value.email"
+        type="text"
         placeholder="Введите email"
         :error="r$.email.$errors[0]"
     />
     <ui-button type="submit">Восстановить</ui-button>
     <span :class="styles.formText">или</span>
-    <ui-button variant="outline" @click="emit('go-to', Step.Login)" type="button">Отменить</ui-button>
+    <ui-button variant="outline" @click="emit('navigate', 'cancel')" type="button">Отменить</ui-button>
   </form>
 </template>

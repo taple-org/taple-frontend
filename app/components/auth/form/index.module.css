@@ -1,8 +1,10 @@
 .form {
-    max-width: 425px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    min-width: 400px;
+    max-width: 600px;
+    width: 100%;
 }
 
 .formText{

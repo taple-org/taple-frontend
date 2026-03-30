@@ -1,13 +1,17 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true,},
+  devtools: { enabled: true, },
   runtimeConfig: {
     public: {
       apiBase: "",
     },
   },
-  modules: ['@pinia/nuxt', '@regle/nuxt', '@nuxt/icon'],
+  modules: ['@pinia/nuxt', '@regle/nuxt', '@nuxt/icon', '@nuxt/eslint',],
+  eslint: {
+    config: {
+      standalone: false
+    }
+  },
   icon: {
     mode: 'svg',
     customCollections: [
@@ -17,10 +21,11 @@ export default defineNuxtConfig({
         recursive: true,
       },
       {
-        prefix: 'other',
-        dir: './app/assets/icons/other',
+        prefix: 'my-icon',
+        dir: './app/assets/icons',
         recursive: true,
       }
     ],
+
   }
 })

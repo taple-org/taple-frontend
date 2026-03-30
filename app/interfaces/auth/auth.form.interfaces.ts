@@ -20,3 +20,12 @@ export type RegisterForm = {
     email: string;
     agree: boolean;
 } & PasswordRegister;
+
+export type OtpRequestForm = {
+    email: string;
+};
+
+export type OtpVerifyForm = {
+    email: string;
+    token: string;
+};
