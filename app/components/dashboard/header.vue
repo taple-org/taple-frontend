@@ -1,24 +1,24 @@
 <script setup lang="ts">
-const route = useRoute()
+const route = useRoute();
 
 const tabs = [
-  { label: 'Дэшбоард', to: '/dashboard' },
-  { label: 'Лиды', to: '/dashboard/leads' },
-  { label: 'Воронка', to: '/dashboard/pipeline' },
-  { label: 'Мониторинг', to: '/dashboard/monitoring' },
-  { label: 'Задачи', to: '/dashboard/tasks' },
-  { label: 'Настройки', to: '/dashboard/settings' },
-]
+  { label: "Дэшбоард", to: "/dashboard" },
+  { label: "Лиды", to: "/dashboard/leads" },
+  { label: "Воронка", to: "/dashboard/pipeline" },
+  { label: "Мониторинг", to: "/dashboard/monitoring" },
+  { label: "Задачи", to: "/dashboard/tasks" },
+  { label: "Настройки", to: "/dashboard/settings" },
+];
 
-const userEmail = 'test@gmail.com'
+const userEmail = "test@gmail.com";
 
 const isActive = (to: string) => {
-  if (to === '/dashboard') {
-    return route.path === '/dashboard'
+  if (to === "/dashboard") {
+    return route.path === "/dashboard";
   }
 
-  return route.path.startsWith(to)
-}
+  return route.path.startsWith(to);
+};
 </script>
 
 <template>
@@ -38,9 +38,18 @@ const isActive = (to: string) => {
       </NuxtLink>
     </nav>
 
-    <button class="dashboard-header__profile" type="button" aria-label="User profile">
+    <button
+      class="dashboard-header__profile"
+      type="button"
+      aria-label="User profile"
+    >
       <span class="dashboard-header__email">{{ userEmail }}</span>
-      <Icon name="my-icon-profile" mode="svg" size="18" class="dashboard-header__profile-icon" />
+      <Icon
+        name="my-icon-profile"
+        mode="svg"
+        size="18"
+        class="dashboard-header__profile-icon"
+      />
     </button>
   </header>
 </template>
@@ -52,7 +61,7 @@ const isActive = (to: string) => {
   gap: 44px;
   /* width: 100%; */
   padding: 10px 72px;
-  background: #FFFFFF;
+  background: #ffffff;
   border-bottom: 1px solid #f4f5f6;
   box-shadow: 0 2px 10px 0 #0000001a;
 }

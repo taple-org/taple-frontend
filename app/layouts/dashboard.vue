@@ -1,21 +1,20 @@
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <div class="app">
-    <dashboard-header/>
+    <dashboard-header />
     <main class="app-main">
-      <slot/>
+      <slot />
     </main>
   </div>
 </template>
 
 <style scoped>
-.app{
+.app {
   display: flex;
   flex-direction: column;
 }
-.app-main{
+.app-main {
   flex-grow: 1;
 }
 </style>

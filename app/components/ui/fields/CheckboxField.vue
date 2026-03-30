@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { Checkbox } from '@ark-ui/vue/checkbox'
-import { CheckIcon, MinusIcon } from 'lucide-vue-next'
+import { Checkbox } from "@ark-ui/vue/checkbox";
+import { CheckIcon, MinusIcon } from "lucide-vue-next";
 
 const props = defineProps<{
-  modelValue: boolean
-  label?: string
-  disabled?: boolean
-}>()
+  modelValue: boolean;
+  label?: string;
+  disabled?: boolean;
+}>();
 
-defineEmits<{ 'update:modelValue': [value: boolean] }>()
+defineEmits<{ "update:modelValue": [value: boolean] }>();
 </script>
 
 <template>
@@ -66,18 +66,19 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
   border-color: var(--color-primary);
 }
 
-.checkbox[data-state='checked'] .checkbox__control {
+.checkbox[data-state="checked"] .checkbox__control {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
 }
 
-.checkbox[data-state='indeterminate'] .checkbox__control {
+.checkbox[data-state="indeterminate"] .checkbox__control {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
 }
 
 .checkbox:focus-within .checkbox__control {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-primary) 20%, transparent);
   border-color: var(--color-primary);
 }
 
@@ -92,11 +93,13 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
   display: none;
 }
 
-.checkbox[data-state='checked'] .checkbox__indicator [data-state='checked'] {
+.checkbox[data-state="checked"] .checkbox__indicator [data-state="checked"] {
   display: flex;
 }
 
-.checkbox[data-state='indeterminate'] .checkbox__indicator [data-state='indeterminate'] {
+.checkbox[data-state="indeterminate"]
+  .checkbox__indicator
+  [data-state="indeterminate"] {
   display: flex;
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Dropdown from '~/components/ui/Dropdown.vue';
+import Dropdown from "~/components/ui/Dropdown.vue";
 
 definePageMeta({
   title: "Leads",
@@ -37,7 +37,7 @@ const takeLead = () => {
 
 <template>
   <div class="leads">
-<!--    <dropdown :options="dropdownOptions"/> -->
+    <!--    <dropdown :options="dropdownOptions"/> -->
     <dashboard-lead-card
       :score="lead.score"
       :title="lead.title"
