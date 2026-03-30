@@ -8,8 +8,6 @@ const props = defineProps<{
   disabled?: boolean
 }>()
 
-
-console.log(props.label)
 defineEmits<{ 'update:modelValue': [value: boolean] }>()
 </script>
 
