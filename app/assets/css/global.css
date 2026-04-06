@@ -25,7 +25,8 @@
   /* Highlight/Darkest */
   --color-highlight-d: #006FFD;
   /* Neutral/Light/Lightest */
-  --color-neutral-ll: #ffffff;
+  --color-neutral-ll: #F8F9FE;
+;
   --color-black: #000;
 
   --font-base: "StyreneALC", sans-serif;

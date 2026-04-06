@@ -1,0 +1,24 @@
+<script setup lang="ts"></script>
+
+<template>
+  <div class="app">
+    <dashboard-header />
+    <main class="app-main">
+      <slot />
+    </main>
+  </div>
+</template>
+
+<style scoped>
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+.app-main {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+</style>
