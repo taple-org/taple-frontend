@@ -39,8 +39,8 @@ export type AuthTokens = {
 export type AuthUser = {
     id: string
     email: string
-    role?: string
-    created_at?: string
+    first_name: string | null
+    last_name: string | null
 }
 
 /** POST /api/v1/auth/login */
