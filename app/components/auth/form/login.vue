@@ -6,13 +6,19 @@ import type { LoginActionsType } from "~/interfaces/auth/modal";
 const emit = defineEmits<{ 'navigate': [actions: LoginActionsType] }>()
 const authStore = useAuthStore();
 
-const { r$ } = useLoginForm();
+const { r$, externalErrors } = useLoginForm();
+
 const handleSubmit = async () => {
   const values = await r$.$validate()
   if(!values.valid) return;
-  // const ok = await authStore.login(values.data);
-  // if(ok) 
-  emit('navigate', 'success');
+
+  await authStore.withLoading(
+    async () => {
+      await authStore.login(values.data);
+      emit('navigate', 'success');
+    },
+    externalErrors
+  )();
 
 }
 </script>

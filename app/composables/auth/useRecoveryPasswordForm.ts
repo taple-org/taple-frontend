@@ -1,17 +1,19 @@
+import type { RegleExternalErrorTree } from "@regle/core";
 import { required, email } from "@regle/rules";
 
 export interface IRecoveryPasswordForm {
   email: string;
 }
-interface ILoginFormProps {
+interface IRecoveryPasswordFormProps {
   initialValues?: IRecoveryPasswordForm;
 }
 
 export const useRecoveryPasswordForm = ({
   initialValues = { email: "" },
-}: ILoginFormProps = {}) => {
+}: IRecoveryPasswordFormProps = {}) => {
   const state = reactive<IRecoveryPasswordForm>(initialValues);
-
+  const externalErrors = ref<RegleExternalErrorTree<IRecoveryPasswordForm>>({})
+  
   const { r$ } = useRegle(
     state,
     {
@@ -20,8 +22,8 @@ export const useRecoveryPasswordForm = ({
         email: withMessage(email, "Некорректный email"),
       },
     },
-    { id: "recovery-password" },
+    { id: "recovery-password", externalErrors },
   );
 
-  return { r$ };
+  return { r$, externalErrors };
 };

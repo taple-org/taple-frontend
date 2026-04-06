@@ -1,3 +1,4 @@
+import type { RegleExternalErrorTree } from "@regle/core";
 import { required, email } from "@regle/rules";
 
 export interface ILoginFormState {
@@ -14,6 +15,7 @@ export const useLoginForm = ({
   initialValues = { email: "", password: "", rememberMe: false },
 }: ILoginFormProps = {}) => {
   const state = reactive<ILoginFormState>(initialValues);
+  const externalErrors = ref<RegleExternalErrorTree<ILoginFormState>>({})
 
   const { r$ } = useRegle(
     state,
@@ -26,8 +28,8 @@ export const useLoginForm = ({
         required: withMessage(required, "Обязательное поле"),
       },
     },
-    { id: "login" },
+    { id: "login", externalErrors },
   );
 
-  return { r$ };
+  return { r$, externalErrors };
 };

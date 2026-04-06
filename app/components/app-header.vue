@@ -9,7 +9,7 @@ const links: TemplateLink[] = [
 ];
 
 const { open } = useAuthModalController();
-const isAuthenticated = ref(true);
+const { isAuthenticated } = useAuthStore()
 </script>
 <template>
   <header class="header">

@@ -1,4 +1,5 @@
 import { TokenKey } from '~/constants/api.constants'
+import { buildAuthRepository } from '~/repositories/auth.repository'
 
 export default defineNuxtPlugin({
     name: 'http',
@@ -14,10 +15,10 @@ export default defineNuxtPlugin({
                 }
                 options.headers.append('Accept', 'application/json')
             },
-        })
+        });
+        const auth = buildAuthRepository(http);
+        const api = { auth };
 
-        const api = {  }
-
-        return { provide: { http, api } }
+        return { provide: { http, api } };
     },
 })

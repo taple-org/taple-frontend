@@ -1,3 +1,4 @@
+import type { RegleExternalErrorTree } from "@regle/core";
 import { required, sameAs, checked } from "@regle/rules";
 
 export type IRegisterFormState = {
@@ -9,6 +10,7 @@ export type IRegisterFormState = {
 
 interface IRegisterFormProps {
   initialValues?: IRegisterFormState;
+ 
 }
 
 export const useRegisterForm = ({
@@ -20,6 +22,8 @@ export const useRegisterForm = ({
   },
 }: IRegisterFormProps = {}) => {
   const state = reactive<IRegisterFormState>(initialValues);
+  const externalErrors = ref<RegleExternalErrorTree<IRegisterFormState>>({})
+
 
   const { r$ } = useRegle(
     state,
@@ -40,8 +44,8 @@ export const useRegisterForm = ({
         ),
       },
     },
-    { id: "register" },
+    { id: "register", externalErrors },
   );
 
-  return { r$ };
+  return { r$, externalErrors };
 };

@@ -1,21 +1,25 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
-import { useRecoveryPasswordForm } from '~/composables/auth/useRecoveryPasswordForm';
 import type {RecoveryActionsType} from "~/interfaces/auth/modal";
+import { useRecoveryPasswordForm } from '~/composables/auth/useRecoveryPasswordForm';
+const emit = defineEmits<{ 'navigate': [actions: RecoveryActionsType ] }>()
 
-const emit = defineEmits<{ 'navigate': [actions: RecoveryActionsType ] }>();
+const { r$, externalErrors } = useRecoveryPasswordForm();
+const {setPendingEmail, forgotPassword, withLoading} = useAuthStore();
 
-const { r$ } = useRecoveryPasswordForm();
-// const {setPendingEmail, forgotPassword} = useAuthStore();
 const handleSubmit = async () => {
   const values = await r$.$validate();
   if(!values.valid) return;
 
-  // setPendingEmail(values.data.email);
-  // const ok = await forgotPassword(values.data);
+  setPendingEmail(values.data.email);
   
-  // if(ok)
-  emit('navigate', 'success');
+  await withLoading(
+    async () => {
+      await forgotPassword(values.data);
+      emit('navigate', 'success');
+    },
+    externalErrors
+  )();
 }
 </script>
 <template>

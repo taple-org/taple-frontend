@@ -1,3 +1,4 @@
+import type { RegleExternalErrorTree } from "@regle/core";
 import { required, sameAs } from "@regle/rules";
 
 export interface INewPasswordFormState {
@@ -12,6 +13,7 @@ export const useNewPasswordForm = ({
   initialValues = { password: "", confirmPassword: "" },
 }: INewPasswordFormProps = {}) => {
   const state = reactive<INewPasswordFormState>(initialValues);
+  const externalErrors = ref<RegleExternalErrorTree<INewPasswordFormState>>({})
 
   const { r$ } = useRegle(
     state,
@@ -30,8 +32,8 @@ export const useNewPasswordForm = ({
         ),
       },
     },
-    { id: "new-password" },
+    { id: "new-password", externalErrors },
   );
 
-  return { r$ };
+  return { r$, externalErrors };
 };

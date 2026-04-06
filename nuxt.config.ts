@@ -4,25 +4,33 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: "",
-      backendKey: ""
+      apiBase: ""
     },
   },
-
   modules: ["@pinia/nuxt", "@regle/nuxt", "@nuxt/icon", "@nuxt/eslint"],
 
+
   eslint: {
-    config: { standalone: false },
+    config: {
+      standalone: false,
+    },
   },
 
   icon: {
     mode: "svg",
     customCollections: [
-      { prefix: "my",      dir: "./app/assets/icons/my", recursive: true },
-      { prefix: "my-icon", dir: "./app/assets/icons",    recursive: true },
+      {
+        prefix: "my",
+        dir: "./app/assets/icons/my",
+        recursive: true,
+      },
+      {
+        prefix: "my-icon",
+        dir: "./app/assets/icons",
+        recursive: true,
+      },
     ],
   },
-
   vite: {
     optimizeDeps: {
       include: [
@@ -42,4 +50,4 @@ export default defineNuxtConfig({
       ],
     },
   },
-})
+});
