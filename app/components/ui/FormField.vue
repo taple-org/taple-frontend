@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { Field } from '@ark-ui/vue/field'
-import { fieldRegistry } from './fields/registry'
+import { fieldRegistry, type SelectOption } from './fields/registry'
 
-type TextProps     = { type: 'text' | 'email'; modelValue: string; placeholder?: string }
+
+type TextProps = { type: 'text' | 'email'; modelValue: string; placeholder?: string }
 type PasswordProps = { type: 'password'; modelValue: string; placeholder?: string }
 type CheckboxProps = { type: 'checkbox'; modelValue: boolean }
+type SelectProps = { type: 'select'; modelValue: string; options?: SelectOption[]; placeholder?: string }
 
 export type FieldWrapperProps = {
   label?: string
@@ -14,7 +16,7 @@ export type FieldWrapperProps = {
   required?: boolean
 }
 
-type FieldProps = (TextProps | PasswordProps | CheckboxProps) & FieldWrapperProps
+type FieldProps = (TextProps | PasswordProps | CheckboxProps | SelectProps) & FieldWrapperProps
 
 const props = defineProps<FieldProps>()
 const emit = defineEmits<{ 'update:modelValue': [value: string | number | boolean] }>()
@@ -27,7 +29,7 @@ const inputProps = computed(() => {
   const passthrough = new Set(config.value.passthrough ?? [])
 
   return Object.fromEntries(
-    Object.entries(props).filter(([key]) => 
+    Object.entries(props).filter(([key]) =>
       !WRAPPER_KEYS.includes(key as keyof FieldWrapperProps) || passthrough.has(key as keyof FieldWrapperProps)
     )
   )
@@ -35,22 +37,13 @@ const inputProps = computed(() => {
 </script>
 
 <template>
-  <Field.Root
-    class="field"
-    :disabled="props.disabled"
-    :required="props.required"
-    :invalid="!!props.error"
-  >
+  <Field.Root class="field" :disabled="props.disabled" :required="props.required" :invalid="!!props.error">
     <Field.Label v-if="props.label && props.type !== 'checkbox'" class="field__label">
       {{ props.label }}
       <span v-if="props.required" class="field__required" aria-hidden="true">*</span>
     </Field.Label>
 
-    <component
-      :is="config.component"
-      v-bind="inputProps"
-      @update:model-value="emit('update:modelValue', $event)"
-    />
+    <component :is="config.component" v-bind="inputProps" @update:model-value="emit('update:modelValue', $event)" />
 
     <Field.HelperText v-if="props.hint && !props.error" class="field__hint">
       {{ props.hint }}

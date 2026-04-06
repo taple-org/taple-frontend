@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useOTP } from "~/composables/useOTP";
-import type {ConfirmActionsType} from "~/interfaces/auth/auth.modal.interfaces";
+import type {ConfirmActionsType} from "~/interfaces/auth/modal";
 import styles from '~/components/auth/form/index.module.css'
 const emit = defineEmits<{ "navigate": [actions: ConfirmActionsType] }>();
 const authStore = useAuthStore();
@@ -8,10 +8,11 @@ const authStore = useAuthStore();
 const {resend, verify, countdown, otp} = useOTP(
     60,
     async ({valueAsString}) => {
-      const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
-      if (ok) emit('navigate', 'success')
+      // const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
+      // if (ok) 
+      emit('navigate', 'success')
     },
-    () => authStore.resendOtp(authStore.pendingEmail)
+    // () => authStore.resendOtp(authStore.pendingEmail)
 );
 
 </script>
@@ -22,7 +23,6 @@ const {resend, verify, countdown, otp} = useOTP(
       v-model="otp"
       :count="8"
       @value-complete="verify"
-      :disabled="authStore.isLoading"
     />
 
     <p v-if="countdown > 0" class="otp-form__timer">
@@ -32,8 +32,7 @@ const {resend, verify, countdown, otp} = useOTP(
     <ui-button variant="outline"
                type="button"
                @click="emit('navigate', 'close')"
-               :disabled="authStore.isLoading"
-    >
+     >
       Закрыть
     </ui-button>
   </form>

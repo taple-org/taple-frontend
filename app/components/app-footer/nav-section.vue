@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {NavSection} from "~/interfaces/link";
+import type { NavSection } from "~/interfaces/link.interfaces";
 defineProps<{
   navLinks: NavSection[]
 }>();
@@ -11,10 +11,8 @@ defineProps<{
         <h3 class="nav-section__heading">{{ heading }}</h3>
         <ul class="nav-section__list">
           <li v-for="{ label, ...props } in links" class="nav-section__item">
-            <nuxt-link
-                class="nav-section__link"
-                v-bind="props">
-              {{label}}
+            <nuxt-link class="nav-section__link" v-bind="props">
+              {{ label }}
             </nuxt-link>
           </li>
         </ul>
@@ -23,16 +21,18 @@ defineProps<{
   </nav>
 </template>
 <style scoped>
-.nav-section{
+.nav-section {
   display: flex;
   gap: 40px;
 }
-.nav-section__list{
+
+.nav-section__list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.nav-section__heading{
+
+.nav-section__heading {
   font-size: 15px;
   line-height: 145%;
   font-weight: bold;
@@ -40,7 +40,7 @@ defineProps<{
 
 }
 
-.nav-section__link{
+.nav-section__link {
   font-size: 14px;
   line-height: 145%;
   font-weight: 400;

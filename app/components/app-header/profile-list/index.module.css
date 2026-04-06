@@ -1,0 +1,59 @@
+.item {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 16px;
+    background-color: var(--color-neutral-ll);
+    cursor: pointer;
+    user-select: none;
+}
+
+.item:active {
+    opacity: 0.75;
+}
+
+.item__title {
+    color: var(--color-neutral-dd);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.item__description {
+    color: var(--color-neutral-dl);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+}
+
+.item__icon {
+    width: 40px;
+    height: 40px;
+    box-sizing: border-box;
+    background-color: var(--color-neutral-lm);
+    color: var(--color-neutral-dd);
+    padding: 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+
+
+
+.hoverable, .hoverableTitle, .hoverableIcon {
+    transition: background-color, color var(--transition-base);
+
+}
+.hoverable:hover {
+    background-color: var(--color-highlight-l);
+}
+
+.hoverable:hover .hoverableTitle {
+    color: var(--color-highlight-d);
+}
+
+.hoverable:hover .hoverableIcon{
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
+}

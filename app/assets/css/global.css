@@ -10,6 +10,8 @@
   --color-success-l: #E7F4E8;
   --color-warning: #FFB37C;
   --color-warning-l: #FFF4E4;
+  /* Neutral/Light/Light */
+  --color-neutral-ll: #F8F9FE;
   /* Neutral/Light/Medium */
   --color-neutral-lm: #E8E9F1;
   --color-neutral-ld: #D4D6DD;
@@ -25,8 +27,7 @@
   /* Highlight/Darkest */
   --color-highlight-d: #006FFD;
   /* Neutral/Light/Lightest */
-  --color-neutral-ll: #F8F9FE;
-;
+  --color-white: #ffffff;
   --color-black: #000;
 
   --font-base: "StyreneALC", sans-serif;

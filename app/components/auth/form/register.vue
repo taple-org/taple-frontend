@@ -1,14 +1,11 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
-import type {RegisterActionsType} from "~/interfaces/auth/auth.modal.interfaces";
-import type { RegleExternalErrorTree } from '@regle/core'
-import type { RegisterForm } from '~/interfaces/auth/auth.form.interfaces'
-
+import type {RegisterActionsType} from "~/interfaces/auth/modal";
+import { useRegisterForm } from '~/composables/auth/useRegisterForm';
 const emit = defineEmits<{ 'navigate': [actions: RegisterActionsType] }>()
 const authStore = useAuthStore();
 
-const externalErrors = ref<RegleExternalErrorTree<RegisterForm>>({})
-const { r$ } = useRegisterForm(externalErrors)
+const { r$, externalErrors } = useRegisterForm()
 
 const handleSubmit = async (e: Event) => {
   const values = await r$.$validate()

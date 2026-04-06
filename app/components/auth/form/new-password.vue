@@ -1,13 +1,10 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
-import type {NewPasswordActionsType} from "~/interfaces/auth/auth.modal.interfaces";
-import type { RegleExternalErrorTree } from '@regle/core'
-import type { NewPasswordForm } from '~/interfaces/auth/auth.form.interfaces'
-
+import type {NewPasswordActionsType} from "~/interfaces/auth/modal";
+import {useNewPasswordForm} from "~/composables/auth/useNewPasswordForm"
 const emit = defineEmits<{ 'navigate': [actions: NewPasswordActionsType] }>()
 
-const externalErrors = ref<RegleExternalErrorTree<NewPasswordForm>>({})
-const { r$ } = useNewPasswordForm(externalErrors);
+const { r$, externalErrors } = useNewPasswordForm();
 const {resetPassword, withLoading} = useAuthStore();
 
 const handleSubmit = async () => {

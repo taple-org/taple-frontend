@@ -1,13 +1,10 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
-import type {RecoveryActionsType} from "~/interfaces/auth/auth.modal.interfaces";
-import type { RegleExternalErrorTree } from '@regle/core'
-import type { RecoveryPasswordForm } from '~/interfaces/auth/auth.form.interfaces'
-
+import type {RecoveryActionsType} from "~/interfaces/auth/modal";
+import { useRecoveryPasswordForm } from '~/composables/auth/useRecoveryPasswordForm';
 const emit = defineEmits<{ 'navigate': [actions: RecoveryActionsType ] }>()
 
-const externalErrors = ref<RegleExternalErrorTree<RecoveryPasswordForm>>({})
-const { r$ } = useRecoveryPasswordForm(externalErrors);
+const { r$, externalErrors } = useRecoveryPasswordForm();
 const {setPendingEmail, forgotPassword, withLoading} = useAuthStore();
 
 const handleSubmit = async () => {
