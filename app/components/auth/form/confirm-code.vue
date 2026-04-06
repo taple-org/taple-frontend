@@ -9,7 +9,7 @@ const {resend, verify, countdown, otp} = useOTP(
     60,
     async ({valueAsString}) => {
       // const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
-      // if (ok) emit('navigate', 'success')
+      // if (ok) 
       emit('navigate', 'success')
     },
     // () => authStore.resendOtp(authStore.pendingEmail)
@@ -23,7 +23,6 @@ const {resend, verify, countdown, otp} = useOTP(
       v-model="otp"
       :count="8"
       @value-complete="verify"
-      :disabled="authStore.isLoading"
     />
 
     <p v-if="countdown > 0" class="otp-form__timer">
@@ -33,8 +32,7 @@ const {resend, verify, countdown, otp} = useOTP(
     <ui-button variant="outline"
                type="button"
                @click="emit('navigate', 'close')"
-               :disabled="authStore.isLoading"
-    >
+     >
       Закрыть
     </ui-button>
   </form>
