@@ -1,20 +1,14 @@
 <script setup lang="ts">
-import { AppFooterLinks } from "~/constants/nav.constants"
+import config from "~/configs/nav.config"
 
 </script>
 <template>
   <footer class="app-footer">
     <ui-container>
       <div class="app-footer__content">
-        <app-footer-brand-section
-            title="TAPLE"
-            description="Descriptive line about what your company does."
-            :links="AppFooterLinks.Brand"
-        />
-        <app-footer-nav-section
-            aria-label="Footer navigation"
-            :nav-links="AppFooterLinks.Nav"
-        />
+        <app-footer-brand-section title="TAPLE" description="Descriptive line about what your company does."
+          :links="config.footer.Brand" />
+        <app-footer-nav-section aria-label="Footer navigation" :nav-links="config.footer.Nav" />
       </div>
     </ui-container>
   </footer>
@@ -24,7 +18,8 @@ import { AppFooterLinks } from "~/constants/nav.constants"
   box-shadow: var(--app-footer-box-shadow);
   padding: var(--app-footer-padding)
 }
-.app-footer__content{
+
+.app-footer__content {
   display: flex;
   justify-content: space-between;
 

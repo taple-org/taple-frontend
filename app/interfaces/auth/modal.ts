@@ -1,5 +1,3 @@
-const AuthModalSteps = ["login", "register", "recovery", "new-password", "confirm-code"];
-
 const LoginActions = ['success', 'register', 'recovery'] as const;
 const RegisterActions = ['success', 'login'] as const;
 const RecoveryActions = ['success', 'cancel'] as const;
@@ -47,6 +45,9 @@ export type AuthModalType<T extends keyof StepActionsMapType> = {
     component: Component;
     actions: ActionsObject<T>;
 };
-export type AuthModalsType = {
+export type AuthModalConfig = {
     [K in keyof StepActionsMapType]: AuthModalType<K>;
 };
+
+
+

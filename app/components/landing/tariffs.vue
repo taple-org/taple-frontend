@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type {ITariffCard} from "~/interfaces/landing";
+import type { ITariffCard } from "~/interfaces/landing.interfaces";
 const cards: ITariffCard[] = [
   {
     name: 'Plan 1',
@@ -45,18 +45,19 @@ const cards: ITariffCard[] = [
   </section>
 </template>
 <style scoped>
-
-.tariffs__title{
+.tariffs__title {
   font-weight: bold;
   font-size: 24px;
   color: var(--color-neutral-dd);
   padding-bottom: 10px;
 }
-.tariffs__list{
+
+.tariffs__list {
   display: flex;
   gap: 10px;
 }
-.tariffs__item{
+
+.tariffs__item {
   flex-grow: 1;
 }
 </style>

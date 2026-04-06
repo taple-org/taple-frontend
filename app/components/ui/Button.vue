@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 type ButtonProps = {
-  variant?: "fill" | "outline"
+  variant?: "primary" | "outline" | "error"
   disabled?: boolean
 }
-const { variant = "fill", disabled } = defineProps<ButtonProps>()
+const { variant = "primary", disabled } = defineProps<ButtonProps>()
 
 defineOptions({
   inheritAttrs: true
@@ -30,7 +30,7 @@ const emit = defineEmits<{ click: [event: MouseEvent] }>()
   font-size: 14px;
   padding-block: 12px;
   padding-inline: 16px;
-  border: 1px solid var(--color-primary);
+  border: 2px solid var(--color-primary);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition:
@@ -39,12 +39,12 @@ const emit = defineEmits<{ click: [event: MouseEvent] }>()
     color var(--transition-base);
 }
 
-.btn--fill {
+.btn--primary {
   background-color: var(--color-primary);
   color: var(--color-secondary);
 }
 
-.btn--fill:hover:not(:disabled) {
+.btn--primary:hover:not(:disabled) {
   background-color: color-mix(in srgb, var(--color-primary) 85%, white);
   border-color: color-mix(in srgb, var(--color-primary) 85%, white);
 }
@@ -57,6 +57,17 @@ const emit = defineEmits<{ click: [event: MouseEvent] }>()
 
 .btn--outline:hover:not(:disabled) {
   background-color: var(--color-primary);
+  color: var(--color-secondary);
+}
+
+.btn--error {
+  background-color: var(--color-secondary);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.btn--error:hover:not(:disabled) {
+  background-color: var(--color-error);
   color: var(--color-secondary);
 }
 

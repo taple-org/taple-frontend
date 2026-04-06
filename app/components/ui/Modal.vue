@@ -6,7 +6,6 @@ defineOptions({ inheritAttrs: false })
 defineProps<{
   title?: string
   description?: string
-  size?: 'sm' | 'md' | 'lg'
 }>()
 
 const open = defineModel<boolean>('open')
@@ -18,10 +17,7 @@ const open = defineModel<boolean>('open')
       <Teleport to="body">
         <Dialog.Backdrop class="dialog-backdrop" />
         <Dialog.Positioner class="dialog-positioner">
-          <Dialog.Content
-            class="dialog-content"
-            :class="[`dialog-content--${size ?? 'md'}`]"
-          >
+          <Dialog.Content class="dialog-content">
             <div class="dialog-header">
               <div v-if="$slots.header">
                 <slot name="header" />
@@ -34,7 +30,6 @@ const open = defineModel<boolean>('open')
                   {{ description }}
                 </Dialog.Description>
               </div>
-
             </div>
 
             <div class="dialog-body">
@@ -52,16 +47,32 @@ const open = defineModel<boolean>('open')
 </template>
 
 <style scoped>
+/*
+  Backdrop: убираем backdrop-filter — он форсирует отдельный compositor layer
+  на весь viewport и является главной причиной фризов при открытии/закрытии.
+  Заменяем на чуть более плотный rgba без blur — визуально почти неотличимо,
+  производительность кардинально лучше.
+
+  will-change убираем с постоянного места и выставляем только в момент
+  анимации через @keyframes — браузер сам продвигает элемент в отдельный
+  слой только пока он нужен.
+*/
 .dialog-backdrop {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background-color: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(2px);
-  will-change: opacity;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* НЕТ backdrop-filter: blur() — главный виновник фризов */
+  /* НЕТ постоянного will-change */
 }
-.dialog-backdrop[data-state='open']  { animation: dialog-backdrop-in  150ms ease forwards; }
-.dialog-backdrop[data-state='closed'] { animation: dialog-backdrop-out 120ms ease forwards; }
+
+.dialog-backdrop[data-state='open'] {
+  animation: dialog-backdrop-in 150ms ease forwards;
+}
+
+.dialog-backdrop[data-state='closed'] {
+  animation: dialog-backdrop-out 120ms ease forwards;
+}
 
 .dialog-positioner {
   position: fixed;
@@ -81,17 +92,25 @@ const open = defineModel<boolean>('open')
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
-  width: fit-content;       
-  min-width: 320px;        
-  max-width: min(600px, calc(100vw - 32px)); 
+  width: fit-content;
+  min-width: 320px;
+  max-width: min(1000px, calc(100vw - 32px));
   overflow: hidden;
   pointer-events: all;
-  will-change: transform, opacity;
+  /*
+    contain: layout style — изолирует layout и style recalc внутри модалки,
+    браузер не пересчитывает остальную страницу при изменениях внутри.
+  */
+  contain: layout style;
 }
 
+.dialog-content[data-state='open'] {
+  animation: dialog-content-in 150ms ease forwards;
+}
 
-.dialog-content[data-state='open']   { animation: dialog-content-in  150ms ease forwards; }
-.dialog-content[data-state='closed'] { animation: dialog-content-out 120ms ease forwards; }
+.dialog-content[data-state='closed'] {
+  animation: dialog-content-out 120ms ease forwards;
+}
 
 .dialog-header {
   position: relative;
@@ -122,12 +141,8 @@ const open = defineModel<boolean>('open')
   margin: 0;
 }
 
-.dialog-close:hover {
-  background-color: color-mix(in srgb, var(--color-neutral-lm) 80%, var(--color-black));
-}
-
 .dialog-body {
-  padding: 20px 30px 30px;
+  padding: 0 30px 30px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -140,15 +155,27 @@ const open = defineModel<boolean>('open')
   gap: 10px;
 }
 
-@keyframes dialog-backdrop-in  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes dialog-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+/*
+  will-change ставим только внутри @keyframes — браузер создаёт
+  compositor layer лишь на время анимации и сразу освобождает память.
+*/
+@keyframes dialog-backdrop-in {
+  from { will-change: opacity; opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes dialog-backdrop-out {
+  from { will-change: opacity; opacity: 1; }
+  to   { opacity: 0; }
+}
 
 @keyframes dialog-content-in {
-  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  from { will-change: transform, opacity; opacity: 0; transform: translate3d(0, 8px, 0); }
   to   { opacity: 1; transform: translate3d(0, 0, 0); }
 }
+
 @keyframes dialog-content-out {
-  from { opacity: 1; transform: translate3d(0, 0,   0);    }
+  from { will-change: transform, opacity; opacity: 1; transform: translate3d(0, 0, 0); }
   to   { opacity: 0; transform: translate3d(0, 8px, 0); }
 }
 </style>

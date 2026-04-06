@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { Checkbox } from '@ark-ui/vue/checkbox'
-import { CheckIcon, MinusIcon } from 'lucide-vue-next'
 
 const props = defineProps<{
   modelValue: boolean
@@ -22,8 +21,8 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
   >
     <Checkbox.Control class="checkbox__control">
       <Checkbox.Indicator class="checkbox__indicator">
-        <MinusIcon :size="12" data-state="indeterminate" />
-        <CheckIcon :size="12" data-state="checked" />
+        <Icon name="my-icon-minus" :size="12" data-state="indeterminate" />
+        <Icon name="my-icon-check" :size="12" data-state="checked" />
       </Checkbox.Indicator>
     </Checkbox.Control>
 

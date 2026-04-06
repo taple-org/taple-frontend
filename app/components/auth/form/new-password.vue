@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
 import type {NewPasswordActionsType} from "~/interfaces/auth/modal";
+import { useNewPasswordForm } from '~/composables/auth/useNewPasswordForm';
+
 const emit = defineEmits<{ 'navigate': [actions: NewPasswordActionsType] }>()
 
 const { r$ } = useNewPasswordForm();
@@ -10,8 +12,9 @@ const handleSubmit = async () => {
   const values = await r$.$validate();
   if(!values.valid) return;
 
-  const ok = await authStore.resetPassword(values.data);
-  if(ok) emit('navigate', 'success');
+  // const ok = await authStore.resetPassword(values.data);
+  // if(ok) 
+  emit('navigate', 'success');
 }
 </script>
 <template>

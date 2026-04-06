@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import styles from '~/components/auth/form/index.module.css'
+import { useRegisterForm } from '~/composables/auth/useRegisterForm';
 import type {RegisterActionsType} from "~/interfaces/auth/modal";
 
 const emit = defineEmits<{ 'navigate': [actions: RegisterActionsType] }>()
@@ -10,8 +11,9 @@ const authStore = useAuthStore();
 const handleSubmit = async (e: Event) => {
   const values = await r$.$validate()
   if(!values.valid) return;
-  const ok = await authStore.register(values.data);
-  if(ok) emit("navigate", 'success');
+  // const ok = await authStore.register(values.data);
+  // if(ok) 
+  emit("navigate", 'success');
 
 }
 

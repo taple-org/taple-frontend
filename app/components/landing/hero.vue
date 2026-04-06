@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { useAuthModalController } from '~/composables/modals/useAuthModalController';
+
 
 defineProps<{
   title: string;
   subtitle: string;
 }>();
 
-const { open } = useAuthModal()
+const { open } = useAuthModalController()
 </script>
 <template>
   <section class="hero">

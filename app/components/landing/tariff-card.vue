@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import {CheckIcon} from "lucide-vue-next";
-import type {ITariffCard} from "~/interfaces/landing";
+import type { ITariffCard } from "~/interfaces/landing.interfaces";
 defineProps<{
   card: ITariffCard
 }>();
@@ -8,17 +7,17 @@ defineProps<{
 <template>
   <article class="tariff">
     <header class="tariff__header">
-      <h4 class="tariff__title">{{card.name}}</h4>
-      <span class="tariff__description">{{card.description}}</span>
+      <h4 class="tariff__title">{{ card.name }}</h4>
+      <span class="tariff__description">{{ card.description }}</span>
     </header>
     <div class="tariff__pricing">
-      <span class="pricing__price">{{card.pricing.price}}</span>
-      <span class="pricing__time"> / {{card.pricing.time}}</span>
+      <span class="pricing__price">{{ card.pricing.price }}</span>
+      <span class="pricing__time"> / {{ card.pricing.time }}</span>
     </div>
     <ul class="tariff__features">
       <li v-for="feature in card.features" class="features__item">
-        <check-icon class="feature__check-icon"  />
-        <span class="feature__label">{{feature}}</span>
+        <Icon name="my-icon-check" class="feature__check-icon" />
+        <span class="feature__label">{{ feature }}</span>
       </li>
     </ul>
     <ui-button variant="outline">Зарегистрироваться</ui-button>
@@ -35,41 +34,48 @@ defineProps<{
   flex-direction: column;
   gap: 32px;
 }
-.tariff__header{
+
+.tariff__header {
   padding-bottom: 16px;
 }
-.tariff__title{
+
+.tariff__title {
   font-size: 22px;
   font-weight: 700;
   color: var(--color-neutral-dd);
 }
-.tariff__description{
+
+.tariff__description {
   font-size: 16px;
   font-weight: 400;
   color: var(--color-neutral-ld);
 }
-.pricing__price{
+
+.pricing__price {
   font-size: 64px;
   font-weight: 700;
   color: var(--color-neutral-dd);
 
 }
-.pricing__time{
+
+.pricing__time {
   font-weight: 400;
   font-size: 16px;
   color: var(--color-neutral-ld);
 }
 
-.features__item{
+.features__item {
   display: flex;
   gap: 8px
 }
-.feature__check-icon{
+
+.feature__check-icon {
   width: 24px;
   height: 24px;
   color: green;
 }
-.feature__label{
+
+.feature__label {
   font-weight: 400;
   font-size: 16px;
   color: var(--color-neutral-dd);

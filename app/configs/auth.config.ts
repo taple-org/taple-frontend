@@ -6,11 +6,10 @@ import {
     AuthFormRegister
 } from "#components";
 import type {
-    AuthModalStepType,
-    AuthModalsType,
+    AuthModalConfig,
 } from "~/interfaces/auth/modal";
 
-export const AuthModals: AuthModalsType = {
+const config: AuthModalConfig = {
     "login": {
         title: 'Вход',
         description: 'Добро пожаловать в Taple.kz',
@@ -90,16 +89,9 @@ export const AuthModals: AuthModalsType = {
             }
         }
     },
-};
+} ;
 
-
-export const AuthModalPriority: Record<AuthModalStepType, number> = {
-    "login": 1,
-    "register": 2,
-    "recovery": 3,
-    "new-password": 4,
-    "confirm-code": 5,
-}
+export default config;
 
 
 

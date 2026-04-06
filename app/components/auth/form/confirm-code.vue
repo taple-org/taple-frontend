@@ -8,10 +8,11 @@ const authStore = useAuthStore();
 const {resend, verify, countdown, otp} = useOTP(
     60,
     async ({valueAsString}) => {
-      const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
-      if (ok) emit('navigate', 'success')
+      // const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
+      // if (ok) emit('navigate', 'success')
+      emit('navigate', 'success')
     },
-    () => authStore.resendOtp(authStore.pendingEmail)
+    // () => authStore.resendOtp(authStore.pendingEmail)
 );
 
 </script>
