@@ -58,7 +58,7 @@ const emit = defineEmits<{
 
 .lead-card__divider {
   width: 1px;
-  background: var(--color-neutral-ll);
+  background: var(--color-neutral-ld);
 }
 
 .lead-card__action--take {

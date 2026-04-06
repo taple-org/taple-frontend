@@ -13,8 +13,12 @@
 .app {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 .app-main {
-  flex-grow: 1;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 </style>
