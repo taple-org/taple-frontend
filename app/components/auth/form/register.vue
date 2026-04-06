@@ -24,6 +24,18 @@ const handleSubmit = async (e: Event) => {
 <template>
   <form :class="styles.form" @submit.prevent="handleSubmit">
     <ui-form-field
+      v-model="r$.$value.first_name"
+      type="text"
+      :error="r$.first_name.$errors[0]"
+      placeholder="Введите Имя"
+    />
+    <ui-form-field
+        v-model="r$.$value.last_name"
+        type="text"
+        :error="r$.last_name.$errors[0]"
+        placeholder="Введите Имя"
+    />
+    <ui-form-field
         v-model="r$.$value.email"
         type="text"
         :error="r$.email.$errors[0]"
@@ -36,9 +48,9 @@ const handleSubmit = async (e: Event) => {
         placeholder="Введите пароль"
     />
     <ui-form-field
-        v-model="r$.$value.confirmPassword"
+        v-model="r$.$value.password_confirm"
         type="password"
-        :error="r$.confirmPassword.$errors[0]"
+        :error="r$.password_confirm.$errors[0]"
         placeholder="Подтвердите пароль"
     />
     <ui-info-section size="md">

@@ -6,7 +6,7 @@ import type { RegleExternalErrorTree } from '@regle/core'
 export const useAuthStore = defineStore('auth', () => {
     const notification = useNotification()
     const router = useRouter()
-    const { $api } = useNuxtApp()
+    const { $api, $apiClient } = useNuxtApp()
 
     const user = ref<AuthUser | null>(null)
     const isLoading = ref(false)
@@ -87,10 +87,10 @@ export const useAuthStore = defineStore('auth', () => {
         await router.push('/')
     }
 
-    const register = async ({ email, password }: { email: string; password: string }) => {
+    const register = async ({first_name ,last_name ,email, password, password_confirm }: {first_name: string ,last_name:string ,email: string; password: string, password_confirm }) => {
         setPendingEmail(email)
         otpType.value = 'signup'
-        await $api.auth.signUp({ body: { email, password } })
+        await     $apiClient.api.signUpApiV1AuthSignUpPost( { first_name,last_name, email, password, password_confirm  })
         notification.success('Код подтверждения отправлен на почту!')
     }
 
