@@ -44,25 +44,15 @@ export const useAuthStore = defineStore('auth', () => {
         otpType.value = null
     }
 
-    /**
-     * Parses an error thrown by the generated API client (HttpResponse) into
-     * a user-friendly message and optional per-field errors for regle.
-     *
-     * The generated client throws the HttpResponse object when !response.ok.
-     * r.error is the parsed response body, which can be either:
-     *   - Backend application error: { meta: { error: { message, type, fields? } } }
-     *   - FastAPI validation error:  { detail: ValidationError[] }
-     */
+
     function extractApiClientError(e: unknown): { message: string; fieldErrors?: Record<string, string[]> } | null {
         if (e === null || typeof e !== 'object' || e instanceof Error) return null
         const resp = e as Record<string, unknown>
-        // Generated HttpResponse always has numeric `status` and an `error` key
         if (typeof resp.status !== 'number' || !('error' in resp)) return null
 
         const body = resp.error as Record<string, unknown> | null | undefined
         if (!body) return { message: 'Неизвестная ошибка' }
 
-        // Backend application error: { meta: { error: ErrorBody } }
         const meta = body.meta as Record<string, unknown> | undefined
         if (meta?.error) {
             const apiError = meta.error as {
@@ -80,7 +70,6 @@ export const useAuthStore = defineStore('auth', () => {
             return { message, fieldErrors: Object.keys(fieldErrors).length ? fieldErrors : undefined }
         }
 
-        // FastAPI validation error: { detail: ValidationError[] }
         if (Array.isArray(body.detail)) {
             const details = body.detail as Array<{ loc?: (string | number)[]; msg?: string }>
             const fieldErrors: Record<string, string[]> = {}
@@ -134,7 +123,6 @@ export const useAuthStore = defineStore('auth', () => {
     const login = async ({ email, password }: { email: string; password: string }) => {
         const tokenResp = await $apiClient.api.loginApiV1AuthLoginPost({ email, password })
         const tokens = tokenResp.data.result
-        // Store token before calling /me so buildFetcher can attach it as Authorization header
         if (import.meta.client) {
             localStorage.setItem(TokenKey, tokens.access_token)
             if (tokens.refresh_token) {
@@ -168,16 +156,12 @@ export const useAuthStore = defineStore('auth', () => {
 
     const verifyOtp = withLoading(async (email: string, token: string) => {
         if (otpType.value === 'signup') {
-            // NOTE (audit): VerifyEmailResult no longer returns tokens/user.
-            // After email verification the user is NOT auto-logged in.
-            // Flow mismatch to be clarified with Adel.
             await $apiClient.api.verifyEmailApiV1AuthVerifyEmailPost({ email, code: token })
             notification.success('Email подтверждён!')
             resetPendingEmail()
         } else if (otpType.value === 'recovery') {
             const result = await $apiClient.api.forgotPasswordVerifyApiV1AuthForgotPasswordVerifyPost({ email, code: token })
             resetToken.value = result.data.result.reset_token
-            // Navigation to the "New Password" step is handled by the component on success
         }
     })
 
@@ -196,8 +180,6 @@ export const useAuthStore = defineStore('auth', () => {
         setAuth(meResp.data.result)
     })
 
-    // NOTE (audit): No logout endpoint exists in the generated API.
-    // Logout only clears local auth state.
     const signOut = withLoading(async () => {
         clearAuth()
     })

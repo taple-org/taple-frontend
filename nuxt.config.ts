@@ -4,7 +4,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: ""
+      apiBase: "",
+      backendKey: ""
     },
   },
   modules: ["@pinia/nuxt", "@regle/nuxt", "@nuxt/icon", "@nuxt/eslint"],
