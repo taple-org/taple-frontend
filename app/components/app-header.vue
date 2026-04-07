@@ -8,8 +8,8 @@ const links: TemplateLink[] = [
   { to: "#", label: "API" },
 ];
 
-const { open } = useAuthModalController();
-const { isAuthenticated } = useAuthStore()
+const {open} = useAuthModalController();
+const {isAuthenticated} = storeToRefs(useAuthStore());
 </script>
 <template>
   <header class="header">

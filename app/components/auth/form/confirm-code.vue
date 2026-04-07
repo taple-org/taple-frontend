@@ -8,11 +8,10 @@ const authStore = useAuthStore();
 const {resend, verify, countdown, otp} = useOTP(
     60,
     async ({valueAsString}) => {
-      // const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
-      // if (ok) 
-      emit('navigate', 'success')
+      const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
+      if (ok) emit('navigate', 'success')
     },
-    // () => authStore.resendOtp(authStore.pendingEmail)
+    () => authStore.resendOtp(authStore.pendingEmail)
 );
 
 </script>
@@ -21,7 +20,7 @@ const {resend, verify, countdown, otp} = useOTP(
   <form :class="styles.form" class="otp-form" @submit.prevent>
     <ui-fields-pin-input-field
       v-model="otp"
-      :count="8"
+      :count="6"
       @value-complete="verify"
     />
 

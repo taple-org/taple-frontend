@@ -4,12 +4,13 @@ import type { AuthModalStepType, ActionsOf, ActionFn } from "~/interfaces/auth/m
 import { useAuthModalController } from "~/composables/modals/useAuthModalController";
 
 const { to, close } = useAuthModalController()
-const { isOpen, current, direction } = storeToRefs(useAuthModalController())
+const { isOpen, current, direction, from } = storeToRefs(useAuthModalController())
 
 function onNavigate<T extends AuthModalStepType>(step: T, action: ActionsOf<T>): void;
 function onNavigate(step: AuthModalStepType, action: string) {
   const fn = (config[step].actions as Record<string, ActionFn>)[action];
-  fn?.({ to, close }, { from: step });
+  console.log("from", from.value);
+  fn?.({ to, close }, { from: from.value });
 }
 
 </script>

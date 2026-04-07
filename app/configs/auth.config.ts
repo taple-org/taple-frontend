@@ -74,13 +74,22 @@ const config: AuthModalConfig = {
                 {to, close},
                 {from}
             ) => {
+                console.log("from", from)
+
                 switch (from) {
                     case "recovery": {
+                        console.log("recovery")
                         to("new-password");
                         break;
                     }
+                    case "register": {
+                        console.log("login")
+                        to("login");
+                        break;
+                    }
                     default: {
-                        close();
+                        console.log("default")
+                        close()
                     }
                 }
             },

@@ -2,6 +2,9 @@
 import { useWorkspaceMakeFlow } from '~/composables/workspace/useWorkspaceMakeFlow';
 import type { ProfileListConfig } from '~/interfaces/profile.interfaces';
 const controller = useWorkspaceMakeFlow();
+const { user } = storeToRefs(useAuthStore());
+const { signOut } = useAuthStore();
+
 const profileListConfig: ProfileListConfig = [
     {
         title: 'Профиль',
@@ -51,7 +54,7 @@ const profileListConfig: ProfileListConfig = [
     <ui-popover class="profile" placement="bottom" :offset="{ mainAxis: 36 }">
         <template #trigger>
             <ui-badge class="">
-                test@gmail.com
+              {{ user?.email }}
             </ui-badge>
         </template>
         <template #default>
@@ -67,7 +70,7 @@ const profileListConfig: ProfileListConfig = [
                         </li>
                     </template>
                 </ul>
-                <ui-button class="profile__logout" variant="error">
+                <ui-button class="profile__logout" variant="error" @click="signOut">
                     Выйти
                 </ui-button>
             </section>

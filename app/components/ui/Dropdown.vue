@@ -1,7 +1,5 @@
 <script lang="ts" setup>
 import { Select, createListCollection } from "@ark-ui/vue/select";
-import { ChevronDownIcon } from "lucide-vue-next";
-
 export type DropdownOption = {
   label: string;
   value: string;

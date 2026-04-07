@@ -1,17 +1,16 @@
 import { TokenKey, RefreshTokenKey } from '~/constants/api.constants'
 import type { AuthUser } from '~/types/api.types'
-import { ApiException } from '~/repositories/repository.helpers'
 import type { RegleExternalErrorTree } from '@regle/core'
 
 export const useAuthStore = defineStore('auth', () => {
     const notification = useNotification()
     const router = useRouter()
-    const { $api } = useNuxtApp()
+    const { $apiClient } = useNuxtApp()
 
     const user = ref<AuthUser | null>(null)
     const isLoading = ref(false)
     const error = ref<string | null>(null)
-    
+
     const pendingEmail = ref<string>('')
     const otpType = ref<'signup' | 'recovery' | null>(null)
     const resetToken = ref<string>('')
@@ -45,6 +44,60 @@ export const useAuthStore = defineStore('auth', () => {
         otpType.value = null
     }
 
+    /**
+     * Parses an error thrown by the generated API client (HttpResponse) into
+     * a user-friendly message and optional per-field errors for regle.
+     *
+     * The generated client throws the HttpResponse object when !response.ok.
+     * r.error is the parsed response body, which can be either:
+     *   - Backend application error: { meta: { error: { message, type, fields? } } }
+     *   - FastAPI validation error:  { detail: ValidationError[] }
+     */
+    function extractApiClientError(e: unknown): { message: string; fieldErrors?: Record<string, string[]> } | null {
+        if (e === null || typeof e !== 'object' || e instanceof Error) return null
+        const resp = e as Record<string, unknown>
+        // Generated HttpResponse always has numeric `status` and an `error` key
+        if (typeof resp.status !== 'number' || !('error' in resp)) return null
+
+        const body = resp.error as Record<string, unknown> | null | undefined
+        if (!body) return { message: 'Неизвестная ошибка' }
+
+        // Backend application error: { meta: { error: ErrorBody } }
+        const meta = body.meta as Record<string, unknown> | undefined
+        if (meta?.error) {
+            const apiError = meta.error as {
+                message?: Record<string, string>
+                type?: string
+                fields?: Record<string, Record<string, string>>
+            }
+            const message = apiError.message?.ru ?? apiError.message?.en ?? apiError.type ?? 'Ошибка'
+            const fieldErrors: Record<string, string[]> = {}
+            if (apiError.fields) {
+                for (const [field, msgs] of Object.entries(apiError.fields)) {
+                    fieldErrors[field] = [msgs.ru ?? msgs.en ?? '']
+                }
+            }
+            return { message, fieldErrors: Object.keys(fieldErrors).length ? fieldErrors : undefined }
+        }
+
+        // FastAPI validation error: { detail: ValidationError[] }
+        if (Array.isArray(body.detail)) {
+            const details = body.detail as Array<{ loc?: (string | number)[]; msg?: string }>
+            const fieldErrors: Record<string, string[]> = {}
+            for (const ve of details) {
+                const field = ve.loc?.[ve.loc.length - 1]
+                if (field && typeof field === 'string') {
+                    if (!fieldErrors[field]) fieldErrors[field] = []
+                    if (ve.msg) fieldErrors[field].push(ve.msg)
+                }
+            }
+            const message = details[0]?.msg ?? 'Ошибка валидации'
+            return { message, fieldErrors: Object.keys(fieldErrors).length ? fieldErrors : undefined }
+        }
+
+        return { message: 'Неизвестная ошибка' }
+    }
+
     function withLoading<T extends unknown[]>(
         fn: (...args: T) => Promise<void>,
         externalErrors?: Ref<RegleExternalErrorTree<any>>
@@ -57,12 +110,13 @@ export const useAuthStore = defineStore('auth', () => {
                 await fn(...args)
                 return true
             } catch (e: unknown) {
-                if (e instanceof ApiException) {
-                    error.value = e.message
-                    if (externalErrors && e.fieldErrors) {
-                        externalErrors.value = e.fieldErrors as RegleExternalErrorTree<any>
+                const apiClientError = extractApiClientError(e)
+                if (apiClientError) {
+                    error.value = apiClientError.message
+                    if (externalErrors && apiClientError.fieldErrors) {
+                        externalErrors.value = apiClientError.fieldErrors as RegleExternalErrorTree<any>
                     }
-                    notification.error('Ошибка', e.message)
+                    notification.error('Ошибка', apiClientError.message)
                 } else if (e instanceof Error) {
                     error.value = e.message
                     notification.error('Ошибка', e.message)
@@ -78,48 +132,58 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     const login = async ({ email, password }: { email: string; password: string }) => {
-        const result = await $api.auth.login({ body: { email, password } })
-        setAuth(result.user, result.tokens.access_token)
-        if (import.meta.client && result.tokens.refresh_token) {
-            localStorage.setItem(RefreshTokenKey, result.tokens.refresh_token)
+        const tokenResp = await $apiClient.api.loginApiV1AuthLoginPost({ email, password })
+        const tokens = tokenResp.data.result
+        // Store token before calling /me so buildFetcher can attach it as Authorization header
+        if (import.meta.client) {
+            localStorage.setItem(TokenKey, tokens.access_token)
+            if (tokens.refresh_token) {
+                localStorage.setItem(RefreshTokenKey, tokens.refresh_token)
+            }
         }
+        const meResp = await $apiClient.api.meApiV1AuthMeGet()
+        setAuth(meResp.data.result, tokens.access_token)
         notification.success('Авторизация', 'Вы успешно вошли в аккаунт')
         await router.push('/')
     }
 
-    const register = async ({ email, password }: { email: string; password: string }) => {
+    const register = async ({
+        first_name,
+        last_name,
+        email,
+        password,
+        password_confirm,
+    }: {
+        first_name: string
+        last_name: string
+        email: string
+        password: string
+        password_confirm: string
+    }) => {
         setPendingEmail(email)
         otpType.value = 'signup'
-        await $api.auth.signUp({ body: { email, password } })
+        await $apiClient.api.signUpApiV1AuthSignUpPost({ first_name, last_name, email, password, password_confirm })
         notification.success('Код подтверждения отправлен на почту!')
     }
 
     const verifyOtp = withLoading(async (email: string, token: string) => {
         if (otpType.value === 'signup') {
-            const result = await $api.auth.verifyEmail({ body: { email, otp_code: token } })
-            setAuth(result.user, result.tokens.access_token)
-            if (import.meta.client && result.tokens.refresh_token) {
-                localStorage.setItem(RefreshTokenKey, result.tokens.refresh_token)
-            }
+            // NOTE (audit): VerifyEmailResult no longer returns tokens/user.
+            // After email verification the user is NOT auto-logged in.
+            // Flow mismatch to be clarified with Adel.
+            await $apiClient.api.verifyEmailApiV1AuthVerifyEmailPost({ email, code: token })
             notification.success('Email подтверждён!')
-            await router.push('/')
             resetPendingEmail()
-        } 
-        else if (otpType.value === 'recovery') {
-            const result = await $api.auth.forgotPasswordVerify({ body: { email, otp_code: token } })
-            resetToken.value = result.reset_token
-            // Переход на страницу "Новый пароль" выполнится компонентом (success изнутри confirm-code)
+        } else if (otpType.value === 'recovery') {
+            const result = await $apiClient.api.forgotPasswordVerifyApiV1AuthForgotPasswordVerifyPost({ email, code: token })
+            resetToken.value = result.data.result.reset_token
+            // Navigation to the "New Password" step is handled by the component on success
         }
     })
 
     const resendOtp = withLoading(async (email: string) => {
-        // Предположим, что для отправки кода ещё раз вы используете тот же эндпоинт отправки.
-        // Или если у бэкенда нет resendOtp, то присылайте запрос снова на \register или \forgot-password
-        if (otpType.value === 'signup') {
-            await $api.auth.resendOtp({ body: { email } })
-        } else if (otpType.value === 'recovery') {
-            await $api.auth.forgotPassword({ body: { email } })
-        }
+        const purpose = otpType.value === 'signup' ? 'email_verification' : 'password_reset'
+        await $apiClient.api.resendOtpApiV1AuthResendOtpPost({ email, purpose })
         notification.success('Код отправлен повторно!')
     })
 
@@ -128,27 +192,29 @@ export const useAuthStore = defineStore('auth', () => {
             const token = localStorage.getItem(TokenKey)
             if (!token) return
         }
-        const me = await $api.auth.me({})
-        setAuth(me)
+        const meResp = await $apiClient.api.meApiV1AuthMeGet()
+        setAuth(meResp.data.result)
     })
 
+    // NOTE (audit): No logout endpoint exists in the generated API.
+    // Logout only clears local auth state.
     const signOut = withLoading(async () => {
-        try {
-            await $api.auth.logout({})
-        } finally {
-            clearAuth()
-        }
+        clearAuth()
     })
 
     const forgotPassword = async ({ email }: { email: string }) => {
         setPendingEmail(email)
         otpType.value = 'recovery'
-        await $api.auth.forgotPassword({ body: { email } })
+        await $apiClient.api.forgotPasswordApiV1AuthForgotPasswordPost({ email })
         notification.success('Код для восстановления пароля отправлен на почту!')
     }
 
-    const resetPassword = async ({ password }: { password: string }) => {
-        await $api.auth.forgotPasswordReset({ body: { password, reset_token: resetToken.value } })
+    const resetPassword = async ({ password, confirmPassword }: { password: string; confirmPassword: string }) => {
+        await $apiClient.api.resetPasswordApiV1AuthForgotPasswordResetPost({
+            reset_token: resetToken.value,
+            new_password: password,
+            new_password_confirm: confirmPassword,
+        })
         notification.success('Успешно сбросили пароль')
         resetPendingEmail()
     }
