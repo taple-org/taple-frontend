@@ -1,6 +1,6 @@
 import { required, withMessage } from "@regle/rules";
 import { createScopedUseRegle } from "@regle/core";
-import type { ResponseTenantOnboardingRead, TenantOnboardingCreate } from "~/api/generated/api";
+import type { TenantCreate, ResponseTenantRead } from "~/api/generated/api";
 
 export type WithLabel<T> = T & { label: string }
 export type WithId<T> = T & { id: string }
@@ -42,7 +42,7 @@ type UseWorkspaceFormProps = {
     next: () => void,
     beforeSubmit?: () => void;
     catchError?: (error: unknown) => void;
-    resolve?: (data : ResponseTenantOnboardingRead) => void;
+    resolve?: (data : ResponseTenantRead) => void;
     
 }
 
@@ -80,7 +80,7 @@ export const useWorkspaceForm = ({ current, next, beforeSubmit, catchError, reso
         return;
       }
 
-      function normalizer(scope: CollectedScopes): TenantOnboardingCreate{
+      function normalizer(scope: CollectedScopes): TenantCreate{
         const productTracks = scope.taging
         .productTracks.map((pt) => ({
           product_track_id: pt.id,
@@ -94,7 +94,7 @@ export const useWorkspaceForm = ({ current, next, beforeSubmit, catchError, reso
         }
       }
       const normalizedData = normalizer(scope.$value)
-      const response = await $apiClient.api.createTenantOnboardingApiV1TenantsOnboardingPost(normalizedData);
+      const response = await $apiClient.api.createTenantApiV1TenantsPost(normalizedData);
       resolve && resolve(response.data);
 
       return response;

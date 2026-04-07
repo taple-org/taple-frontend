@@ -36,7 +36,7 @@ const { toNext, handleSubmit, items, close } = useWorkspaceMakeFlow()
 
           <div v-else-if="status === 'loading'" class="completed">
             <div class="completed__icon-ring completed__icon-ring--loading">
-              <Icon size="36" name="my-icon-loader" />
+              <Icon size="36" name="my-icon-inbox" />
             </div>
             <h2 class="completed__title">Создание...</h2>
             <p class="completed__description">Пожалуйста, подождите</p>
@@ -54,7 +54,7 @@ const { toNext, handleSubmit, items, close } = useWorkspaceMakeFlow()
           <!-- Error -->
           <div v-else-if="status === 'error'" class="completed">
             <div class="completed__icon-ring completed__icon-ring--error">
-              <Icon size="36" name="my-icon-x-circle" />
+              <Icon size="36" name="my-icon-close" />
             </div>
             <h2 class="completed__title">Что-то пошло не так</h2>
             <p class="completed__description">
@@ -127,7 +127,7 @@ const { toNext, handleSubmit, items, close } = useWorkspaceMakeFlow()
 }
 
 .completed__icon-ring--error {
-  color: var(--color-danger);
+  color: var(--color-error);
 }
 
 .completed__icon-ring--loading {

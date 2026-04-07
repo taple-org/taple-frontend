@@ -6,7 +6,7 @@ const { $apiClient } = useNuxtApp();
 const { data: cities, error } = useAsyncData(() => $apiClient.api.listAllApiV1CatalogCitiesGet())
 const options = computed(() => {
     if(!cities.value?.data) return [];
-    return [...cities.value.data.result.map((city) => ({ label: city.name_ru, value: city.id })), { label: "Алматы", value:"oskdmocimsdc" }]
+    return [...cities.value.data.result.map((city) => ({ label: city.name_ru, value: city.id }))]
 })
 
 console.log(options.value)

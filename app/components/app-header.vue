@@ -18,7 +18,11 @@ const {isAuthenticated} = storeToRefs(useAuthStore());
         <app-header-logo title="TAPLE" />
         <app-header-links :links />
         <ui-button v-if="!isAuthenticated" @click="open('login')">Войти</ui-button>
-        <app-header-profile v-else />
+        <template v-else>
+          <client-only>
+            <app-header-profile />
+          </client-only>
+        </template>
       </section>
     </ui-container>
   </header>

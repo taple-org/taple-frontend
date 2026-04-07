@@ -11,17 +11,7 @@ const productTracks = computed<WithLabel<ProductTrack>[]>(() => {
             id: pt.id,
             label: pt.name_ru,
             priority_order: index,
-        })),
-        {
-            id: "34567890-",
-            label: "dsjhbsdhbcj",
-            priority_order: 1,
-        },
-        {
-            id: "34567890-",
-            label: "sdddddd",
-            priority_order: 2,
-        }
+        }))
     ]
 })
 
