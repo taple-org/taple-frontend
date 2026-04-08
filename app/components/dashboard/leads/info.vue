@@ -87,7 +87,7 @@ defineProps<{
   justify-content: center;
   align-items: center;
   color: var(--color-neutral-dl);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -101,7 +101,7 @@ defineProps<{
 .leads-info__title {
   margin: 0;
   color: var(--color-neutral-dd);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.25;
 }
@@ -109,7 +109,7 @@ defineProps<{
 .leads-info__subtitle {
   margin: 0;
   color: #71727a;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 400;
   line-height: 1.25;
   letter-spacing: 0.1px;
@@ -128,7 +128,7 @@ defineProps<{
 .leads-info__label {
   margin: 0;
   color: var(--color-neutral-dm);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.3;
   letter-spacing: 0.4px;
@@ -150,7 +150,7 @@ defineProps<{
   align-items: center;
   gap: 5px;
   color: var(--color-neutral-dm);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 500;
   line-height: 1.25;
   white-space: nowrap;
@@ -169,7 +169,7 @@ defineProps<{
 
 .leads-info__map-link {
   color: var(--color-neutral-dl);
-  font-size: 5px;
+  font-size: 9px;
   font-weight: 500;
   line-height: 1.2;
   text-decoration: underline;
@@ -180,7 +180,7 @@ defineProps<{
 .leads-info__text {
   margin: 3px 0 0;
   color: #71727a;
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 500;
   line-height: 1.25;
   white-space: nowrap;
@@ -203,7 +203,7 @@ defineProps<{
 .leads-info__freshness {
   margin: 3px 0 0;
   color: var(--color-neutral-dl);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 500;
   line-height: 1.25;
 }

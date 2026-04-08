@@ -3,6 +3,7 @@ definePageMeta({
   title: "Monitoring",
   layout: 'dashboard'
 })
+
 </script>
 <template>
     <div class="leads">

@@ -21,15 +21,10 @@ export default defineNuxtConfig({
     mode: "svg",
     customCollections: [
       {
-        prefix: "my",
-        dir: "./app/assets/icons/my",
-        recursive: true,
-      },
-      {
         prefix: "my-icon",
         dir: "./app/assets/icons",
         recursive: true,
-      },
+      }
     ],
   },
   vite: {
