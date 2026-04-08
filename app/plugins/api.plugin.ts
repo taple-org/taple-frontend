@@ -2,6 +2,7 @@ import { Api } from '~/api/generated/api';
 import buildFetcher from '~/utils/buildFetcher';
 
 export default defineNuxtPlugin({
+    name: 'api',
     setup: (nuxtApp) => {
         const backendKey = nuxtApp.$config.public.backendKey;
         const apiClient = new Api({

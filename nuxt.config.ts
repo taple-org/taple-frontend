@@ -48,6 +48,8 @@ export default defineNuxtConfig({
         "@ark-ui/vue",
         "@ark-ui/vue/password-input",
         '@formkit/drag-and-drop/vue',
+        '@formkit/drag-and-drop',
+        '@ark-ui/vue/progress'
       ],
     },
   },

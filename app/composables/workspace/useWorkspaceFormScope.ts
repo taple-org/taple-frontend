@@ -94,7 +94,8 @@ export const useWorkspaceForm = ({ current, next, beforeSubmit, catchError, reso
         }
       }
       const normalizedData = normalizer(scope.$value)
-      const response = await $apiClient.api.createTenantApiV1TenantsPost(normalizedData);
+      
+      const response = await $apiClient.api.createTenantApiV1TenantsPost(normalizedData, {  });
       resolve && resolve(response.data);
 
       return response;

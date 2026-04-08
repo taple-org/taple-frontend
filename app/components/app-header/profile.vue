@@ -7,7 +7,7 @@ const {user} = storeToRefs(useAuthStore());
 const {signOut} = useAuthStore();
 const {$apiClient} = useNuxtApp();
 
-const {data: tenats, error} = useAsyncData(() => $apiClient.api.listMyTenantsApiV1TenantsGet(), {lazy: true});
+const {data: tenats, error, refresh} = useAsyncData(() => $apiClient.api.listMyTenantsApiV1TenantsGet(), {lazy: true});
 
 const configs = computed<ProfileListConfig>(() => {
   return [
@@ -38,7 +38,7 @@ const configs = computed<ProfileListConfig>(() => {
         icon: 'my-icon:add',
         type: 'action',
         action: () => {
-          controller.open();
+          controller.open({ handleResolve: () => refresh() });
         }
       }]
     }]
