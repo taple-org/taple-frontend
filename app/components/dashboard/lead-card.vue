@@ -13,31 +13,51 @@ type LeadCardProps = {
   phone: string;
   openStatus: string;
   isNew?: boolean;
+  leadId: string;
 };
 
-const {
-  score,
-  title,
-  subtitle,
-  tags,
-  address,
-  phone,
-  openStatus,
-  isNew = true,
-} = defineProps<LeadCardProps>();
+const props = defineProps<LeadCardProps>();
 
 const emit = defineEmits<{
-  postpone: [];
-  take: [];
+  postpone: [leadId: string];
+  take: [leadId: string];
 }>();
+
+const isLoading = ref(false);
+const shouldShake = ref(false);
+
+const handlePostpone = () => {
+  isLoading.value = true;
+  shouldShake.value = false;
+  emit('postpone', props.leadId);
+};
+
+const handleTake = () => {
+  isLoading.value = true;
+  shouldShake.value = false;
+  emit('take', props.leadId);
+};
+
+const triggerShake = () => {
+  isLoading.value = false;
+  shouldShake.value = true;
+  setTimeout(() => {
+    shouldShake.value = false;
+  }, 500);
+};
+
+defineExpose({
+  triggerShake,
+});
 </script>
 
 <template>
-  <article class="lead-card" aria-label="Lead card">
+  <article class="lead-card" :class="{ 'lead-card--shake': shouldShake }" aria-label="Lead card">
     <LeadCardHead
       :score="score"
       :title="title"
       :subtitle="subtitle"
+      :status="openStatus"
       :is-new="isNew"
     />
 
@@ -49,7 +69,11 @@ const emit = defineEmits<{
       :open-status="openStatus"
     />
 
-    <LeadCardActions @postpone="emit('postpone')" @take="emit('take')" />
+    <LeadCardActions 
+      :loading="isLoading"
+      @postpone="handlePostpone" 
+      @take="handleTake" 
+    />
   </article>
 </template>
 
@@ -62,6 +86,22 @@ const emit = defineEmits<{
   padding: 8px 16px;
   background: var(--color-neutral-ll);
   border-radius: 16px;
+}
+
+.lead-card--shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-8px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(8px);
+  }
 }
 
 @media (max-width: 640px) {

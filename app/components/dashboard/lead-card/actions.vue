@@ -1,4 +1,8 @@
 <script setup lang="ts">
+defineProps<{
+  loading?: boolean;
+}>();
+
 const emit = defineEmits<{
   postpone: [];
   take: [];
@@ -10,6 +14,7 @@ const emit = defineEmits<{
     <button
       class="lead-card__action lead-card__action--postpone"
       type="button"
+      :disabled="loading"
       @click="emit('postpone')"
     >
       Отложить
@@ -20,6 +25,7 @@ const emit = defineEmits<{
     <button
       class="lead-card__action lead-card__action--take"
       type="button"
+      :disabled="loading"
       @click="emit('take')"
     >
       Взять в работу
@@ -43,11 +49,17 @@ const emit = defineEmits<{
   font-weight: 500;
   line-height: 1.1;
   cursor: pointer;
-  transition: filter var(--transition-base);
+  transition: all var(--transition-base);
 }
 
-.lead-card__action:hover {
+.lead-card__action:hover:not(:disabled) {
   filter: brightness(0.96);
+}
+
+.lead-card__action:disabled {
+  cursor: not-allowed;
+  background: var(--color-neutral-lm) !important;
+  color: var(--color-neutral-dl) !important;
 }
 
 .lead-card__action--postpone {

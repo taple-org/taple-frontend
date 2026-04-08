@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 type LeadCardTagsProps = {
   tags: string[];
 };
@@ -8,9 +9,9 @@ defineProps<LeadCardTagsProps>();
 
 <template>
   <div class="lead-card__tags" aria-label="Lead services">
-    <span v-for="tag in tags" :key="tag" class="lead-card__service-tag">
+    <ui-badge v-for="tag in tags" :key="tag" size="sm" >
       {{ tag }}
-    </span>
+    </ui-badge>
   </div>
 </template>
 

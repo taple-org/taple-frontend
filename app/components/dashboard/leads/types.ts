@@ -4,7 +4,7 @@ export type LeadFit = {
 };
 
 export type Lead = {
-  id: number;
+  id: string;
   score: number;
   title: string;
   subtitle: string;

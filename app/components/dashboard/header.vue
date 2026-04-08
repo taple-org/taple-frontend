@@ -1,22 +1,23 @@
 <script setup lang="ts">
 const route = useRoute();
 
-const tabs = [
-  { label: "Дэшбоард", to: "/dashboard" },
-  { label: "Лиды", to: "/dashboard/leads" },
-  { label: "Воронка", to: "/dashboard/pipeline" },
-  { label: "Мониторинг", to: "/dashboard/monitoring" },
-  { label: "Задачи", to: "/dashboard/tasks" },
-  { label: "Настройки", to: "/dashboard/settings" },
-];
+const workSpaceId = route.params.workspaceId as string;
+
+const tabs = computed(() => [
+  { label: "Дэшбоард", to: `/workspaces/${workSpaceId}/dashboard` },
+  { label: "Лиды", to: `/workspaces/${workSpaceId}/dashboard/leads` },
+  { label: "Воронка", to: `/workspaces/${workSpaceId}/dashboard/pipeline` },
+  { label: "Мониторинг", to: `/workspaces/${workSpaceId}/dashboard/monitoring` },
+  { label: "Задачи", to: `/workspaces/${workSpaceId}/dashboard/tasks` },
+  { label: "Настройки", to: `/workspaces/${workSpaceId}/dashboard/settings` },
+]);
 
 const userEmail = "test@gmail.com";
 
 const isActive = (to: string) => {
-  if (to === "/dashboard") {
-    return route.path === "/dashboard";
+  if (to === `/workspaces/${workSpaceId}/dashboard`) {
+    return route.path === `/workspaces/${workSpaceId}/dashboard`;
   }
-
   return route.path.startsWith(to);
 };
 </script>
@@ -38,19 +39,12 @@ const isActive = (to: string) => {
       </NuxtLink>
     </nav>
 
-    <button
-      class="dashboard-header__profile"
-      type="button"
-      aria-label="User profile"
-    >
-      <span class="dashboard-header__email">{{ userEmail }}</span>
-      <Icon
-        name="my-icon-profile"
-        mode="svg"
-        size="18"
-        class="dashboard-header__profile-icon"
-      />
-    </button>
+
+    <div class="dashboard-header__profile">
+      <client-only>
+        <app-header-profile />
+      </client-only>
+    </div>
   </header>
 </template>
 
@@ -130,13 +124,6 @@ const isActive = (to: string) => {
 
 .dashboard-header__profile {
   margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px 6px 16px;
-  border: 0;
-  border-radius: 100px;
-  background: var(--color-highlight-l);
   cursor: pointer;
 }
 

@@ -6,6 +6,8 @@ const controller = useWorkspaceMakeFlow();
 const {user} = storeToRefs(useAuthStore());
 const {signOut} = useAuthStore();
 const {$apiClient} = useNuxtApp();
+const workspaceStore = useWorkspaceStore();
+const router = useRouter();
 
 const {data: tenats, error} = useAsyncData(() => $apiClient.api.listMyTenantsApiV1TenantsGet(), {lazy: true});
 
@@ -29,9 +31,12 @@ const configs = computed<ProfileListConfig>(() => {
       type: 'nested',
       full: true,
       items: [...(tenats.value?.data.result.map((tenat): ProfileListItem => ({
-        type: 'link',
+        type: 'action',
         title: tenat.name,
-        to: `#`
+        action: () => {
+          workspaceStore.setCurrentWorkspace(tenat.id);
+          router.push(`/workspaces/${tenat.id}/dashboard/leads`);
+        }
       })) ?? []), {
         title: 'Создать',
         description: 'Добавить новое рабочее пространство',

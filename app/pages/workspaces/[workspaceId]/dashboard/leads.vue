@@ -12,18 +12,23 @@ definePageMeta({
   layout: "dashboard",
 });
 
+const route = useRoute();
+const workspaceId = route.params.workspaceId as string;
+
+const workspaceStore = useWorkspaceStore();
+workspaceStore.setCurrentWorkspace(workspaceId);
+
+const leadsStore = useLeadsStore();
+const cardsListRef = ref<InstanceType<typeof DashboardLeadsCardsList>>();
+
 const leadsMock = leadsMockJson as {
-  dropdownOptions: DropdownOption[];
   productFilters: FilterOption[];
   pointTypeFilters: FilterOption[];
   requiredFilters: FilterOption[];
-  leads: Lead[];
 };
 
 const cloneFilters = (filters: FilterOption[]) =>
   filters.map((filter) => ({ ...filter }));
-
-const dropdownOptions: DropdownOption[] = leadsMock.dropdownOptions;
 
 const selectedCity = ref<string | null>(null);
 const searchQuery = ref("");
@@ -31,45 +36,62 @@ const searchQuery = ref("");
 const productFilters = ref<FilterOption[]>(
   cloneFilters(leadsMock.productFilters),
 );
-
 const pointTypeFilters = ref<FilterOption[]>(
   cloneFilters(leadsMock.pointTypeFilters),
 );
-
 const requiredFilters = ref<FilterOption[]>(
   cloneFilters(leadsMock.requiredFilters),
 );
 
-const leads = ref<Lead[]>(leadsMock.leads);
-const visibleLeadsCount = ref(5);
+// Only show leads with "Новый" status
+const newLeads = computed<Lead[]>(() => 
+  leadsStore.leads.filter((lead) => lead.openStatus === 'Новый')
+);
 
-const filteredLeads = computed(() => {
+const dropdownOptions = computed<DropdownOption[]>(() => {
+  const cities = [...new Set(newLeads.value.map((l) => l.locationShort).filter(Boolean))];
+  return [
+    { label: "Все города", value: "" },
+    ...cities.map((c) => ({ label: c, value: c })),
+  ];
+});
+
+const filteredLeads = computed<Lead[]>(() => {
   const query = searchQuery.value.trim().toLowerCase();
+  const city = selectedCity.value;
 
-  const filtered = query
-    ? leads.value.filter((lead) => {
-        return [lead.title, lead.address, lead.phone].some((field) =>
-          field.toLowerCase().includes(query),
-        );
-      })
-    : leads.value;
-
-  return filtered.slice(0, visibleLeadsCount.value);
+  return newLeads.value.filter((lead) => {
+    const matchesCity = !city || lead.locationShort === city;
+    const matchesQuery =
+      !query ||
+      [lead.title, lead.address, lead.phone].some((f) =>
+        f.toLowerCase().includes(query),
+      );
+    return matchesCity && matchesQuery;
+  });
 });
 
 const selectedLead = computed(() => filteredLeads.value[0] ?? null);
 
-const postponeLead = (_leadTitle: string) => {
-  // TODO: replace with business action when API endpoint is ready.
+const handlePostpone = async (leadId: string) => {
+  const success = await leadsStore.postponeLead(leadId, workspaceId);
+  if (!success) {
+    cardsListRef.value?.triggerShake(leadId);
+  }
+  // On success, lead will automatically disappear from the list
 };
 
-const takeLead = (_leadTitle: string) => {
-  // TODO: replace with business action when API endpoint is ready.
+const handleTake = async (leadId: string) => {
+  const success = await leadsStore.takeLead(leadId, workspaceId);
+  if (!success) {
+    cardsListRef.value?.triggerShake(leadId);
+  }
+  // On success, lead will automatically disappear from the list
 };
 
-const showMoreLeads = () => {
-  visibleLeadsCount.value += 3;
-};
+onMounted(() => {
+  leadsStore.fetchLeads(workspaceId);
+});
 </script>
 
 <template>
@@ -89,10 +111,11 @@ const showMoreLeads = () => {
 
       <div class="leads-page__main-grid">
         <DashboardLeadsCardsList
+          ref="cardsListRef"
           :leads="filteredLeads"
-          @postpone="postponeLead"
-          @take="takeLead"
-          @show-more="showMoreLeads"
+          @postpone="handlePostpone"
+          @take="handleTake"
+          @show-more="leadsStore.fetchMore"
         />
 
         <DashboardLeadsInfo :lead="selectedLead" />
