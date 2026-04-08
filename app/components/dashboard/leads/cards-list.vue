@@ -62,6 +62,7 @@ defineExpose({
 
 <style scoped>
 .leads-cards-list {
+  z-index: -1;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -93,9 +94,7 @@ defineExpose({
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.lead-card-leave-active {
-  transition: all 0.4s ease-out;
-}
+
 
 .lead-card-enter-from {
   opacity: 0;
