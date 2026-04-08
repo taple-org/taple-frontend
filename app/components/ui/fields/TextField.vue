@@ -3,21 +3,19 @@ import { Field } from "@ark-ui/vue"
 
 defineProps<{
   type: "text" | "email" | "password"
-  modelValue: string
   disabled?: boolean
   placeholder?: string
 }>()
 
-defineEmits<{ "update:modelValue": [value: string] }>()
+const modalValue = defineModel<string>()
 </script>
 
 <template>
   <Field.Input
     class="field-input"
     :type="type"
-    :value="modelValue"
     :placeholder="placeholder"
-    @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+    v-model="modalValue"
   />
 </template>
 
@@ -32,6 +30,11 @@ defineEmits<{ "update:modelValue": [value: string] }>()
   transition:
     border-color var(--transition-base),
     box-shadow var(--transition-base);
+
+  color: var(--color-neutral-dd);
+}
+.field-input::placeholder {
+  color: var(--color-neutral-dl);
 }
 
 .field-input:focus {

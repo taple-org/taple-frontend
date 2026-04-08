@@ -1,3 +1,3 @@
-import { FontsLinks } from "~/constants/fonts.constants";
+import fontsConfig from "~/configs/fonts.config";
 
-export const useFontsLoader = () => useHead({ link: FontsLinks })
+export const useFontsLoader = () => useHead(fontsConfig);

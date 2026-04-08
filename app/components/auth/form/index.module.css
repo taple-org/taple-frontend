@@ -1,0 +1,16 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 400px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.formText{
+    font-family: var(--font-base), sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    text-align: center;
+    color: var(--color-neutral-dd);
+}

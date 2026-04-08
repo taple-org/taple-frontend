@@ -17,8 +17,12 @@ logs
 .DS_Store
 .fleet
 .idea
+.history
 
 # Local env files
 .env
 .env.*
 !.env.example
+
+#Generated code
+app/api

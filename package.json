@@ -7,12 +7,19 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "generate:api": "swagger-typescript-api generate -p openapi.json -o ./app/api/generated -n api.ts --fetch"
   },
   "dependencies": {
     "@ark-ui/vue": "^5.34.0",
+    "@formkit/drag-and-drop": "^0.5.3",
+    "@nuxt/icon": "2.2.1",
     "@pinia/nuxt": "^0.11.3",
-    "lucide-vue-next": "^0.575.0",
+    "@regle/core": "^1.20.4",
+    "@regle/nuxt": "1.20.1",
+    "@regle/rules": "^1.20.4",
+    "@regle/schemas": "^1.20.1",
     "nuxt": "^4.3.1",
     "pinia": "^3.0.4",
     "vue": "^3.5.28",
@@ -28,8 +35,19 @@
     "onlyBuiltDependencies": [
       "@parcel/watcher",
       "esbuild",
-      "vue-demi"
+      "unrs-resolver"
     ]
   },
-  "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef"
+  "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef",
+  "devDependencies": {
+    "@nuxt/eslint": "^1.15.2",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
+    "eslint": "^9.20.0",
+    "eslint-plugin-no-unsanitized": "^4.1.5",
+    "eslint-plugin-security": "^4.0.0",
+    "swagger-typescript-api": "^13.6.3",
+    "typescript": "^5.9.3",
+    "vue-eslint-parser": "^10.4.0"
+  }
 }
