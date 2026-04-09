@@ -4,6 +4,7 @@ import type { Lead } from "./types";
 defineProps<{
   lead: Lead | null;
 }>();
+
 </script>
 
 <template>
@@ -13,7 +14,7 @@ defineProps<{
       <p class="leads-info__subtitle">{{ lead.subtitle }}</p>
     </header>
 
-    <section class="leads-info__section">
+    <section v-if="lead.contacts?.length || lead.email"  class="leads-info__section">
       <h4 class="leads-info__label">Контакты</h4>
 
       <ul class="leads-info__contacts">
@@ -33,14 +34,14 @@ defineProps<{
       </ul>
     </section>
 
-    <section class="leads-info__section">
+    <section v-if="lead.address" class="leads-info__section">
       <div class="leads-info__row">
         <h4 class="leads-info__label">Локация</h4>
         <a class="leads-info__map-link" href="#" @click.prevent
           >Открыть в 2GIS</a
         >
       </div>
-      <p class="leads-info__text">{{ lead.locationShort }}</p>
+      <p class="leads-info__text">{{ lead.address }}</p>
     </section>
 
     <section class="leads-info__section">
@@ -52,7 +53,7 @@ defineProps<{
       </ul>
     </section>
 
-    <section class="leads-info__section">
+    <section v-if="lead.reasons?.length" class="leads-info__section">
       <h4 class="leads-info__label">Почему высокий лид</h4>
       <ul class="leads-info__list leads-info__list--bulleted">
         <li v-for="reason in lead.reasons" :key="reason">
@@ -74,7 +75,8 @@ defineProps<{
 
 <style scoped>
 .leads-info {
-  height: 100%;
+  min-height:360px;
+  height:fit-content;
   padding: 8px 16px;
   border-radius: 16px;
   background: var(--color-neutral-ll);

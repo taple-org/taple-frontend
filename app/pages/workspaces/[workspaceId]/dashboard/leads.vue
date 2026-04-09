@@ -70,8 +70,15 @@ const filteredLeads = computed<Lead[]>(() => {
     return matchesCity && matchesQuery;
   });
 });
+const hoveredLeadId = ref<string | null>(null);
 
-const selectedLead = computed(() => filteredLeads.value[0] ?? null);
+const selectedLead = computed(() => {
+  if (hoveredLeadId.value) {
+    return filteredLeads.value.find(l => l.id === hoveredLeadId.value) ?? filteredLeads.value[0] ?? null;
+  }
+  return filteredLeads.value[0] ?? null;
+});
+
 
 const handlePostpone = async (leadId: string) => {
   const success = await leadsStore.postponeLead(leadId, workspaceId);
@@ -92,6 +99,8 @@ const handleTake = async (leadId: string) => {
 onMounted(() => {
   leadsStore.fetchLeads(workspaceId);
 });
+console.log(selectedLead)
+
 </script>
 
 <template>
@@ -116,6 +125,7 @@ onMounted(() => {
           @postpone="handlePostpone"
           @take="handleTake"
           @show-more="leadsStore.fetchMore"
+          @hover="hoveredLeadId = $event"
         />
 
         <DashboardLeadsInfo :lead="selectedLead" />

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import DashboardLeadCard from "../lead-card.vue";
+import DashboardLeadCard from "./lead-card.vue";
 import type { Lead } from "./types";
 
 defineProps<{
@@ -10,9 +10,12 @@ const emit = defineEmits<{
   postpone: [leadId: string];
   take: [leadId: string];
   showMore: [];
+  hover: [leadId: string];
 }>();
 
-const cardRefs = ref<Record<string, InstanceType<typeof DashboardLeadCard>>>({});
+const cardRefs = ref<Record<string, InstanceType<typeof DashboardLeadCard>>>(
+  {},
+);
 
 const setCardRef = (leadId: string, el: any) => {
   if (el) {
@@ -31,7 +34,11 @@ defineExpose({
 
 <template>
   <section class="leads-cards-list" aria-label="Список лидов">
-    <TransitionGroup name="lead-card" tag="div" class="leads-cards-list__container">
+    <TransitionGroup
+      name="lead-card"
+      tag="div"
+      class="leads-cards-list__container"
+    >
       <DashboardLeadCard
         v-for="lead in leads"
         :key="lead.id"
@@ -46,6 +53,7 @@ defineExpose({
         :open-status="lead.openStatus"
         @postpone="emit('postpone', $event)"
         @take="emit('take', $event)"
+        @hover="emit('hover', $event)"
       />
     </TransitionGroup>
 
@@ -94,8 +102,6 @@ defineExpose({
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-
-
 .lead-card-enter-from {
   opacity: 0;
   transform: translateY(-20px);
@@ -131,7 +137,6 @@ defineExpose({
 }
 </style>
 
-
 <style scoped>
 .leads-cards-list {
   display: flex;
@@ -165,10 +170,6 @@ defineExpose({
 }
 
 @media (max-width: 700px) {
-  .leads-cards-list {
-    max-width: 100%;
-  }
-
   .leads-cards-list :deep(.lead-card) {
     max-width: 100%;
   }

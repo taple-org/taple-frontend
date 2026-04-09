@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import LeadCardActions from "./lead-card/actions.vue";
-import LeadCardDetails from "./lead-card/details.vue";
-import LeadCardHead from "./lead-card/head.vue";
-import LeadCardTags from "./lead-card/tags.vue";
+import LeadCardActions from "../lead-card/actions.vue";
+import LeadCardDetails from "../lead-card/details.vue";
+import LeadCardHead from "../lead-card/head.vue";
+import LeadCardTags from "../lead-card/tags.vue";
 
 type LeadCardProps = {
   score: number;
@@ -21,6 +21,7 @@ const props = defineProps<LeadCardProps>();
 const emit = defineEmits<{
   postpone: [leadId: string];
   take: [leadId: string];
+  hover: [leadId: string];
 }>();
 
 const isLoading = ref(false);
@@ -52,7 +53,7 @@ defineExpose({
 </script>
 
 <template>
-  <article class="lead-card" :class="{ 'lead-card--shake': shouldShake }" aria-label="Lead card">
+  <article class="lead-card" :class="{ 'lead-card--shake': shouldShake }" aria-label="Lead card" @mouseenter="emit('hover', leadId)">
     <LeadCardHead
       :score="score"
       :title="title"
@@ -86,10 +87,15 @@ defineExpose({
   padding: 8px 16px;
   background: var(--color-neutral-ll);
   border-radius: 16px;
+  transition: box-shadow 0.3s ease;
 }
 
 .lead-card--shake {
   animation: shake 0.5s ease-in-out;
+}
+.lead-card:hover{
+  cursor: pointer;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes shake {
