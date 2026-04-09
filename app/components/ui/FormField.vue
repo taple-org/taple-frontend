@@ -3,8 +3,16 @@ import { Field } from '@ark-ui/vue/field'
 import { fieldRegistry, type SelectOption } from './fields/registry'
 
 
-type TextProps = { type: 'text' | 'email'; modelValue: string; placeholder?: string }
-type PasswordProps = { type: 'password'; modelValue: string; placeholder?: string }
+type TextProps = {
+  type: 'text' | 'email'; modelValue: string; placeholder?: string
+  iconLeft?: string
+  iconRight?: string
+}
+type PasswordProps = {
+  type: 'password'; modelValue: string; placeholder?: string
+  iconLeft?: string
+  iconRight?: string
+}
 type CheckboxProps = { type: 'checkbox'; modelValue: boolean }
 type SelectProps = { type: 'select'; modelValue: string; options?: SelectOption[]; placeholder?: string }
 

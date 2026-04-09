@@ -62,7 +62,7 @@ const selectedValue = computed<string[]>({
         />
 
         <Select.Indicator class="dropdown__indicator" aria-hidden="true">
-          <Icon name="other-arrow-down" mode="svg" :size="16" />
+          <Icon name="my-icon-arrow-down" mode="svg" :size="16" />
         </Select.Indicator>
       </Select.Control>
     </Select.Trigger>

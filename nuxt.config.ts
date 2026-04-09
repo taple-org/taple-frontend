@@ -10,7 +10,6 @@ export default defineNuxtConfig({
   },
   modules: ["@pinia/nuxt", "@regle/nuxt", "@nuxt/icon", "@nuxt/eslint"],
 
-
   eslint: {
     config: {
       standalone: false,
@@ -44,7 +43,8 @@ export default defineNuxtConfig({
         "@ark-ui/vue/password-input",
         '@formkit/drag-and-drop/vue',
         '@formkit/drag-and-drop',
-        '@ark-ui/vue/progress'
+        '@ark-ui/vue/progress',
+        '@ark-ui/vue/toggle-group'
       ],
     },
   },

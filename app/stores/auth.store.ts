@@ -10,12 +10,16 @@ export const useAuthStore = defineStore('auth', () => {
     const user = ref<AuthUser | null>(null)
     const isLoading = ref(false)
     const error = ref<string | null>(null)
+    const isHydrated = ref<boolean>(false)
 
     const pendingEmail = ref<string>('')
     const otpType = ref<'signup' | 'recovery' | null>(null)
     const resetToken = ref<string>('')
 
     const isAuthenticated = computed(() => !!user.value)
+    function hydrated(){
+        isHydrated.value = true;
+    }
 
     function setAuth(authUser: AuthUser | null, accessToken?: string) {
         user.value = authUser
@@ -209,6 +213,8 @@ export const useAuthStore = defineStore('auth', () => {
         otpType,
 
         isAuthenticated,
+        isHydrated,
+        hydrated,
 
         setPendingEmail,
         resetPendingEmail,
