@@ -3,8 +3,10 @@ import config, { type Keys } from "~/configs/workspace.modal.config";
 import { useWorkspaceForm } from "./useWorkspaceFormScope";
 
 type WorkspaceMakeFlowStatus = "idle" | "loading" | "success" | "error";
-
-export const useWorkspaceMakeFlow = defineStore("workspace-make-flow", () => {
+interface UseWorkspaceMakeFlowProps {
+  handleResolve?: () => void | Promise<void>;
+}
+export const useWorkspaceMakeFlow = defineStore("workspace-make-flow", ({}) => {
   const isOpen = ref(false);
   const status = ref<WorkspaceMakeFlowStatus>("idle");
 
@@ -12,7 +14,7 @@ export const useWorkspaceMakeFlow = defineStore("workspace-make-flow", () => {
   const steps = useSteps({ count: items.length });
   const currentKey = computed(() => items[steps.value.value]?.[0]! as Keys);
   const current = computed(() => config[currentKey.value]);
-
+  const onResolve = ref<(() => void) | null>(null);
   const { toNext, handleSubmit } = useWorkspaceForm({
     current: currentKey,
     next: steps.value.goToNextStep,
@@ -24,7 +26,7 @@ export const useWorkspaceMakeFlow = defineStore("workspace-make-flow", () => {
     },
     resolve: () => {
       status.value = 'success'
-      
+      onResolve.value && onResolve.value()
     }
   });
 
@@ -37,8 +39,9 @@ export const useWorkspaceMakeFlow = defineStore("workspace-make-flow", () => {
     }
   });
 
-  function open() {
+  function open(props? : UseWorkspaceMakeFlowProps) {
     isOpen.value = true;
+    onResolve.value = props?.handleResolve ?? null
   }
   function close() {
     isOpen.value = false;

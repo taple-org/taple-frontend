@@ -43,11 +43,11 @@ function handleValueChange(details: { value: string[] }) {
 
     <Select.Positioner>
       <Select.Content class="select__content">
-        <Select.Item v-for="option in options" :key="option.value" :item="option" class="select__item">
-          <Select.ItemText class="select__item-text">
-            {{ option.label }}
-          </Select.ItemText>
-        </Select.Item>
+          <Select.Item v-for="option in options" :key="option.value" :item="option" class="select__item">
+            <Select.ItemText class="select__item-text">
+              {{ option.label }}
+            </Select.ItemText>
+          </Select.Item>
       </Select.Content>
     </Select.Positioner>
   </Select.Root>
@@ -64,13 +64,14 @@ function handleValueChange(details: { value: string[] }) {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  font-family: var(--font-base);
+  min-width: 140px;
+  font-family: var(--font-base), sans-serif;
   font-size: 14px;
   padding: 16px;
   border: 1px solid var(--color-neutral-lm);
   border-radius: var(--radius-md);
-  background-color: var(--color-secondary);
-  color: var(--color-neutral-dd);
+  background-color: var(--color-neutral-ll);
+  color: var(--color-neutral-dl);
   cursor: pointer;
   outline: none;
   transition:
@@ -104,13 +105,13 @@ function handleValueChange(details: { value: string[] }) {
 }
 
 .select__value[data-placeholder-shown] {
-  color: var(--color-neutral-dl);
+  color: var(--color-neutral-dd);
 }
 
 .select__indicator {
   display: flex;
   align-items: center;
-  color: var(--color-neutral-ld);
+  color: var(--color-neutral-dd);
   transition: transform var(--transition-base);
   flex-shrink: 0;
 }
@@ -125,7 +126,7 @@ function handleValueChange(details: { value: string[] }) {
   padding: 12px;
   border-radius: var(--radius-md);
   box-shadow: 0 4px 16px color-mix(in srgb, var(--color-neutral-dd) 10%, transparent);
-  min-width: var(--reference-width);
+  min-width: 140px;
   z-index: 50;
   outline: none;
 }
@@ -164,12 +165,13 @@ function handleValueChange(details: { value: string[] }) {
 
 .select__item {
   display: flex;
+  text-align: center;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
   border-radius: calc(var(--radius-md) - 2px);
   cursor: pointer;
-  font-family: var(--font-base);
+  font-family: var(--font-base), sans-serif;
   font-size: 14px;
   color: var(--color-neutral-dd);
   font-style: normal;
@@ -179,11 +181,10 @@ function handleValueChange(details: { value: string[] }) {
   outline: none;
   transition: background-color var(--transition-base);
 
-  margin-bottom: 8px;
 }
 
 .select__item[data-highlighted] {
-  background-color: var(--color-neutral-lm);
+  background-color: var(--color-neutral-ll);
 }
 
 .select__item[data-state='checked'] {

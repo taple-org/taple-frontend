@@ -55,7 +55,7 @@ defineExpose({
       @click="emit('showMore')"
     >
       Показать еще
-      <Icon name="other-arrow-down" mode="svg" :size="10" />
+      <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
     </button>
   </section>
 </template>
