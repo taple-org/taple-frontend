@@ -1,18 +1,26 @@
 <script lang="ts" setup>
-import { useQueuingScope, type ProductTrack, type WithLabel } from '~/composables/workspace/useWorkspaceFormScope';
+import {
+  useQueuingScope,
+  type WithLabel,
+  type ProductTrackWithCategories
+} from '~/composables/workspace/useWorkspaceFormScope';
+import {RecommendationCode} from "~/api/generated/api";
+
 const { $apiClient } = useNuxtApp();
-const { data: products, error } = useAsyncData(() => $apiClient.api.listAllApiV1CatalogProductTracksGet())
 
-const productTracks = computed<WithLabel<ProductTrack>[]>(() => {
-    if (!products.value?.data) return [];
+const { data: pts, error } = useAsyncData(() => $apiClient.api.listProductTracksApiV1CatalogProductTracksGet())
 
-    return [
-        ...products.value.data.result.map((pt, index) => ({
-            id: pt.id,
-            label: pt.name_ru,
-            priority_order: index,
-        }))
-    ]
+const productTracks = computed<WithLabel<ProductTrackWithCategories>[]>(() => {
+  if(!pts.value?.data) return [];
+  return pts.value.data.result.map((pt, index) => ({
+        id: pt.id,
+        label: pt.name_ru,
+        priority_order: index,
+        business_categories: (pt.business_categories ?? [])
+            .filter((v) => v.recommendation_code === RecommendationCode.Recommended)
+            .map((category) => ({ label: category.name_ru, id: category.id }))
+      })
+  )
 })
 
 

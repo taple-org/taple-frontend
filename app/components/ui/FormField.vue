@@ -15,6 +15,12 @@ type PasswordProps = {
 }
 type CheckboxProps = { type: 'checkbox'; modelValue: boolean }
 type SelectProps = { type: 'select'; modelValue: string; options?: SelectOption[]; placeholder?: string }
+type MultiSelectProps = {
+  type: 'multi-select'
+  modelValue: string[]
+  options?: SelectOption[]
+  placeholder?: string
+}
 
 export type FieldWrapperProps = {
   label?: string
@@ -24,7 +30,7 @@ export type FieldWrapperProps = {
   required?: boolean
 }
 
-type FieldProps = (TextProps | PasswordProps | CheckboxProps | SelectProps) & FieldWrapperProps
+type FieldProps = (TextProps | PasswordProps | CheckboxProps | SelectProps | MultiSelectProps) & FieldWrapperProps
 
 const props = defineProps<FieldProps>()
 const emit = defineEmits<{ 'update:modelValue': [value: string | number | boolean] }>()

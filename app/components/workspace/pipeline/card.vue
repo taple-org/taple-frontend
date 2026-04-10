@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import type { PipelineCardItem } from '~/api/generated/api';
+import type { PipelineCardItem, TaskBadge } from '~/api/generated/api';
 
 const { card } = defineProps<{
     card: PipelineCardItem
 }>()
 const data = computed(() => new Date(card.created_at).toLocaleDateString('ru-RU'))
 const tags = ['Торговый экваринг', 'Какой-то тег']
+
 </script>
 <template>
     <article class="card pipeline-card">
@@ -21,7 +22,7 @@ const tags = ['Торговый экваринг', 'Какой-то тег']
         <div class="card__right">
             <div class="data">{{ data }}</div>
             <div v-if="card.task_badge">{{ card.task_badge }}</div>
-            <div v-else class="task-badge task-badge__warning">нет задач</div>
+            <workspace-pipeline-card-task-badge variant="warning">нет задач</workspace-pipeline-card-task-badge>
 
         </div>
     </article>
@@ -38,7 +39,7 @@ const tags = ['Торговый экваринг', 'Какой-то тег']
 }
 
 .title {
-    color: var(---color-neutral-dd, #1F2024);
+    color: var(--color-neutral-dd, #1F2024);
     font-size: 14px;
     font-style: normal;
     font-weight: 700;
@@ -47,7 +48,7 @@ const tags = ['Торговый экваринг', 'Какой-то тег']
 }
 
 .category {
-    color: var(---color-neutral-dl, #71727A);
+    color: var(--color-neutral-dl, #71727A);
     font-size: 10px;
     font-style: normal;
     font-weight: 400;
@@ -57,7 +58,7 @@ const tags = ['Торговый экваринг', 'Какой-то тег']
 }
 
 .data {
-    color: var(---color-neutral-dl, #71727A);
+    color: var(--color-neutral-dl, #71727A);
     text-align: right;
     font-size: 8px;
     font-style: normal;
@@ -72,10 +73,6 @@ const tags = ['Торговый экваринг', 'Какой-то тег']
     font-style: normal;
     font-weight: 400;
     line-height: normal;
-}
-
-.task-badge__warning {
-    color: var(--Support-Warning-Medium, #FFB37C);
 }
 
 .card__right,

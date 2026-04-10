@@ -5,11 +5,11 @@ export default defineNuxtPlugin({
     name: 'api',
     setup: (nuxtApp) => {
         const backendKey = nuxtApp.$config.public.backendKey;
+        const apiBase = nuxtApp.$config.public.apiBase;
+
         const apiClient = new Api({
             baseUrl: nuxtApp.$config.public.apiBase,
-            customFetch: (input, init) => buildFetcher(input, 
-                {...init, headers: { ...init?.headers, "X-Backend-Key": backendKey } }
-            )
+            customFetch: buildFetcher(apiBase, backendKey)
         })
 
         return { provide: { apiClient } };

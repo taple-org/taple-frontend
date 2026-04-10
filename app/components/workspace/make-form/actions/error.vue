@@ -14,3 +14,10 @@ defineProps<{
         </ui-button>
     </div>
 </template>
+<style>
+.actions{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+</style>

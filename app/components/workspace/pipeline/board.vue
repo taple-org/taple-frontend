@@ -4,8 +4,10 @@ const { columns } = defineProps<{
   columns: StageColumn[];
 }>()
 const { $apiClient } = useNuxtApp()
-const handleMove = (cardId: string, fromStage: TenantLeadStage, toStage: TenantLeadStage) => {
-  $apiClient.api.moveLeadApiV1LeadsTenantLeadIdMovePost(cardId, { tenant_id: cardId }, { to_stage: toStage })
+const workspaceId = inject('workspaceId') as string
+
+const handleMove = (cardId: string, from: TenantLeadStage, to: TenantLeadStage) => {
+  $apiClient.api.moveLeadApiV1LeadsTenantLeadIdMovePost(cardId, { tenant_id: workspaceId }, { to_stage: to })
 }
 
 </script>

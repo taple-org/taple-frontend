@@ -1,25 +1,33 @@
 <script lang="ts" setup>
 import type { StageColumn, TenantLeadStage, PipelineCardItem } from '~/api/generated/api';
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue';
+import { dropOrSwap, animations } from '@formkit/drag-and-drop';
 
 const emit = defineEmits<{ move: [cardId: string, fromStage: TenantLeadStage, toStage: TenantLeadStage] }>()
 const { column } = defineProps<{
     column: StageColumn
 }>()
-
+const isOver = ref(false)
 
 const [columnRef, cards] = useDragAndDrop<PipelineCardItem>(column.cards, {
-    group: 'pipeline',
-    sortable: true,
-    draggable: (el) => el.classList.contains('pipeline-card'),
-    onTransfer(dragState) {
-        const movedCard = dragState.draggedNodes[0]?.data as unknown as PipelineCardItem;
-        const toStage = dragState.targetParent.el.dataset.stage as unknown as TenantLeadStage;
-
-        emit('move', movedCard.tenant_lead_id, column.stage_code, toStage);
-    },
+  group: 'pipeline',
+  sortable: true,
+  plugins: [dropOrSwap(), animations()],
+  draggable: (el) => el.classList.contains('pipeline-card'),
+  onTransfer(dragState) {
+    isOver.value = false
+    const movedCard = dragState.draggedNodes[0]?.data.value as PipelineCardItem;
+    const toStage = dragState.targetParent.el.dataset.stage as unknown as TenantLeadStage;
+    emit('move', movedCard.tenant_lead_id, column.stage_code, toStage);
+  },
 })
-
+const handleDragLeave = (e: DragEvent) => {
+  if (columnRef.value?.contains(e.relatedTarget as Node)) return
+  isOver.value = false
+}
+watch(() => column.cards, (newCards) => {
+  cards.value = [...newCards]
+}, { deep: true })
 
 
 </script>
@@ -32,13 +40,23 @@ const [columnRef, cards] = useDragAndDrop<PipelineCardItem>(column.cards, {
             </div>
             <ui-separator :thickness="5" color="#00C3D0" class="separator" />
         </header>
-        <div ref="columnRef" class="cards" :data-stage="column.stage_code">
+        <div ref="columnRef"
+             class="cards"
+             :class="{ 'cards--over': isOver }"
+             :data-stage="column.stage_code"
+             @dragover.prevent="isOver = true"
+             @dragleave="handleDragLeave"
+             @drop="isOver = false"
+        >
             <workspace-pipeline-card v-for="card in cards" :key="card.tenant_lead_id" :card />
         </div>
     </article>
 </template>
 
 <style lang="css" scoped>
+.column {
+    height: 100%;
+}
 .header {
     display: flex;
     margin-bottom: 5px;
@@ -82,9 +100,28 @@ const [columnRef, cards] = useDragAndDrop<PipelineCardItem>(column.cards, {
 }
 
 .cards {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.cards--over {
+  border: 3px solid var(--color-primary);
+  border-radius: 14px;
+
+}
+</style>
+<style lang="css">
+.sortable-ghost {
+  opacity: 0.4;
+  border: 2px dashed #00C3D0;
+  border-radius: 16px;
+}
+.sortable-drag {
+  opacity: 0.9;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: rotate(2deg);
 }
 </style>

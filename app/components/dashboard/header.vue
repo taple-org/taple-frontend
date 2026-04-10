@@ -54,7 +54,6 @@ const isActive = (to: string) => {
       </client-only>
     </div>
   </header>
-  <auth-modal />
 </template>
 
 <style scoped>

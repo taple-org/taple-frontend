@@ -52,31 +52,32 @@ const configs = computed<ProfileListConfig>(() => {
 
 </script>
 <template>
-    <ui-popover class="profile" placement="bottom" :offset="{ mainAxis: 36 }">
-        <template #trigger>
-            <ui-badge class="">
-              {{ user?.email }}
-            </ui-badge>
-        </template>
-        <template #default>
-            <section class="profile__content">
-                <ul class="profile__list">
-                    <template v-for="element in configs" :key="element.title">
-                        <li :class="{ 'profile__list-item--full': element.full }">
-                            <app-header-profile-list-link-item v-if="element.type === 'link'" v-bind="element" />
-                            <app-header-profile-list-nested-item v-else-if="element.type === 'nested'"
-                                v-bind="element" />
-                            <app-header-profile-list-action-item v-else-if="element.type === 'action'"
-                                v-bind="element" />
-                        </li>
-                    </template>
-                </ul>
-                <ui-button class="profile__logout" variant="error" @click="signOut">
-                    Выйти
-                </ui-button>
-            </section>
-        </template>
-    </ui-popover>
+  <ui-popover class="profile" placement="bottom" :offset="{ mainAxis: 36 }">
+    <template #trigger>
+      <ui-badge class="">
+        {{ user?.email }}
+      </ui-badge>
+    </template>
+    <template #default>
+      <section class="profile__content">
+        <ul class="profile__list">
+          <template v-for="element in configs" :key="element.title">
+            <li :class="{ 'profile__list-item--full': element.full }">
+              <app-header-profile-list-link-item v-if="element.type === 'link'" v-bind="element"/>
+              <app-header-profile-list-nested-item v-else-if="element.type === 'nested'"
+                                                   v-bind="element"/>
+              <app-header-profile-list-action-item v-else-if="element.type === 'action'"
+                                                   v-bind="element"/>
+            </li>
+          </template>
+        </ul>
+        <ui-button class="profile__logout" variant="error" @click="signOut">
+          Выйти
+        </ui-button>
+      </section>
+      <workspace-make-form-modal />
+    </template>
+  </ui-popover>
 </template>
 <style>
 .profile__content {
