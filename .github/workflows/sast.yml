@@ -123,13 +123,6 @@ jobs:
             exit 1
           fi
 
-      - name: Upload SARIF to GitHub Security
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: semgrep-results.sarif
-          category: semgrep
-
       - name: Upload Semgrep Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -244,8 +237,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: latest
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
