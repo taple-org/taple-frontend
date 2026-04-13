@@ -2,7 +2,7 @@ import { useSteps } from "@ark-ui/vue/steps";
 import config, { type Keys } from "~/configs/workspace.modal.config";
 import { useWorkspaceForm } from "./useWorkspaceFormScope";
 
-type WorkspaceMakeFlowStatus = "idle" | "loading" | "success" | "error";
+export type WorkspaceMakeFlowStatus = "idle" | "loading" | "success" | "error";
 interface UseWorkspaceMakeFlowProps {
   handleResolve?: () => void | Promise<void>;
 }

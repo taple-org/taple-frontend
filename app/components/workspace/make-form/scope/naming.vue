@@ -2,14 +2,14 @@
 import { useNamingScope } from '~/composables/workspace/useWorkspaceFormScope';
 
 const { r$ } = useNamingScope();
-const { $apiClient } = useNuxtApp();
-const { data: cities, error } = useAsyncData(() => $apiClient.api.listAllApiV1CatalogCitiesGet())
-const options = computed(() => {
-    if(!cities.value?.data) return [];
-    return [...cities.value.data.result.map((city) => ({ label: city.name_ru, value: city.id }))]
-})
+const { data: cities, error } = useAsyncData(
+    (nuxtApp) => nuxtApp.$apiClient.api.listAllApiV1CatalogCitiesGet()
+        .then(cs => cs.data.result)
+        .then(r => r.map((city) => ({ value: city.id, label: city.name_ru })))
+)
+const options = computed(() => cities.value ?? []);
 
-console.log(options.value)
+
 </script>
 <template>
     <div class="naming-scope">

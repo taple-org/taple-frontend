@@ -3,18 +3,11 @@ import { Field } from '@ark-ui/vue/field'
 import { fieldRegistry, type SelectOption } from './fields/registry'
 
 
-type TextProps = {
-  type: 'text' | 'email'; modelValue: string; placeholder?: string
-  iconLeft?: string
-  iconRight?: string
-}
-type PasswordProps = {
-  type: 'password'; modelValue: string; placeholder?: string
-  iconLeft?: string
-  iconRight?: string
-}
-type CheckboxProps = { type: 'checkbox'; modelValue: boolean }
-type SelectProps = { type: 'select'; modelValue: string; options?: SelectOption[]; placeholder?: string }
+type TextProps = { type: 'text' | 'email'; modelValue: string; iconLeft?: string; iconRight?: string; }
+type PasswordProps = { type: 'password'; modelValue: string; iconLeft?: string; iconRight?: string }
+type CheckboxProps = { type: 'checkbox'; modelValue: boolean; }
+type SelectProps = { type: 'select'; modelValue: string; options: SelectOption[]; }
+type MultiSelectProps = { type: 'multi-select'; modelValue: string[]; options: SelectOption[]; }
 
 export type FieldWrapperProps = {
   label?: string
@@ -22,9 +15,10 @@ export type FieldWrapperProps = {
   error?: string
   disabled?: boolean
   required?: boolean
+  placeholder?: string
 }
 
-type FieldProps = (TextProps | PasswordProps | CheckboxProps | SelectProps) & FieldWrapperProps
+type FieldProps = (TextProps | PasswordProps | CheckboxProps | SelectProps | MultiSelectProps) & FieldWrapperProps
 
 const props = defineProps<FieldProps>()
 const emit = defineEmits<{ 'update:modelValue': [value: string | number | boolean] }>()

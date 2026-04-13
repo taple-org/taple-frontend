@@ -20,12 +20,12 @@ const configs: Record<'idle' | 'success' | 'loading' | 'error', Component> = {
     <Steps.RootProvider :value="steps" class="steps">
       <Steps.Context v-slot="{
         hasPrevStep, value: current, count, percent,
-        goToPrevStep, goToNextStep
+        goToPrevStep
       }">
 
-        <WorkspaceMakeFormHeader :current :percent :steps="count" :title="items[current]?.[1]?.title!"
+        <workspace-make-form-header :current :percent :steps="count" :title="items[current]?.[1]?.title!"
           :description="current < count ? items[current]?.[1]?.description : undefined"
-          :has-previous="hasPrevStep && current < count" :prev="goToPrevStep" />
+          :has-previous="hasPrevStep && status === 'idle'" :prev="goToPrevStep" />
 
         <Steps.Content v-for="([key, modal], index) in items" :key="key" :index="index">
           <component :is="modal.component" />
@@ -35,25 +35,7 @@ const configs: Record<'idle' | 'success' | 'loading' | 'error', Component> = {
           <component :is="configs[status]" v-if="configs[status]" />
         </Steps.CompletedContent>
 
-        <ui-button v-if="current < count" @click="toNext">
-          Далее
-        </ui-button>
-
-        <template v-else>
-          <ui-button v-if="status === 'idle'" @click="handleSubmit">
-            Создать
-          </ui-button>
-
-          <ui-button v-else-if="status === 'loading'" disabled>
-            <ui-progress variant="circular" />
-          </ui-button>
-
-          <ui-button v-else-if="status === 'success'" @click="close">
-            Закрыть
-          </ui-button>
-
-          <WorkspaceMakeFormActionsError v-else-if="status === 'error'" :retry="handleSubmit" :prev="goToPrevStep"  />
-        </template>
+        <workspace-make-form-actions :canNext="current < count" :status :handleSubmit :toNext :toPrevious="goToPrevStep" :close />
 
       </Steps.Context>
     </Steps.RootProvider>

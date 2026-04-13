@@ -31,8 +31,7 @@ const {isAuthenticated} = storeToRefs(useAuthStore());
       </section>
     </ui-container>
   </header>
-  <auth-modal />
-  <WorkspaceMakeFormModal />
+  <auth-modal/>
 </template>
 
 <style scoped>

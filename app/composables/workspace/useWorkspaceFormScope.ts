@@ -1,6 +1,6 @@
-import { required, withMessage } from "@regle/rules";
-import { createScopedUseRegle } from "@regle/core";
-import type { TenantCreate, ResponseTenantRead } from "~/api/generated/api";
+import { required, withMessage,  } from "@regle/rules";
+import { createScopedUseRegle, type Maybe } from "@regle/core";
+import type { TenantCreate, ResponseTenantRead, ProductTrackItem } from "~/api/generated/api";
 
 export type WithLabel<T> = T & { label: string }
 export type WithId<T> = T & { id: string }
@@ -9,8 +9,10 @@ export type ProductTrack = {
     id: string;
     priority_order: number;
 }
+
+export type BusinessCategory = WithLabel<WithId<{}>>;
 export type ProductTrackWithCategories = ProductTrack & {
-  business_categories: WithLabel<WithId<{}>>[];
+  business_categories: BusinessCategory[];
 }
 
 
@@ -20,7 +22,7 @@ type NamingScopeState = {
 };
 
 type QueuingScopeState = {
-  productTracks: WithLabel<ProductTrack>[];
+  productTracks: WithLabel<ProductTrackWithCategories>[];
 };
 
 type TagingScopeState = {
@@ -55,16 +57,7 @@ export const useWorkspaceForm = ({ current, next, beforeSubmit, catchError, reso
 
     switch (toValue(current)){
         case 'queuing': {
-            scope.taging.$value.productTracks = 
-            scope.queuing.$value.productTracks.map(
-                (qpt, index) => 
-                    ({ ...(scope.taging.$value.productTracks
-                      .find(tpt => 
-                        tpt.id === qpt.id
-                      ) ?? { ...qpt, business_categories: [] } ),
-                      priority_order: index,
-                    })
-            )
+            scope.taging.$value.productTracks = scope.queuing.$value.productTracks
             break;
         }
     }
@@ -147,17 +140,33 @@ export const useQueuingScope = (initialValues: MaybeRef<QueuingScopeState>) => {
   return { r$ };
 };
 
-export const useTagingScope = (initialValues: TagingScopeState = { productTracks: [] }) => {
-  const state = reactive<TagingScopeState>(initialValues);
-  const { r$ } = useScopedRegle(
-    state,
-    {
-      productTracks: {
-        required: withMessage(required, "Это поле обязательно для заполнения"),
-      },
+const allTracksHaveCategories = createRule({
+    validator(value: Maybe<WithLabel<ProductTrackWithCategories>[]>) {
+        return (value ?? []).every(track => track.business_categories.length > 0);
     },
-    { id: "taging" },
-  );
+    message: "Необходимо выбрать хотя бы один тэг для каждого направления"
+});
 
-  return { r$ };
+
+export const useTagingScope = () => {
+    const state = reactive<TagingScopeState>({
+        productTracks: []
+    });
+    const {r$} = useScopedRegle(
+        state,
+        {
+            productTracks: {
+                required: withMessage(required, "Это поле обязательно для заполнения"),
+                allTracksHaveCategories
+            },
+        },
+        {id: "taging"},
+    );
+    const trackErrors = computed(() =>
+        state.productTracks.map(track =>
+            track.business_categories.length === 0 ? "Необходимо выбрать хотя бы один тэг" : undefined
+        )
+    );
+
+    return {r$, trackErrors};
 };
