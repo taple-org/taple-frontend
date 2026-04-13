@@ -25,8 +25,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: latest
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -45,7 +43,6 @@ jobs:
             --format json \
             --output-file eslint-report.json || true
 
-          # Check if there are errors
           ERRORS=$(cat eslint-report.json | jq '[.[] | .errorCount] | add // 0')
           WARNINGS=$(cat eslint-report.json | jq '[.[] | .warningCount] | add // 0')
 
@@ -58,7 +55,6 @@ jobs:
 
           if [ "$ERRORS" -gt 0 ] || [ "$WARNINGS" -gt 0 ]; then
             echo "ESLint found $ERRORS errors and $WARNINGS warnings"
-            # Pretty print issues
             cat eslint-report.json | jq -r '.[] | select(.errorCount > 0 or .warningCount > 0) | "\(.filePath):\n\(.messages[] | "  L\(.line): [\(.severity == 2 | if . then "ERROR" else "WARN" end)] \(.ruleId) - \(.message)")"'
             exit 1
           fi
@@ -91,24 +87,14 @@ jobs:
             --config p/typescript \
             --config .semgrep.yml \
             --severity WARNING \
-            --sarif \
-            --output semgrep-results.sarif \
+            --json \
+            --output semgrep-results.json \
             --error \
             . || true
 
       - name: Generate Summary
         if: always()
         run: |
-          semgrep scan \
-            --config p/owasp-top-ten \
-            --config p/javascript \
-            --config p/typescript \
-            --config .semgrep.yml \
-            --severity WARNING \
-            --json \
-            --output semgrep-results.json \
-            . || true
-
           FINDINGS=$(cat semgrep-results.json | python3 -c "
           import json, sys
           data = json.load(sys.stdin)
@@ -120,6 +106,17 @@ jobs:
           echo "- Total findings: $FINDINGS" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$FINDINGS" -gt 0 ]; then
+            cat semgrep-results.json | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for r in data.get('results', []):
+              path = r.get('path', '?')
+              line = r.get('start', {}).get('line', '?')
+              rule = r.get('check_id', '?')
+              sev = r.get('extra', {}).get('severity', '?')
+              msg = r.get('extra', {}).get('message', '').split('\n')[0]
+              print(f'{path}:{line} [{sev}] {rule} — {msg}')
+          "
             exit 1
           fi
 
@@ -128,9 +125,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-report
-          path: |
-            semgrep-results.sarif
-            semgrep-results.json
+          path: semgrep-results.json
           retention-days: 30
 
   # ──────────────────────────────────────────────
@@ -145,8 +140,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: latest
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -162,7 +155,6 @@ jobs:
         run: |
           pnpm audit --json > audit-report.json 2>&1 || true
 
-          # Parse results
           HIGH=$(cat audit-report.json | jq '[.advisories // {} | to_entries[] | select(.value.severity == "high")] | length' 2>/dev/null || echo "0")
           CRITICAL=$(cat audit-report.json | jq '[.advisories // {} | to_entries[] | select(.value.severity == "critical")] | length' 2>/dev/null || echo "0")
 
@@ -173,7 +165,6 @@ jobs:
           echo "- Critical: $CRITICAL" >> "$GITHUB_STEP_SUMMARY"
           echo "- High: $HIGH" >> "$GITHUB_STEP_SUMMARY"
 
-          # Fail on high or critical
           pnpm audit --audit-level=high
 
       - name: Upload Audit Report
@@ -253,13 +244,11 @@ jobs:
       - name: Check licenses
         id: licenses
         run: |
-          # Generate full report
           license-checker \
             --json \
             --out license-report.json \
             --production
 
-          # Check for forbidden licenses
           FORBIDDEN=$(license-checker \
             --failOn "GPL-2.0;GPL-3.0;AGPL-1.0;AGPL-3.0;AGPL-3.0-only;AGPL-3.0-or-later;GPL-2.0-only;GPL-2.0-or-later;GPL-3.0-only;GPL-3.0-or-later" \
             --production 2>&1) || true
@@ -334,7 +323,6 @@ jobs:
             > 📋 Detailed reports available in [Actions artifacts](${context.payload.pull_request.html_url}/checks)
             `.replace(/^            /gm, '');
 
-            // Find existing comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
