@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import Dropdown, { type DropdownOption } from "~/components/ui/Dropdown.vue";
-import CheckboxField from "~/components/ui/fields/CheckboxField.vue";
 import type { FilterOption } from "./types";
-
+type DropdownOption = {
+  label: string;
+  value: string;
+};
 const props = defineProps<{
   dropdownOptions: DropdownOption[];
   selectedCity: string | null;
@@ -23,17 +24,18 @@ const cityModel = computed<string | null>({
 
 <template>
   <aside class="leads-filters" aria-label="Фильтры лидов">
-    <Dropdown
-      v-model="cityModel"
-      :options="dropdownOptions"
-      placeholder="Город"
+    <ui-fields-select-field
+        modelValue=""cityModel
+        :options="dropdownOptions"
+        placeholder="Город"
+        :disabled?="dropdownOptions?.length === 0"
     />
 
     <section class="leads-filters__block">
       <h2 class="leads-filters__title">Продукты</h2>
 
       <div class="leads-filters__checkbox-list">
-        <CheckboxField
+        <ui-fields-checkbox-field
           v-for="item in productFilters"
           :key="item.label"
           v-model="item.checked"
@@ -46,7 +48,7 @@ const cityModel = computed<string | null>({
       <h2 class="leads-filters__title">Тип точки</h2>
 
       <div class="leads-filters__checkbox-list">
-        <CheckboxField
+        <ui-fields-checkbox-field
           v-for="item in pointTypeFilters"
           :key="item.label"
           v-model="item.checked"
@@ -61,7 +63,7 @@ const cityModel = computed<string | null>({
       <h2 class="leads-filters__title">Обязательные параметры</h2>
 
       <div class="leads-filters__checkbox-list">
-        <CheckboxField
+        <ui-fields-checkbox-field
           v-for="item in requiredFilters"
           :key="item.label"
           v-model="item.checked"

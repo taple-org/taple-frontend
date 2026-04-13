@@ -1,22 +1,25 @@
 <script setup lang="ts">
+import {useAuthModalController} from "~/composables/modals/useAuthModalController";
+
 const route = useRoute();
 
-const tabs = [
-  { label: "Дэшбоард", to: "/dashboard" },
-  { label: "Лиды", to: "/dashboard/leads" },
-  { label: "Воронка", to: "/dashboard/pipeline" },
-  { label: "Мониторинг", to: "/dashboard/monitoring" },
-  { label: "Задачи", to: "/dashboard/tasks" },
-  { label: "Настройки", to: "/dashboard/settings" },
-];
+const workspaceId = computed(() => route.params.workspaceId as string)
 
-const userEmail = "test@gmail.com";
+const tabs = computed(() => [
+  { label: "Дэшбоард", to: `/workspaces/${workspaceId.value}/dashboard` },
+  { label: "Лиды", to: `/workspaces/${workspaceId.value}/dashboard/leads` },
+  { label: "Воронка", to: `/workspaces/${workspaceId.value}/dashboard/pipeline` },
+  { label: "Мониторинг", to: `/workspaces/${workspaceId.value}/dashboard/monitoring` },
+  { label: "Задачи", to: `/workspaces/${workspaceId.value}/dashboard/tasks` },
+  { label: "Настройки", to: `/workspaces/${workspaceId.value}/dashboard/settings` },
+]);
 
+const { isAuthenticated } = storeToRefs(useAuthStore())
+const controller = useAuthModalController()
 const isActive = (to: string) => {
-  if (to === "/dashboard") {
-    return route.path === "/dashboard";
+  if (to === `/workspaces/${workspaceId.value}/dashboard`) {
+    return route.path === `/workspaces/${workspaceId.value}/dashboard`;
   }
-
   return route.path.startsWith(to);
 };
 </script>
@@ -38,19 +41,18 @@ const isActive = (to: string) => {
       </NuxtLink>
     </nav>
 
-    <button
-      class="dashboard-header__profile"
-      type="button"
-      aria-label="User profile"
-    >
-      <span class="dashboard-header__email">{{ userEmail }}</span>
-      <Icon
-        name="my-icon-profile"
-        mode="svg"
-        size="18"
-        class="dashboard-header__profile-icon"
-      />
-    </button>
+
+    <div class="dashboard-header__profile">
+      <client-only>
+        <ui-button v-if="!isAuthenticated" @click="controller.open('login')">
+          Войти
+        </ui-button>
+        <app-header-profile v-else />
+        <template #fallback>
+          <ui-button disabled>Войти</ui-button>
+        </template>
+      </client-only>
+    </div>
   </header>
 </template>
 
@@ -130,13 +132,6 @@ const isActive = (to: string) => {
 
 .dashboard-header__profile {
   margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px 6px 16px;
-  border: 0;
-  border-radius: 100px;
-  background: var(--color-highlight-l);
   cursor: pointer;
 }
 

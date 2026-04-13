@@ -3,9 +3,9 @@ import type { Tag } from '~/interfaces/workspace.interfaces';
 
 const props = defineProps<{
   label: string
-  availableTags: Tag[]
+  availableTags: Tag[],
+  error?: string
 }>()
-
 const modelValue = defineModel<Tag[]>({ default: () => [] })
 
 const search = ref('')
@@ -55,7 +55,6 @@ function removeTag(tagId: string) {
         </button>
       </div>
 
-      <!-- Inline input когда добавляем -->
       <div v-if="isAdding" class="tag-chip tag-chip--input-wrap">
         <input ref="inputRef" v-model="search" class="tag-chip__input" placeholder="Тег..." @blur="stopAdding" />
       </div>
@@ -63,7 +62,9 @@ function removeTag(tagId: string) {
       <button v-else class="tag-field__add" type="button" @click="startAdding">
         + Добавить
       </button>
+
     </div>
+    <div v-if="error" class="tag-field__error">{{ error }}</div>
 
     <Transition name="dropdown">
       <div v-if="isAdding" class="tag-field__dropdown">
@@ -182,7 +183,10 @@ function removeTag(tagId: string) {
   color: var(--color-primary);
   opacity: 0.5;
 }
-
+.tag-field__error {
+  font-size: 11px;
+  color: var(--color-error);
+}
 .tag-field__add {
   display: inline-flex;
   padding: 6px 10px;

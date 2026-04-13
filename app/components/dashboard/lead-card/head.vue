@@ -3,7 +3,8 @@ type LeadCardHeadProps = {
   score: number;
   title: string;
   subtitle: string;
-  isNew: boolean;
+  status: string;
+  isNew?: boolean;
 };
 
 defineProps<LeadCardHeadProps>();
@@ -12,8 +13,8 @@ defineProps<LeadCardHeadProps>();
 <template>
   <div class="lead-card__head">
     <div class="lead-card__status-group">
-      <span v-if="isNew" class="lead-card__status-tag">Новый</span>
-      <span class="lead-card__score">{{ score }}</span>
+      <dashboard-lead-card-badge variant="tag" :label="status" />
+      <dashboard-lead-card-badge variant="score" :label="String(score)" />
     </div>
 
     <div class="lead-card__title-wrap">
@@ -38,37 +39,6 @@ defineProps<LeadCardHeadProps>();
   flex-shrink: 0;
 }
 
-.lead-card__status-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-  width: fit-content;
-  padding: 6px 12px;
-  border-radius: 12px;
-  background: #298267;
-  color: var(--color-neutral-ll);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: normal;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.lead-card__score {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  min-height: 36px;
-  padding: 10px;
-  border-radius: 12px;
-  background: #298267;
-  color: var(--color-success-l);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 16px;
-}
 
 .lead-card__title-wrap {
   min-width: 0;
@@ -92,10 +62,6 @@ defineProps<LeadCardHeadProps>();
 }
 
 @media (max-width: 640px) {
-  .lead-card__status-tag {
-    padding-inline: 8px;
-  }
-
   .lead-card__title {
     font-size: 13px;
   }

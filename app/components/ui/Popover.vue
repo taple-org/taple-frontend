@@ -65,7 +65,7 @@ const positioning = computed(() => ({
 }
 
 .popover-positioner {
-  z-index: 200;
+  z-index: 50 !important;
 }
 
 .popover-content {

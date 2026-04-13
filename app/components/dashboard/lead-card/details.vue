@@ -10,31 +10,28 @@ defineProps<LeadCardDetailsProps>();
 
 <template>
   <div class="lead-card__details">
-    <p class="lead-card__detail-row">
+    <p v-if="address.length > 0" class="lead-card__detail-row">
       <Icon
-        name="other-icon-location-pin"
+        name="my-icon:location-pin"
         mode="svg"
-        :size="15"
         class="lead-card__detail-icon lead-card__detail-icon--location"
       />
       <span>{{ address }}</span>
     </p>
 
-    <p class="lead-card__detail-row">
+    <p v-if="phone.length > 0" class="lead-card__detail-row">
       <Icon
-        name="other-icon-phone"
+        name="my-icon:phone"
         mode="svg"
-        :size="15"
         class="lead-card__detail-icon"
       />
       <span>{{ phone }}</span>
     </p>
 
-    <p class="lead-card__detail-row">
+    <p v-if="openStatus.length > 0" class="lead-card__detail-row">
       <Icon
-        name="other-icon-clock"
+        name="my-icon:clock"
         mode="svg"
-        :size="15"
         class="lead-card__detail-icon"
       />
       <span>{{ openStatus }}</span>
@@ -64,6 +61,8 @@ defineProps<LeadCardDetailsProps>();
 }
 
 .lead-card__detail-icon {
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
 }
 

@@ -4,11 +4,11 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: ""
+      apiBase: "",
+      backendKey: "",
     },
   },
   modules: ["@pinia/nuxt", "@regle/nuxt", "@nuxt/icon", "@nuxt/eslint"],
-
 
   eslint: {
     config: {
@@ -19,11 +19,6 @@ export default defineNuxtConfig({
   icon: {
     mode: "svg",
     customCollections: [
-      {
-        prefix: "my",
-        dir: "./app/assets/icons/my",
-        recursive: true,
-      },
       {
         prefix: "my-icon",
         dir: "./app/assets/icons",
@@ -46,7 +41,11 @@ export default defineNuxtConfig({
         "@ark-ui/vue/select",
         "@ark-ui/vue",
         "@ark-ui/vue/password-input",
-        '@formkit/drag-and-drop/vue',
+        "@formkit/drag-and-drop/vue",
+        "@formkit/drag-and-drop",
+        "@ark-ui/vue/progress",
+        "@ark-ui/vue/toggle-group",
+        "@ark-ui/vue/tabs",
       ],
     },
   },
