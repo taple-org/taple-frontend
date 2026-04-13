@@ -48,6 +48,7 @@ keywords = ["hooks.slack.com"]
 
 [allowlist]
 description = "Global allowlist"
+commits = ["a7b98f2efab694941ebb062f79c756fe34055f3e"]
 paths = [
   '''node_modules''',
   '''\.nuxt''',
@@ -57,9 +58,11 @@ paths = [
   '''app/api/generated''',
   '''\.git''',
 ]
-[[allowlist]]
-commits = ["a7b98f2efab694941ebb062f79c756fe34055f3e"]
-description = "Old dev JWT token, already expired/rotated"
+regexTarget = "line"
+regexes = [
+  '''(?i)example|placeholder|changeme|your[_-]?(api|token|key|secret)|xxx|TODO''',
+]
+
 regexTarget = "line"
 regexes = [
   '''(?i)example|placeholder|changeme|your[_-]?(api|token|key|secret)|xxx|TODO''',
