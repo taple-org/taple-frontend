@@ -8,6 +8,39 @@ export default defineNuxtConfig({
       backendKey: "",
     },
   },
+
+  app: {
+    head: {
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      ],
+    },
+  },
+
+  // Security headers including CSP
+  routeRules: {
+    '/**': {
+      headers: {
+        'Content-Security-Policy': [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline'", // unsafe-inline needed for Nuxt hydration
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data: https:",
+          "font-src 'self' data:",
+          "frame-ancestors 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+        ].join('; '),
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '0; mode=block',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+      },
+    },
+  },
+
   modules: ["@pinia/nuxt", "@regle/nuxt", "@nuxt/icon", "@nuxt/eslint"],
 
   eslint: {
