@@ -1,8 +1,8 @@
-import type { TenantLeadListItem } from '~/api/generated/api'
+import type { TenantLeadListItem, LeadBranchRead } from '~/api/generated/api'
 import { TenantLeadStage } from '~/api/generated/api'
-import type { Lead, LeadFit } from '~/components/dashboard/leads/types'
+import type { Lead, LeadFit, LeadBranch } from '~/components/dashboard/leads/types'
 
-const LIMIT = 5
+const LIMIT = 10
 
 const STAGE_LABELS: Record<TenantLeadStage, string> = {
     [TenantLeadStage.New]: 'Новый',
@@ -42,6 +42,15 @@ function mapToLead(item: TenantLeadListItem): Lead {
 
     const locationParts = [item.address_city_name_ru, item.address_district_name_ru].filter(Boolean)
 
+    const branches: LeadBranch[] = (item.branches ?? []).map((b: LeadBranchRead) => ({
+        id: b.id,
+        name: b.name,
+        fullAddress: b.full_address,
+        isActive: b.is_active,
+        rating: b.signals?.rating,
+        reviewCount: b.signals?.review_count,
+    }))
+
     return {
         id: item.id,
         score,
@@ -59,6 +68,7 @@ function mapToLead(item: TenantLeadListItem): Lead {
         freshness: item.freshness_score != null
             ? `${Math.round(item.freshness_score * 100)}%`
             : '',
+        branches,
     }
 }
 
@@ -135,7 +145,7 @@ export const useLeadsStore = defineStore('leads', () => {
     }
 
     const postponeLead = async (leadId: string, workspaceId: string) => {
-        const snoozed_until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        const snoozed_until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0,19)
         try {
             await $apiClient.api.snoozeLeadApiV1LeadsTenantLeadIdSnoozePost(
                 leadId,

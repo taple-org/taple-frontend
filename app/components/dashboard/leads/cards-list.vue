@@ -11,6 +11,8 @@ const emit = defineEmits<{
   take: [leadId: string];
   showMore: [];
   hover: [leadId: string];
+  leave: [];
+  details: [leadId: string];
 }>();
 
 const cardRefs = ref<Record<string, InstanceType<typeof DashboardLeadCard>>>(
@@ -54,6 +56,8 @@ defineExpose({
         @postpone="emit('postpone', $event)"
         @take="emit('take', $event)"
         @hover="emit('hover', $event)"
+        @leave="emit('leave')"
+        @details="emit('details', $event)"
       />
     </TransitionGroup>
 

@@ -22,6 +22,8 @@ const emit = defineEmits<{
   postpone: [leadId: string];
   take: [leadId: string];
   hover: [leadId: string];
+  leave: [];
+  details: [leadId: string];
 }>();
 
 const isLoading = ref(false);
@@ -53,7 +55,14 @@ defineExpose({
 </script>
 
 <template>
-  <article class="lead-card" :class="{ 'lead-card--shake': shouldShake }" aria-label="Lead card" @mouseenter="emit('hover', leadId)">
+  <article 
+    class="lead-card" 
+    :class="{ 'lead-card--shake': shouldShake }" 
+    aria-label="Lead card" 
+    @mouseenter="emit('hover', leadId)"
+    @mouseleave="emit('leave')"
+    @click="emit('details', leadId)"
+  >
     <LeadCardHead
       :score="score"
       :title="title"
@@ -83,7 +92,7 @@ defineExpose({
   display: flex;
   flex-direction: column;
   gap: 10px;
-
+  max-width: 100%;
   padding: 8px 16px;
   background: var(--color-neutral-ll);
   border-radius: 16px;

@@ -66,6 +66,27 @@ defineProps<{
       <h4 class="leads-info__label">Свежесть</h4>
       <p class="leads-info__freshness">{{ lead.freshness }}</p>
     </section>
+
+    <section class="leads-info__section" v-if="lead.branches && lead.branches.length > 0">
+      <h4 class="leads-info__label">Филиалы ({{ lead.branches.length }})</h4>
+      <ul class="leads-info__branches-list">
+        <li v-for="branch in lead.branches" :key="branch.id" class="leads-info__branch-item">
+          <div class="leads-info__branch-header">
+            <span class="leads-info__branch-name">{{ branch.name || 'Без названия' }}</span>
+            <span
+              :class="['leads-info__branch-status', branch.isActive ? 'leads-info__branch-status--active' : 'leads-info__branch-status--inactive']"
+            >
+              {{ branch.isActive ? 'Активен' : 'Неактивен' }}
+            </span>
+          </div>
+          <p class="leads-info__branch-address" v-if="branch.fullAddress">{{ branch.fullAddress }}</p>
+          <div v-if="branch.rating != null || branch.reviewCount != null" class="leads-info__branch-signals">
+            <span v-if="branch.rating != null" class="leads-info__branch-signal">⭐ {{ branch.rating }}</span>
+            <span v-if="branch.reviewCount != null" class="leads-info__branch-signal">💬 {{ branch.reviewCount }}</span>
+          </div>
+        </li>
+      </ul>
+    </section>
   </article>
 
   <article v-else class="leads-info leads-info--empty" aria-label="Детали лида">
@@ -75,14 +96,17 @@ defineProps<{
 
 <style scoped>
 .leads-info {
-  min-height:360px;
-  height:fit-content;
+  overflow-y:auto;
+  height:100%;
+  max-height:100%;
+  min-width: 30%;
   padding: 8px 16px;
   border-radius: 16px;
   background: var(--color-neutral-ll);
   display: flex;
+  box-sizing: border-box;
+
   flex-direction: column;
-  overflow: hidden;
 }
 
 .leads-info--empty {
@@ -210,6 +234,83 @@ defineProps<{
   line-height: 1.25;
 }
 
+.leads-info__branches-list {
+  list-style: none;
+  padding: 0;
+  margin: 3px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leads-info__branch-item {
+  padding: 6px 8px;
+  background: var(--color-neutral-ld);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.leads-info__branch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.leads-info__branch-name {
+  color: var(--color-neutral-dm);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leads-info__branch-status {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.leads-info__branch-status--active {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.leads-info__branch-status--inactive {
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+}
+
+.leads-info__branch-address {
+  margin: 0;
+  color: #71727a;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leads-info__branch-signals {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.leads-info__branch-signal {
+  color: var(--color-neutral-dm);
+  font-size: 9px;
+  font-weight: 500;
+}
+
 @media (max-width: 1280px) {
   .leads-info {
     max-width: 100%;
@@ -220,6 +321,14 @@ defineProps<{
   .leads-info__list li,
   .leads-info__list--bulleted li,
   .leads-info__text {
+    white-space: normal;
+  }
+
+  .leads-info__branch-item {
+    padding: 8px 10px;
+  }
+
+  .leads-info__branch-address {
     white-space: normal;
   }
 }

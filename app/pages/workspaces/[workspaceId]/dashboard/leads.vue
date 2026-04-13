@@ -4,6 +4,7 @@ import DashboardLeadsCardsList from "~/components/dashboard/leads/cards-list.vue
 import DashboardLeadsFilters from "~/components/dashboard/leads/filters.vue";
 import DashboardLeadsInfo from "~/components/dashboard/leads/info.vue";
 import DashboardLeadsSearchBar from "~/components/dashboard/leads/search-bar.vue";
+import DashboardLeadDetailModal from "~/components/dashboard/leads/lead-detail-modal.vue";
 import type { FilterOption, Lead } from "~/components/dashboard/leads/types";
 import leadsMockJson from "~/constants/leads.mock.json";
 
@@ -20,6 +21,10 @@ workspaceStore.setCurrentWorkspace(workspaceId);
 
 const leadsStore = useLeadsStore();
 const cardsListRef = ref<InstanceType<typeof DashboardLeadsCardsList>>();
+
+// Modal state
+const isDetailModalOpen = ref(false);
+const selectedLeadForModal = ref<Lead | null>(null);
 
 const leadsMock = leadsMockJson as {
   productFilters: FilterOption[];
@@ -90,6 +95,24 @@ const handlePostpone = async (leadId: string) => {
 
 const handleTake = async (leadId: string) => {
   const success = await leadsStore.takeLead(leadId, workspaceId);
+  isDetailModalOpen.value = false;
+};
+
+const handleShowDetails = (leadId: string) => {
+  const lead = filteredLeads.value.find(l => l.id === leadId);
+  if (lead) {
+    selectedLeadForModal.value = lead;
+    isDetailModalOpen.value = true;
+  }
+};
+
+const handleModalPostpone = (leadId: string) => {
+  handlePostpone(leadId);
+  isDetailModalOpen.value = false;
+};
+
+const handleModalTake = (leadId: string) => {
+  handleTake(leadId);
   if (!success) {
     cardsListRef.value?.triggerShake(leadId);
   }
@@ -99,38 +122,49 @@ const handleTake = async (leadId: string) => {
 onMounted(() => {
   leadsStore.fetchLeads(workspaceId);
 });
-console.log(selectedLead)
-
 </script>
 
 <template>
   <div class="leads-page">
-    <DashboardLeadsFilters
-      v-model:selected-city="selectedCity"
-      :dropdown-options="dropdownOptions"
-      :product-filters="productFilters"
-      :point-type-filters="pointTypeFilters"
-      :required-filters="requiredFilters"
+    <div class="leads-page-container">
+
+      <DashboardLeadsFilters
+          v-model:selected-city="selectedCity"
+          :dropdown-options="dropdownOptions"
+          :product-filters="productFilters"
+          :point-type-filters="pointTypeFilters"
+          :required-filters="requiredFilters"
+      />
+
+      <span class="leads-page__sidebar-divider" aria-hidden="true" />
+
+      <section class="leads-page__content">
+        <DashboardLeadsSearchBar v-model="searchQuery" />
+
+        <div class="leads-page__main-grid">
+          <DashboardLeadsCardsList
+              ref="cardsListRef"
+              :leads="filteredLeads"
+              @postpone="handlePostpone"
+              @take="handleTake"
+              @show-more="leadsStore.fetchMore"
+              @details="handleShowDetails"
+              @hover="hoveredLeadId = $event"
+              @leave="hoveredLeadId = null"
+          />
+
+          <DashboardLeadsInfo :lead="selectedLead" />
+        </div>
+      </section>
+    </div>
+
+    <!-- Lead Detail Modal -->
+    <DashboardLeadDetailModal
+        v-model:open="isDetailModalOpen"
+        :lead="selectedLeadForModal"
+        @postpone="handleModalPostpone"
+        @take="handleModalTake"
     />
-
-    <span class="leads-page__sidebar-divider" aria-hidden="true" />
-
-    <section class="leads-page__content">
-      <DashboardLeadsSearchBar v-model="searchQuery" />
-
-      <div class="leads-page__main-grid">
-        <DashboardLeadsCardsList
-          ref="cardsListRef"
-          :leads="filteredLeads"
-          @postpone="handlePostpone"
-          @take="handleTake"
-          @show-more="leadsStore.fetchMore"
-          @hover="hoveredLeadId = $event"
-        />
-
-        <DashboardLeadsInfo :lead="selectedLead" />
-      </div>
-    </section>
   </div>
 </template>
 
@@ -143,8 +177,17 @@ console.log(selectedLead)
   padding: 25px 64px;
   box-sizing: border-box;
   align-items: flex-start;
+  justify-content: center;
 }
+.leads-page-container {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  gap:10px;
+  width:80%;
+  max-width:1300px
 
+}
 .leads-page__sidebar-divider {
   width: 1px;
   align-self: stretch;
@@ -162,14 +205,13 @@ console.log(selectedLead)
 }
 
 .leads-page__main-grid {
-  display: grid;
+  display: flex;
   width: 100%;
   flex: 1;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   align-items: start;
   gap: 10px;
   min-height: 0;
-  overflow: hidden;
+
 }
 
 @media (max-width: 1280px) {
@@ -177,9 +219,6 @@ console.log(selectedLead)
     padding: 20px 24px;
   }
 
-  .leads-page__main-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 @media (max-width: 980px) {
@@ -190,10 +229,6 @@ console.log(selectedLead)
 
   .leads-page__sidebar-divider {
     display: none;
-  }
-
-  .leads-page__main-grid {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 

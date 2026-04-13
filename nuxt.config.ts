@@ -44,7 +44,8 @@ export default defineNuxtConfig({
         '@formkit/drag-and-drop/vue',
         '@formkit/drag-and-drop',
         '@ark-ui/vue/progress',
-        '@ark-ui/vue/toggle-group'
+        '@ark-ui/vue/toggle-group',
+        '@ark-ui/vue/tabs'
       ],
     },
   },
