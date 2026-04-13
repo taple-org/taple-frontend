@@ -42,6 +42,6 @@ provide('workspaceId', workspaceId);
         @search="apply"
         @reset="reset"
     />
-    <workspace-pipeline-board :columns />
+    <workspace-pipeline-board :columns @move="refresh" />
   </ui-container>
 </template>

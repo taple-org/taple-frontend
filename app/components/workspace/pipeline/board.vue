@@ -1,13 +1,17 @@
 <script lang="ts" setup>
 import type { StageColumn, TenantLeadStage } from '~/api/generated/api';
+const emit = defineEmits<{
+  move: []
+}>()
 const { columns } = defineProps<{
   columns: StageColumn[];
 }>()
 const { $apiClient } = useNuxtApp()
 const workspaceId = inject('workspaceId') as string
 
-const handleMove = (cardId: string, from: TenantLeadStage, to: TenantLeadStage) => {
-  $apiClient.api.moveLeadApiV1LeadsTenantLeadIdMovePost(cardId, { tenant_id: workspaceId }, { to_stage: to })
+const handleMove = async (cardId: string, from: TenantLeadStage, to: TenantLeadStage) => {
+  await $apiClient.api.moveLeadApiV1LeadsTenantLeadIdMovePost(cardId, { tenant_id: workspaceId }, { to_stage: to })
+  emit('move')
 }
 
 </script>

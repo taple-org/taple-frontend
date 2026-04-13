@@ -18,7 +18,8 @@ const { data: categories } = useAsyncData(
 const { data: members } = useAsyncData(
     (nuxtApp) => nuxtApp.$apiClient.api.listMembersApiV1TenantsTenantIdMembersGet(workspaceId)
         .then(ms => ms.data.result)
-        .then(r => r.map(m => ({ value: m.id, label: m.email! })))
+        .then(r => r.map(m => ({ value: m.id, label: m.email! }))),
+    { server: false }
 )
 
 const categoriesOptions = computed(() => categories.value ?? []);
