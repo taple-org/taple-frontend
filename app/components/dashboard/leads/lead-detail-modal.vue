@@ -1,48 +1,48 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Dialog } from '@ark-ui/vue/dialog'
-import { Tabs } from '@ark-ui/vue/tabs'
-import type { Lead } from './types'
-import UiButton from '~/components/ui/Button.vue'
-import UiBadge from '~/components/ui/Badge.vue'
+import { ref } from "vue";
+import { Dialog } from "@ark-ui/vue/dialog";
+import { Tabs } from "@ark-ui/vue/tabs";
+import type { Lead } from "./types";
+import UiButton from "~/components/ui/Button.vue";
+import UiBadge from "~/components/ui/Badge.vue";
 
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false });
 
 interface Props {
-  lead: Lead | null
+  lead: Lead | null;
 }
 
 interface Emits {
-  'update:open': [value: boolean]
-  postpone: [leadId: string]
-  take: [leadId: string]
+  "update:open": [value: boolean];
+  postpone: [leadId: string];
+  take: [leadId: string];
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
-const open = defineModel<boolean>('open')
+const open = defineModel<boolean>("open");
 
 const tabs = [
-  { value: 'info', label: 'Информация' },
-  { value: 'eval', label: 'Оценко и данные' },
-  { value: 'history', label: 'История' },
-]
+  { value: "info", label: "Информация" },
+  { value: "eval", label: "Оценко и данные" },
+  { value: "history", label: "История" },
+];
 
-const selectedTab = ref<string>('info')
-const noteValue = ref<string>('')
+const selectedTab = ref<string>("info");
+const noteValue = ref<string>("");
 
 const handlePostpone = () => {
   if (props.lead?.id) {
-    emit('postpone', props.lead.id)
+    emit("postpone", props.lead.id);
   }
-}
+};
 
 const handleTake = () => {
   if (props.lead?.id) {
-    emit('take', props.lead.id)
+    emit("take", props.lead.id);
   }
-}
+};
 </script>
 
 <template>
@@ -50,142 +50,224 @@ const handleTake = () => {
     <Dialog.Root v-model:open="open" lazy-mount unmount-on-exit>
       <Teleport to="body">
         <Dialog.Backdrop class="dialog-backdrop" />
-      <Dialog.Positioner class="dialog-positioner">
-        <Dialog.Content v-if="lead" class="lead-detail-modal">
-          <!-- Header -->
-          <div class="lead-detail-modal__header">
-            <div class="lead-detail-modal__header-top">
-              <div class="lead-detail-modal__badges">
-                <UiBadge variant="primary" size="sm">{{ lead.openStatus }}</UiBadge>
-                <div class="lead-detail-modal__score">{{ lead.score }}</div>
+        <Dialog.Positioner class="dialog-positioner">
+          <Dialog.Content v-if="lead" class="lead-detail-modal">
+            <!-- Header -->
+            <div class="lead-detail-modal__header">
+              <div class="lead-detail-modal__header-top">
+                <div class="lead-detail-modal__badges">
+                  <UiBadge variant="primary" size="sm">{{
+                    lead.openStatus
+                  }}</UiBadge>
+                  <div class="lead-detail-modal__score">{{ lead.score }}</div>
+                </div>
+                <Dialog.CloseTrigger class="lead-detail-modal__close">
+                  <Icon name="other-icon-close" mode="svg" :size="24" />
+                </Dialog.CloseTrigger>
               </div>
-              <Dialog.CloseTrigger class="lead-detail-modal__close">
-                <Icon name="other-icon-close" mode="svg" :size="24" />
-              </Dialog.CloseTrigger>
+
+              <div class="lead-detail-modal__title-section">
+                <h2 class="lead-detail-modal__title">{{ lead.title }}</h2>
+                <p class="lead-detail-modal__subtitle">{{ lead.subtitle }}</p>
+              </div>
+
+              <!-- Tags -->
+              <div class="lead-detail-modal__tags">
+                <span
+                  v-for="tag in lead.tags"
+                  :key="tag"
+                  class="lead-detail-modal__tag"
+                >
+                  {{ tag }}
+                </span>
+              </div>
             </div>
 
-            <div class="lead-detail-modal__title-section">
-              <h2 class="lead-detail-modal__title">{{ lead.title }}</h2>
-              <p class="lead-detail-modal__subtitle">{{ lead.subtitle }}</p>
-            </div>
+            <!-- Tabs -->
+            <Tabs.Root v-model="selectedTab" class="lead-detail-modal__tabs">
+              <Tabs.List class="lead-detail-modal__tab-list">
+                <Tabs.Trigger
+                  v-for="tab in tabs"
+                  :key="tab.value"
+                  :value="tab.value"
+                  class="lead-detail-modal__tab-trigger"
+                >
+                  {{ tab.label }}
+                </Tabs.Trigger>
+              </Tabs.List>
 
-            <!-- Tags -->
-            <div class="lead-detail-modal__tags">
-              <span v-for="tag in lead.tags" :key="tag" class="lead-detail-modal__tag">
-                {{ tag }}
-              </span>
-            </div>
-          </div>
+              <!-- Info Tab -->
+              <Tabs.Content value="info" class="lead-detail-modal__tab-content">
+                <div class="lead-detail-modal__section">
+                  <h3 class="lead-detail-modal__section-title">Контакты</h3>
+                  <div class="lead-detail-modal__contacts">
+                    <div
+                      v-for="contact in lead.contacts"
+                      :key="contact"
+                      class="lead-detail-modal__contact"
+                    >
+                      <Icon name="other-icon-phone" mode="svg" :size="16" />
+                      <span>{{ contact }}</span>
+                    </div>
+                    <div v-if="lead.email" class="lead-detail-modal__contact">
+                      <Icon name="my-icon-inbox" mode="svg" :size="16" />
+                      <span>{{ lead.email }}</span>
+                    </div>
+                  </div>
+                </div>
 
-          <!-- Tabs -->
-          <Tabs.Root v-model="selectedTab" class="lead-detail-modal__tabs">
-            <Tabs.List class="lead-detail-modal__tab-list">
-              <Tabs.Trigger
-                v-for="tab in tabs"
-                :key="tab.value"
-                :value="tab.value"
-                class="lead-detail-modal__tab-trigger"
+                <div class="lead-detail-modal__section">
+                  <h3 class="lead-detail-modal__section-title">Локация</h3>
+                  <div class="lead-detail-modal__location">
+                    <p class="lead-detail-modal__location-address">
+                      {{ lead.address }}
+                    </p>
+                    <a
+                      href="#"
+                      class="lead-detail-modal__location-link"
+                      @click.prevent
+                    >
+                      Открыть в 2GIS
+                    </a>
+                  </div>
+                </div>
+
+                <div class="lead-detail-modal__section">
+                  <h3 class="lead-detail-modal__section-title">Свежесть</h3>
+                  <p class="lead-detail-modal__freshness">
+                    {{ lead.freshness }}
+                  </p>
+                </div>
+
+                <div class="lead-detail-modal__section">
+                  <label class="lead-detail-modal__section-title"
+                    >Заметка</label
+                  >
+                  <textarea
+                    v-model="noteValue"
+                    class="lead-detail-modal__textarea"
+                    placeholder="Короткая заметка (опционально)"
+                    rows="4"
+                  />
+                </div>
+              </Tabs.Content>
+
+              <!-- Evaluation Tab -->
+              <Tabs.Content value="eval" class="lead-detail-modal__tab-content">
+                <div class="lead-detail-modal__section">
+                  <h3 class="lead-detail-modal__section-title">Оценки</h3>
+                  <div
+                    v-if="lead.fitScores.length"
+                    class="lead-detail-modal__scores"
+                  >
+                    <div
+                      v-for="score in lead.fitScores"
+                      :key="score.label"
+                      class="lead-detail-modal__score-item"
+                    >
+                      <span class="lead-detail-modal__score-label">{{
+                        score.label
+                      }}</span>
+                      <span class="lead-detail-modal__score-value">{{
+                        score.level
+                      }}</span>
+                    </div>
+                  </div>
+                  <p v-else class="lead-detail-modal__empty-state">
+                    Нет данных
+                  </p>
+                </div>
+
+                <div
+                  v-if="lead.branches?.length"
+                  class="lead-detail-modal__section"
+                >
+                  <h3 class="lead-detail-modal__section-title">
+                    Филиалы ({{ lead.branches.length }})
+                  </h3>
+                  <div class="lead-detail-modal__branches">
+                    <div
+                      v-for="branch in lead.branches"
+                      :key="branch.id"
+                      class="lead-detail-modal__branch"
+                    >
+                      <div class="lead-detail-modal__branch-header">
+                        <span class="lead-detail-modal__branch-name">{{
+                          branch.name || "Без названия"
+                        }}</span>
+                        <span
+                          :class="[
+                            'lead-detail-modal__branch-status',
+                            branch.isActive
+                              ? 'lead-detail-modal__branch-status--active'
+                              : 'lead-detail-modal__branch-status--inactive',
+                          ]"
+                        >
+                          {{ branch.isActive ? "Активен" : "Неактивен" }}
+                        </span>
+                      </div>
+                      <p
+                        v-if="branch.fullAddress"
+                        class="lead-detail-modal__branch-address"
+                      >
+                        {{ branch.fullAddress }}
+                      </p>
+                      <div
+                        v-if="
+                          branch.rating != null || branch.reviewCount != null
+                        "
+                        class="lead-detail-modal__branch-signals"
+                      >
+                        <span
+                          v-if="branch.rating != null"
+                          class="lead-detail-modal__branch-signal"
+                          >⭐ {{ branch.rating }}</span
+                        >
+                        <span
+                          v-if="branch.reviewCount != null"
+                          class="lead-detail-modal__branch-signal"
+                          >💬 {{ branch.reviewCount }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Tabs.Content>
+
+              <!-- History Tab -->
+              <Tabs.Content
+                value="history"
+                class="lead-detail-modal__tab-content"
               >
-                {{ tab.label }}
-              </Tabs.Trigger>
-            </Tabs.List>
-
-            <!-- Info Tab -->
-            <Tabs.Content value="info" class="lead-detail-modal__tab-content">
-              <div class="lead-detail-modal__section">
-                <h3 class="lead-detail-modal__section-title">Контакты</h3>
-                <div class="lead-detail-modal__contacts">
-                  <div v-for="contact in lead.contacts" :key="contact" class="lead-detail-modal__contact">
-                    <Icon name="other-icon-phone" mode="svg" :size="16" />
-                    <span>{{ contact }}</span>
-                  </div>
-                  <div v-if="lead.email" class="lead-detail-modal__contact">
-                    <Icon name="my-icon-inbox" mode="svg" :size="16" />
-                    <span>{{ lead.email }}</span>
-                  </div>
+                <div class="lead-detail-modal__section">
+                  <p class="lead-detail-modal__empty-state">
+                    История доступна после первого взаимодействия с лидом
+                  </p>
                 </div>
-              </div>
+              </Tabs.Content>
+            </Tabs.Root>
 
-              <div class="lead-detail-modal__section">
-                <h3 class="lead-detail-modal__section-title">Локация</h3>
-                <div class="lead-detail-modal__location">
-                  <p class="lead-detail-modal__location-address">{{ lead.address }}</p>
-                  <a href="#" class="lead-detail-modal__location-link" @click.prevent>
-                    Открыть в 2GIS
-                  </a>
-                </div>
-              </div>
-
-              <div class="lead-detail-modal__section">
-                <h3 class="lead-detail-modal__section-title">Свежесть</h3>
-                <p class="lead-detail-modal__freshness">{{ lead.freshness }}</p>
-              </div>
-
-              <div class="lead-detail-modal__section">
-                <label class="lead-detail-modal__section-title">Заметка</label>
-                <textarea
-                  v-model="noteValue"
-                  class="lead-detail-modal__textarea"
-                  placeholder="Короткая заметка (опционально)"
-                  rows="4"
-                />
-              </div>
-            </Tabs.Content>
-
-            <!-- Evaluation Tab -->
-            <Tabs.Content value="eval" class="lead-detail-modal__tab-content">
-              <div class="lead-detail-modal__section">
-                <h3 class="lead-detail-modal__section-title">Оценки</h3>
-                <div v-if="lead.fitScores.length" class="lead-detail-modal__scores">
-                  <div v-for="score in lead.fitScores" :key="score.label" class="lead-detail-modal__score-item">
-                    <span class="lead-detail-modal__score-label">{{ score.label }}</span>
-                    <span class="lead-detail-modal__score-value">{{ score.level }}</span>
-                  </div>
-                </div>
-                <p v-else class="lead-detail-modal__empty-state">Нет данных</p>
-              </div>
-
-              <div v-if="lead.branches?.length" class="lead-detail-modal__section">
-                <h3 class="lead-detail-modal__section-title">Филиалы ({{ lead.branches.length }})</h3>
-                <div class="lead-detail-modal__branches">
-                  <div v-for="branch in lead.branches" :key="branch.id" class="lead-detail-modal__branch">
-                    <div class="lead-detail-modal__branch-header">
-                      <span class="lead-detail-modal__branch-name">{{ branch.name || 'Без названия' }}</span>
-                      <span :class="['lead-detail-modal__branch-status', branch.isActive ? 'lead-detail-modal__branch-status--active' : 'lead-detail-modal__branch-status--inactive']">
-                        {{ branch.isActive ? 'Активен' : 'Неактивен' }}
-                      </span>
-                    </div>
-                    <p v-if="branch.fullAddress" class="lead-detail-modal__branch-address">{{ branch.fullAddress }}</p>
-                    <div v-if="branch.rating != null || branch.reviewCount != null" class="lead-detail-modal__branch-signals">
-                      <span v-if="branch.rating != null" class="lead-detail-modal__branch-signal">⭐ {{ branch.rating }}</span>
-                      <span v-if="branch.reviewCount != null" class="lead-detail-modal__branch-signal">💬 {{ branch.reviewCount }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Tabs.Content>
-
-            <!-- History Tab -->
-            <Tabs.Content value="history" class="lead-detail-modal__tab-content">
-              <div class="lead-detail-modal__section">
-                <p class="lead-detail-modal__empty-state">История доступна после первого взаимодействия с лидом</p>
-              </div>
-            </Tabs.Content>
-          </Tabs.Root>
-
-          <!-- Footer -->
-          <div class="lead-detail-modal__footer">
-            <UiButton variant="error" class="lead-detail-modal__btn lead-detail-modal__btn--postpone" @click="handlePostpone">
-              Отложить
-            </UiButton>
-            <UiButton variant="primary" class="lead-detail-modal__btn lead-detail-modal__btn--take" @click="handleTake">
-              Взять в работу
-            </UiButton>
-          </div>
-        </Dialog.Content>
-      </Dialog.Positioner>
-    </Teleport>
-  </Dialog.Root>
+            <!-- Footer -->
+            <div class="lead-detail-modal__footer">
+              <UiButton
+                variant="error"
+                class="lead-detail-modal__btn lead-detail-modal__btn--postpone"
+                @click="handlePostpone"
+              >
+                Отложить
+              </UiButton>
+              <UiButton
+                variant="primary"
+                class="lead-detail-modal__btn lead-detail-modal__btn--take"
+                @click="handleTake"
+              >
+                Взять в работу
+              </UiButton>
+            </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Teleport>
+    </Dialog.Root>
   </div>
 </template>
 

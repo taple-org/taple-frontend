@@ -49,12 +49,14 @@ const requiredFilters = ref<FilterOption[]>(
 );
 
 // Only show leads with "Новый" status
-const newLeads = computed<Lead[]>(() => 
-  leadsStore.leads.filter((lead) => lead.openStatus === 'Новый')
+const newLeads = computed<Lead[]>(() =>
+  leadsStore.leads.filter((lead) => lead.openStatus === "Новый"),
 );
 
 const dropdownOptions = computed<DropdownOption[]>(() => {
-  const cities = [...new Set(newLeads.value.map((l) => l.locationShort).filter(Boolean))];
+  const cities = [
+    ...new Set(newLeads.value.map((l) => l.locationShort).filter(Boolean)),
+  ];
   return [
     { label: "Все города", value: "" },
     ...cities.map((c) => ({ label: c, value: c })),
@@ -79,11 +81,14 @@ const hoveredLeadId = ref<string | null>(null);
 
 const selectedLead = computed(() => {
   if (hoveredLeadId.value) {
-    return filteredLeads.value.find(l => l.id === hoveredLeadId.value) ?? filteredLeads.value[0] ?? null;
+    return (
+      filteredLeads.value.find((l) => l.id === hoveredLeadId.value) ??
+      filteredLeads.value[0] ??
+      null
+    );
   }
   return filteredLeads.value[0] ?? null;
 });
-
 
 const handlePostpone = async (leadId: string) => {
   const success = await leadsStore.postponeLead(leadId, workspaceId);
@@ -99,7 +104,7 @@ const handleTake = async (leadId: string) => {
 };
 
 const handleShowDetails = (leadId: string) => {
-  const lead = filteredLeads.value.find(l => l.id === leadId);
+  const lead = filteredLeads.value.find((l) => l.id === leadId);
   if (lead) {
     selectedLeadForModal.value = lead;
     isDetailModalOpen.value = true;
@@ -127,13 +132,12 @@ onMounted(() => {
 <template>
   <div class="leads-page">
     <div class="leads-page-container">
-
       <DashboardLeadsFilters
-          v-model:selected-city="selectedCity"
-          :dropdown-options="dropdownOptions"
-          :product-filters="productFilters"
-          :point-type-filters="pointTypeFilters"
-          :required-filters="requiredFilters"
+        v-model:selected-city="selectedCity"
+        :dropdown-options="dropdownOptions"
+        :product-filters="productFilters"
+        :point-type-filters="pointTypeFilters"
+        :required-filters="requiredFilters"
       />
 
       <span class="leads-page__sidebar-divider" aria-hidden="true" />
@@ -143,14 +147,14 @@ onMounted(() => {
 
         <div class="leads-page__main-grid">
           <DashboardLeadsCardsList
-              ref="cardsListRef"
-              :leads="filteredLeads"
-              @postpone="handlePostpone"
-              @take="handleTake"
-              @show-more="leadsStore.fetchMore"
-              @details="handleShowDetails"
-              @hover="hoveredLeadId = $event"
-              @leave="hoveredLeadId = null"
+            ref="cardsListRef"
+            :leads="filteredLeads"
+            @postpone="handlePostpone"
+            @take="handleTake"
+            @show-more="leadsStore.fetchMore"
+            @details="handleShowDetails"
+            @hover="hoveredLeadId = $event"
+            @leave="hoveredLeadId = null"
           />
 
           <DashboardLeadsInfo :lead="selectedLead" />
@@ -160,10 +164,10 @@ onMounted(() => {
 
     <!-- Lead Detail Modal -->
     <DashboardLeadDetailModal
-        v-model:open="isDetailModalOpen"
-        :lead="selectedLeadForModal"
-        @postpone="handleModalPostpone"
-        @take="handleModalTake"
+      v-model:open="isDetailModalOpen"
+      :lead="selectedLeadForModal"
+      @postpone="handleModalPostpone"
+      @take="handleModalTake"
     />
   </div>
 </template>
@@ -183,10 +187,9 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   height: 100%;
-  gap:10px;
-  width:80%;
-  max-width:1300px
-
+  gap: 10px;
+  width: 80%;
+  max-width: 1300px;
 }
 .leads-page__sidebar-divider {
   width: 1px;
@@ -211,14 +214,12 @@ onMounted(() => {
   align-items: start;
   gap: 10px;
   min-height: 0;
-
 }
 
 @media (max-width: 1280px) {
   .leads-page {
     padding: 20px 24px;
   }
-
 }
 
 @media (max-width: 980px) {

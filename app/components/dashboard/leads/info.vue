@@ -4,7 +4,6 @@ import type { Lead } from "./types";
 defineProps<{
   lead: Lead | null;
 }>();
-
 </script>
 
 <template>
@@ -14,7 +13,10 @@ defineProps<{
       <p class="leads-info__subtitle">{{ lead.subtitle }}</p>
     </header>
 
-    <section v-if="lead.contacts?.length || lead.email"  class="leads-info__section">
+    <section
+      v-if="lead.contacts?.length || lead.email"
+      class="leads-info__section"
+    >
       <h4 class="leads-info__label">Контакты</h4>
 
       <ul class="leads-info__contacts">
@@ -67,22 +69,47 @@ defineProps<{
       <p class="leads-info__freshness">{{ lead.freshness }}</p>
     </section>
 
-    <section class="leads-info__section" v-if="lead.branches && lead.branches.length > 0">
+    <section
+      class="leads-info__section"
+      v-if="lead.branches && lead.branches.length > 0"
+    >
       <h4 class="leads-info__label">Филиалы ({{ lead.branches.length }})</h4>
       <ul class="leads-info__branches-list">
-        <li v-for="branch in lead.branches" :key="branch.id" class="leads-info__branch-item">
+        <li
+          v-for="branch in lead.branches"
+          :key="branch.id"
+          class="leads-info__branch-item"
+        >
           <div class="leads-info__branch-header">
-            <span class="leads-info__branch-name">{{ branch.name || 'Без названия' }}</span>
+            <span class="leads-info__branch-name">{{
+              branch.name || "Без названия"
+            }}</span>
             <span
-              :class="['leads-info__branch-status', branch.isActive ? 'leads-info__branch-status--active' : 'leads-info__branch-status--inactive']"
+              :class="[
+                'leads-info__branch-status',
+                branch.isActive
+                  ? 'leads-info__branch-status--active'
+                  : 'leads-info__branch-status--inactive',
+              ]"
             >
-              {{ branch.isActive ? 'Активен' : 'Неактивен' }}
+              {{ branch.isActive ? "Активен" : "Неактивен" }}
             </span>
           </div>
-          <p class="leads-info__branch-address" v-if="branch.fullAddress">{{ branch.fullAddress }}</p>
-          <div v-if="branch.rating != null || branch.reviewCount != null" class="leads-info__branch-signals">
-            <span v-if="branch.rating != null" class="leads-info__branch-signal">⭐ {{ branch.rating }}</span>
-            <span v-if="branch.reviewCount != null" class="leads-info__branch-signal">💬 {{ branch.reviewCount }}</span>
+          <p class="leads-info__branch-address" v-if="branch.fullAddress">
+            {{ branch.fullAddress }}
+          </p>
+          <div
+            v-if="branch.rating != null || branch.reviewCount != null"
+            class="leads-info__branch-signals"
+          >
+            <span v-if="branch.rating != null" class="leads-info__branch-signal"
+              >⭐ {{ branch.rating }}</span
+            >
+            <span
+              v-if="branch.reviewCount != null"
+              class="leads-info__branch-signal"
+              >💬 {{ branch.reviewCount }}</span
+            >
           </div>
         </li>
       </ul>
@@ -96,9 +123,9 @@ defineProps<{
 
 <style scoped>
 .leads-info {
-  overflow-y:auto;
-  height:100%;
-  max-height:100%;
+  overflow-y: auto;
+  height: 100%;
+  max-height: 100%;
   min-width: 30%;
   padding: 8px 16px;
   border-radius: 16px;
