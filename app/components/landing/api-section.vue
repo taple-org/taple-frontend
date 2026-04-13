@@ -5,12 +5,12 @@ const { open } = useAuthModalController();
 
 const features = [
   {
-    icon: "my-icon:lightning",
+    icon: "my-icon:energy",
     title: "REST API",
     description: "Простая интеграция через стандартный REST интерфейс. Поддержка JSON, быстрые ответы.",
   },
   {
-    icon: "my-icon:shield",
+    icon: "my-icon:lock",
     title: "Аутентификация",
     description: "Безопасный доступ через API-ключи. Управление токенами в личном кабинете.",
   },
@@ -20,7 +20,7 @@ const features = [
     description: "Мгновенный поиск и обогащение данных по ИНН, названию или реквизитам.",
   },
   {
-    icon: "my-icon:chart",
+    icon: "my-icon:settings",
     title: "Мониторинг",
     description: "Отслеживайте изменения в данных контрагентов через вебхуки и API-уведомления.",
   },

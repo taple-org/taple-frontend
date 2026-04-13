@@ -23,8 +23,8 @@
               class="eye-btn"
               @click="showPasswords.current = !showPasswords.current"
           >
-            <Icon name="my-icon:visible" v-if="!showPasswords.current" />
-            <Icon name="my-icon:invisible" v-else />
+            <Icon name="my-icon:eye-visible" v-if="!showPasswords.current" />
+            <Icon name="my-icon:eye-invisible" v-else />
           </button>
         </div>
         <span v-if="errors.currentPassword" class="field-error">{{ errors.currentPassword }}</span>
@@ -47,8 +47,8 @@
               class="eye-btn"
               @click="showPasswords.new = !showPasswords.new"
           >
-            <Icon name="my-icon:visible" v-if="!showPasswords.new" />
-            <Icon name="my-icon:invisible" v-else />
+            <Icon name="my-icon:eye-visible" v-if="!showPasswords.new" />
+            <Icon name="my-icon:eye-invisible" v-else />
           </button>
         </div>
         <span v-if="errors.newPassword" class="field-error">{{ errors.newPassword }}</span>
@@ -83,8 +83,8 @@
               class="eye-btn"
               @click="showPasswords.confirm = !showPasswords.confirm"
           >
-            <Icon name="my-icon:visible" v-if="!showPasswords.confirm" />
-            <Icon name="my-icon:invisible" v-else />
+            <Icon name="my-icon:eye-visible" v-if="!showPasswords.confirm" />
+            <Icon name="my-icon:eye-invisible" v-else />
           </button>
         </div>
         <span v-if="errors.confirmPassword" class="field-error">{{ errors.confirmPassword }}</span>

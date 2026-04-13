@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Field } from "@ark-ui/vue";
+import { Field } from "@ark-ui/vue/field";
 import { useContactForm } from "~/composables/contacts/useContactForm";
 
 const { r$ } = useContactForm();
@@ -62,7 +62,7 @@ const handleSubmit = async () => {
               :error="r$.email.$errors[0]"
             />
 
-            <!-- Textarea wrapped in Ark UI Field.Root for consistent error state -->
+            <!-- Textarea: Field.Root drives data-invalid on Field.Textarea automatically -->
             <Field.Root
               class="field"
               :required="true"
@@ -72,9 +72,8 @@ const handleSubmit = async () => {
                 Сообщение
                 <span class="field__required" aria-hidden="true">*</span>
               </Field.Label>
-              <textarea
+              <Field.Textarea
                 class="field-textarea"
-                :class="{ 'field-textarea--invalid': !!r$.message.$errors[0] }"
                 v-model="r$.$value.message"
                 placeholder="Введите ваше сообщение"
                 rows="5"
@@ -193,11 +192,12 @@ const handleSubmit = async () => {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
 }
 
-.field-textarea--invalid {
+/* Ark UI sets data-invalid on Field.Textarea when Field.Root :invalid is true */
+.field-textarea[data-invalid] {
   border-color: var(--color-error);
 }
 
-.field-textarea--invalid:focus {
+.field-textarea[data-invalid]:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 15%, transparent);
 }
 
