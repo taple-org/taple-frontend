@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { DropdownOption } from "~/components/ui/Dropdown.vue";
 import DashboardLeadsCardsList from "~/components/dashboard/leads/cards-list.vue";
 import DashboardLeadsFilters from "~/components/dashboard/leads/filters.vue";
 import DashboardLeadsInfo from "~/components/dashboard/leads/info.vue";
