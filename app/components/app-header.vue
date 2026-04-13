@@ -4,9 +4,9 @@ import { useAuthModalController } from "~/composables/modals/useAuthModalControl
 import type { TemplateLink } from "~/interfaces/link.interfaces";
 
 const links: TemplateLink[] = [
-  { to: "#", label: "Контакты" },
-  { to: "#tariffs", label: "Тарифы" },
-  { to: "#", label: "API" },
+  { to: "/contacts", label: "Контакты" },
+  { to: "/tariffs", label: "Тарифы" },
+  { to: "/api", label: "API" },
 ];
 
 const {open} = useAuthModalController();

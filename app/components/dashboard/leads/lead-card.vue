@@ -60,7 +60,6 @@ defineExpose({
     :class="{ 'lead-card--shake': shouldShake }"
     aria-label="Lead card"
     @mouseenter="emit('hover', leadId)"
-    @mouseleave="emit('leave')"
     @click="emit('details', leadId)"
   >
     <LeadCardHead
@@ -104,7 +103,7 @@ defineExpose({
 }
 .lead-card:hover {
   cursor: pointer;
-  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes shake {

@@ -127,6 +127,7 @@ defineProps<{
   height: 100%;
   max-height: 100%;
   min-width: 30%;
+  width: 30%;
   padding: 8px 16px;
   border-radius: 16px;
   background: var(--color-neutral-ll);

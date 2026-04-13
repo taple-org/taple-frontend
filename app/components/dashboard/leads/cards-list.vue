@@ -74,6 +74,7 @@ defineExpose({
 
 <style scoped>
 .leads-cards-list {
+  padding: 0 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
