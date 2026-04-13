@@ -1,0 +1,371 @@
+name: SAST Pipeline
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Job 1: ESLint Security
+  # ──────────────────────────────────────────────
+  eslint-security:
+    name: ESLint Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint Security Audit
+        id: eslint
+        run: |
+          pnpm eslint . \
+            --max-warnings 0 \
+            --format json \
+            --output-file eslint-report.json || true
+
+          # Check if there are errors
+          ERRORS=$(cat eslint-report.json | jq '[.[] | .errorCount] | add // 0')
+          WARNINGS=$(cat eslint-report.json | jq '[.[] | .warningCount] | add // 0')
+
+          echo "errors=$ERRORS" >> "$GITHUB_OUTPUT"
+          echo "warnings=$WARNINGS" >> "$GITHUB_OUTPUT"
+
+          echo "### ESLint Security Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Errors: $ERRORS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Warnings: $WARNINGS" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$ERRORS" -gt 0 ] || [ "$WARNINGS" -gt 0 ]; then
+            echo "ESLint found $ERRORS errors and $WARNINGS warnings"
+            # Pretty print issues
+            cat eslint-report.json | jq -r '.[] | select(.errorCount > 0 or .warningCount > 0) | "\(.filePath):\n\(.messages[] | "  L\(.line): [\(.severity == 2 | if . then "ERROR" else "WARN" end)] \(.ruleId) - \(.message)")"'
+            exit 1
+          fi
+
+      - name: Upload ESLint Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: eslint-report.json
+          retention-days: 30
+
+  # ──────────────────────────────────────────────
+  # Job 2: Semgrep SAST
+  # ──────────────────────────────────────────────
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          semgrep scan \
+            --config p/owasp-top-ten \
+            --config p/javascript \
+            --config p/typescript \
+            --config .semgrep.yml \
+            --severity WARNING \
+            --sarif \
+            --output semgrep-results.sarif \
+            --error \
+            . || true
+
+      - name: Generate Summary
+        if: always()
+        run: |
+          semgrep scan \
+            --config p/owasp-top-ten \
+            --config p/javascript \
+            --config p/typescript \
+            --config .semgrep.yml \
+            --severity WARNING \
+            --json \
+            --output semgrep-results.json \
+            . || true
+
+          FINDINGS=$(cat semgrep-results.json | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          results = data.get('results', [])
+          print(len(results))
+          ")
+
+          echo "### Semgrep Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Total findings: $FINDINGS" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$FINDINGS" -gt 0 ]; then
+            exit 1
+          fi
+
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep-results.sarif
+          category: semgrep
+
+      - name: Upload Semgrep Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: |
+            semgrep-results.sarif
+            semgrep-results.json
+          retention-days: 30
+
+  # ──────────────────────────────────────────────
+  # Job 3: Dependency Audit
+  # ──────────────────────────────────────────────
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit
+        id: audit
+        run: |
+          pnpm audit --json > audit-report.json 2>&1 || true
+
+          # Parse results
+          HIGH=$(cat audit-report.json | jq '[.advisories // {} | to_entries[] | select(.value.severity == "high")] | length' 2>/dev/null || echo "0")
+          CRITICAL=$(cat audit-report.json | jq '[.advisories // {} | to_entries[] | select(.value.severity == "critical")] | length' 2>/dev/null || echo "0")
+
+          echo "high=$HIGH" >> "$GITHUB_OUTPUT"
+          echo "critical=$CRITICAL" >> "$GITHUB_OUTPUT"
+
+          echo "### Dependency Audit Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Critical: $CRITICAL" >> "$GITHUB_STEP_SUMMARY"
+          echo "- High: $HIGH" >> "$GITHUB_STEP_SUMMARY"
+
+          # Fail on high or critical
+          pnpm audit --audit-level=high
+
+      - name: Upload Audit Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report
+          path: audit-report.json
+          retention-days: 30
+
+  # ──────────────────────────────────────────────
+  # Job 4: Secret Detection
+  # ──────────────────────────────────────────────
+  secret-detection:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Scan
+        id: trufflehog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified --results=json
+        continue-on-error: true
+
+      - name: Gitleaks Scan
+        id: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: --config .gitleaks.toml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+        continue-on-error: true
+
+      - name: Generate Summary
+        if: always()
+        run: |
+          echo "### Secret Detection Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "- TruffleHog: ${{ steps.trufflehog.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Gitleaks: ${{ steps.gitleaks.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ steps.trufflehog.outcome }}" = "failure" ] || [ "${{ steps.gitleaks.outcome }}" = "failure" ]; then
+            echo "::error::Secrets detected in repository!"
+            exit 1
+          fi
+
+  # ──────────────────────────────────────────────
+  # Job 5: License Compliance
+  # ──────────────────────────────────────────────
+  license-compliance:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install license-checker
+        run: pnpm add -g license-checker
+
+      - name: Check licenses
+        id: licenses
+        run: |
+          # Generate full report
+          license-checker \
+            --json \
+            --out license-report.json \
+            --production
+
+          # Check for forbidden licenses
+          FORBIDDEN=$(license-checker \
+            --failOn "GPL-2.0;GPL-3.0;AGPL-1.0;AGPL-3.0;AGPL-3.0-only;AGPL-3.0-or-later;GPL-2.0-only;GPL-2.0-or-later;GPL-3.0-only;GPL-3.0-or-later" \
+            --production 2>&1) || true
+
+          echo "### License Compliance Results" >> "$GITHUB_STEP_SUMMARY"
+
+          if echo "$FORBIDDEN" | grep -q "Found forbidden"; then
+            echo "::error::Forbidden licenses (GPL/AGPL) detected!"
+            echo "$FORBIDDEN"
+            echo "- Status: FAILED — forbidden licenses found" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          else
+            TOTAL=$(cat license-report.json | jq 'keys | length')
+            echo "- Status: PASSED" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Total packages scanned: $TOTAL" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload License Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: license-report.json
+          retention-days: 30
+
+  # ──────────────────────────────────────────────
+  # Summary PR Comment
+  # ──────────────────────────────────────────────
+  sast-summary:
+    name: SAST Summary
+    runs-on: ubuntu-latest
+    if: always() && github.event_name == 'pull_request'
+    needs:
+      - eslint-security
+      - semgrep
+      - dependency-audit
+      - secret-detection
+      - license-compliance
+    steps:
+      - name: Post PR Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const statusIcon = (result) => {
+              if (result === 'success') return '✅';
+              if (result === 'failure') return '❌';
+              return '⚠️';
+            };
+
+            const results = {
+              eslint: '${{ needs.eslint-security.result }}',
+              semgrep: '${{ needs.semgrep.result }}',
+              audit: '${{ needs.dependency-audit.result }}',
+              secrets: '${{ needs.secret-detection.result }}',
+              license: '${{ needs.license-compliance.result }}'
+            };
+
+            const allPassed = Object.values(results).every(r => r === 'success');
+
+            const body = `## 🛡️ SAST Pipeline Results
+
+            | Check | Status |
+            |-------|--------|
+            | ESLint Security | ${statusIcon(results.eslint)} ${results.eslint} |
+            | Semgrep SAST | ${statusIcon(results.semgrep)} ${results.semgrep} |
+            | Dependency Audit | ${statusIcon(results.audit)} ${results.audit} |
+            | Secret Detection | ${statusIcon(results.secrets)} ${results.secrets} |
+            | License Compliance | ${statusIcon(results.license)} ${results.license} |
+
+            **Overall: ${allPassed ? '✅ All checks passed' : '❌ Some checks failed'}**
+
+            > 📋 Detailed reports available in [Actions artifacts](${context.payload.pull_request.html_url}/checks)
+            `.replace(/^            /gm, '');
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('SAST Pipeline Results')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            }

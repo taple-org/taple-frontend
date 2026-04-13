@@ -1,0 +1,154 @@
+rules:
+  # ─── XSS via v-html ──────────────────────────────────
+  - id: vue-v-html-usage
+    patterns:
+      - pattern: v-html="..."
+    message: >
+      v-html renders raw HTML and is a common XSS vector.
+      Use v-text or sanitize input with DOMPurify before rendering.
+    languages: [html]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation"
+      owasp: "A7:2017 - Cross-Site Scripting (XSS)"
+
+  # ─── Dangerous eval patterns ─────────────────────────
+  - id: no-eval-or-function-constructor
+    patterns:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+      - pattern: setTimeout($ARG, ...)
+        metavariable-regex:
+          metavariable: $ARG
+          regex: ^["']
+    message: >
+      eval(), new Function(), and string-argument setTimeout/setInterval
+      can execute arbitrary code. Use safer alternatives.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code"
+
+  # ─── Hardcoded secrets / tokens ──────────────────────
+  - id: hardcoded-api-key
+    patterns:
+      - pattern: |
+          $KEY = "..."
+        metavariable-regex:
+          metavariable: $KEY
+          regex: (?i)(api[_-]?key|api[_-]?secret|auth[_-]?token|access[_-]?token|secret[_-]?key|private[_-]?key|password|passwd)
+    message: >
+      Potential hardcoded secret detected. Use environment variables
+      or a secrets manager instead.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+
+  # ─── Insecure localStorage for tokens ────────────────
+  - id: localstorage-sensitive-data
+    patterns:
+      - pattern: localStorage.setItem("access_token", ...)
+      - pattern: localStorage.setItem("refresh_token", ...)
+      - pattern: localStorage.setItem("auth_token", ...)
+      - pattern: localStorage.setItem("password", ...)
+    message: >
+      Storing authentication tokens in localStorage is vulnerable to XSS.
+      Consider httpOnly cookies or a more secure storage mechanism.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-922: Insecure Storage of Sensitive Information"
+      note: >
+        Known pattern in taple-frontend (TokenKey = 'access_token').
+        Review if migration to httpOnly cookies is feasible.
+
+  # ─── Insecure HTTP requests ──────────────────────────
+  - id: insecure-http-url
+    patterns:
+      - pattern: |
+          fetch("http://...")
+      - pattern: |
+          $AXIOS.get("http://...")
+      - pattern: |
+          $AXIOS.post("http://...")
+    message: >
+      Using HTTP instead of HTTPS exposes data to MITM attacks.
+      Always use HTTPS for API requests.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-319: Cleartext Transmission of Sensitive Information"
+
+  # ─── postMessage without origin check ────────────────
+  - id: postmessage-no-origin-check
+    pattern: |
+      window.addEventListener("message", function($EVENT) {
+        ...
+      })
+    pattern-not-inside: |
+      window.addEventListener("message", function($EVENT) {
+        ...
+        if ($EVENT.origin ...) { ... }
+        ...
+      })
+    message: >
+      postMessage handler without origin validation. Always verify
+      event.origin to prevent cross-origin attacks.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-346: Origin Validation Error"
+
+  # ─── Open redirect via window.location ───────────────
+  - id: open-redirect-window-location
+    patterns:
+      - pattern: window.location.href = $INPUT
+      - pattern: window.location.assign($INPUT)
+      - pattern: window.location.replace($INPUT)
+    message: >
+      Dynamic redirect using user-controlled input may lead to
+      open redirect vulnerabilities. Validate the URL against an
+      allowlist before redirecting.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-601: URL Redirection to Untrusted Site"
+
+  # ─── Prototype pollution patterns ────────────────────
+  - id: prototype-pollution-merge
+    patterns:
+      - pattern: Object.assign({}, ..., $USER_INPUT)
+      - pattern: |
+          $OBJ[$KEY] = $VAL
+        metavariable-regex:
+          metavariable: $KEY
+          regex: (__proto__|constructor|prototype)
+    message: >
+      Potential prototype pollution. Validate or sanitize object keys,
+      especially when merging user-controlled data.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-1321: Improperly Controlled Modification of Object Prototype Attributes"
+
+  # ─── Regex DoS (ReDoS) ──────────────────────────────
+  - id: regex-dos-pattern
+    patterns:
+      - pattern: new RegExp($INPUT)
+    message: >
+      Constructing RegExp from user input can lead to ReDoS attacks.
+      Use a safe regex library or validate the pattern first.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-1333: Inefficient Regular Expression Complexity"

@@ -1,0 +1,63 @@
+title = "taple-frontend gitleaks config"
+
+# ─── Custom rules ──────────────────────────────────────
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"][a-zA-Z0-9_\-]{20,}['"]'''
+keywords = ["api_key", "apikey", "api-key"]
+
+[[rules]]
+id = "jwt-token"
+description = "JWT Token"
+regex = '''eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}'''
+keywords = ["eyJ"]
+
+[[rules]]
+id = "env-values-in-code"
+description = "Hardcoded .env values"
+regex = '''(?i)(DATABASE_URL|REDIS_URL|SECRET_KEY|JWT_SECRET|NUXT_API_BASE)\s*=\s*['"][^'"]{8,}['"]'''
+keywords = ["DATABASE_URL", "REDIS_URL", "SECRET_KEY", "JWT_SECRET", "NUXT_API_BASE"]
+
+[[rules]]
+id = "private-key-block"
+description = "Private Key"
+regex = '''-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'''
+keywords = ["PRIVATE KEY"]
+
+[[rules]]
+id = "password-in-url"
+description = "Password in connection string"
+regex = '''(?i)(postgres|mysql|redis|mongodb):\/\/[^:]+:[^@]{3,}@'''
+keywords = ["postgres://", "mysql://", "redis://", "mongodb://"]
+
+[[rules]]
+id = "telegram-bot-token"
+description = "Telegram Bot Token"
+regex = '''[0-9]{8,}:[a-zA-Z0-9_-]{35}'''
+keywords = ["bot"]
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Webhook URL"
+regex = '''https://hooks\.slack\.com/services/T[a-zA-Z0-9_]+/B[a-zA-Z0-9_]+/[a-zA-Z0-9_]+'''
+keywords = ["hooks.slack.com"]
+
+# ─── Allowlist (false positives) ───────────────────────
+
+[allowlist]
+description = "Global allowlist"
+paths = [
+  '''node_modules''',
+  '''\.nuxt''',
+  '''\.output''',
+  '''dist''',
+  '''pnpm-lock\.yaml''',
+  '''app/api/generated''',
+  '''\.git''',
+]
+regexTarget = "line"
+regexes = [
+  '''(?i)example|placeholder|changeme|your[_-]?(api|token|key|secret)|xxx|TODO''',
+]
