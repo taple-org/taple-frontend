@@ -4,7 +4,7 @@ type LeadCardHeadProps = {
   title: string;
   subtitle: string;
   status: string;
-  isNew: boolean;
+  isNew?: boolean;
 };
 
 defineProps<LeadCardHeadProps>();

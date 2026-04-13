@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { WorkspaceMakeFormModal } from "#components";
 import { useAuthModalController } from "~/composables/modals/useAuthModalController";
 import type { TemplateLink } from "~/interfaces/link.interfaces";
 
@@ -10,6 +11,7 @@ const links: TemplateLink[] = [
 
 const {open} = useAuthModalController();
 const {isAuthenticated} = storeToRefs(useAuthStore());
+
 </script>
 <template>
   <header class="header">
@@ -17,17 +19,19 @@ const {isAuthenticated} = storeToRefs(useAuthStore());
       <section class="content">
         <app-header-logo title="TAPLE" />
         <app-header-links :links />
-        <ui-button v-if="!isAuthenticated" @click="open('login')">Войти</ui-button>
-        <template v-else>
-          <client-only>
-            <app-header-profile />
-          </client-only>
-        </template>
+        <client-only>
+          <ui-button v-if="!isAuthenticated" @click="open('login')">
+            Войти
+          </ui-button>
+          <app-header-profile v-else />
+          <template #fallback>
+            <ui-button disabled>Войти</ui-button>
+          </template>
+        </client-only>
       </section>
     </ui-container>
   </header>
-  <auth-modal />
-  <workspace-make-form-modal />
+  <auth-modal/>
 </template>
 
 <style scoped>

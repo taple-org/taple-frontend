@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { DropdownOption } from "~/components/ui/Dropdown.vue";
 import DashboardLeadsCardsList from "~/components/dashboard/leads/cards-list.vue";
 import DashboardLeadsFilters from "~/components/dashboard/leads/filters.vue";
 import DashboardLeadsInfo from "~/components/dashboard/leads/info.vue";
 import DashboardLeadsSearchBar from "~/components/dashboard/leads/search-bar.vue";
+import DashboardLeadDetailModal from "~/components/dashboard/leads/lead-detail-modal.vue";
 import type { FilterOption, Lead } from "~/components/dashboard/leads/types";
 import leadsMockJson from "~/constants/leads.mock.json";
 
@@ -20,6 +20,10 @@ workspaceStore.setCurrentWorkspace(workspaceId);
 
 const leadsStore = useLeadsStore();
 const cardsListRef = ref<InstanceType<typeof DashboardLeadsCardsList>>();
+
+// Modal state
+const isDetailModalOpen = ref(false);
+const selectedLeadForModal = ref<Lead | null>(null);
 
 const leadsMock = leadsMockJson as {
   productFilters: FilterOption[];
@@ -44,12 +48,14 @@ const requiredFilters = ref<FilterOption[]>(
 );
 
 // Only show leads with "Новый" status
-const newLeads = computed<Lead[]>(() => 
-  leadsStore.leads.filter((lead) => lead.openStatus === 'Новый')
+const newLeads = computed<Lead[]>(() =>
+  leadsStore.leads.filter((lead) => lead.openStatus === "Новый"),
 );
 
 const dropdownOptions = computed<DropdownOption[]>(() => {
-  const cities = [...new Set(newLeads.value.map((l) => l.locationShort).filter(Boolean))];
+  const cities = [
+    ...new Set(newLeads.value.map((l) => l.locationShort).filter(Boolean)),
+  ];
   return [
     { label: "Все города", value: "" },
     ...cities.map((c) => ({ label: c, value: c })),
@@ -70,8 +76,18 @@ const filteredLeads = computed<Lead[]>(() => {
     return matchesCity && matchesQuery;
   });
 });
+const hoveredLeadId = ref<string | null>(null);
 
-const selectedLead = computed(() => filteredLeads.value[0] ?? null);
+const selectedLead = computed(() => {
+  if (hoveredLeadId.value) {
+    return (
+      filteredLeads.value.find((l) => l.id === hoveredLeadId.value) ??
+      filteredLeads.value[0] ??
+      null
+    );
+  }
+  return filteredLeads.value[0] ?? null;
+});
 
 const handlePostpone = async (leadId: string) => {
   const success = await leadsStore.postponeLead(leadId, workspaceId);
@@ -83,6 +99,24 @@ const handlePostpone = async (leadId: string) => {
 
 const handleTake = async (leadId: string) => {
   const success = await leadsStore.takeLead(leadId, workspaceId);
+  isDetailModalOpen.value = false;
+};
+
+const handleShowDetails = (leadId: string) => {
+  const lead = filteredLeads.value.find((l) => l.id === leadId);
+  if (lead) {
+    selectedLeadForModal.value = lead;
+    isDetailModalOpen.value = true;
+  }
+};
+
+const handleModalPostpone = (leadId: string) => {
+  handlePostpone(leadId);
+  isDetailModalOpen.value = false;
+};
+
+const handleModalTake = (leadId: string) => {
+  handleTake(leadId);
   if (!success) {
     cardsListRef.value?.triggerShake(leadId);
   }
@@ -96,31 +130,44 @@ onMounted(() => {
 
 <template>
   <div class="leads-page">
-    <DashboardLeadsFilters
-      v-model:selected-city="selectedCity"
-      :dropdown-options="dropdownOptions"
-      :product-filters="productFilters"
-      :point-type-filters="pointTypeFilters"
-      :required-filters="requiredFilters"
+    <div class="leads-page-container">
+      <DashboardLeadsFilters
+        v-model:selected-city="selectedCity"
+        :dropdown-options="dropdownOptions"
+        :product-filters="productFilters"
+        :point-type-filters="pointTypeFilters"
+        :required-filters="requiredFilters"
+      />
+
+      <span class="leads-page__sidebar-divider" aria-hidden="true" />
+
+      <section class="leads-page__content">
+        <DashboardLeadsSearchBar v-model="searchQuery" />
+
+        <div class="leads-page__main-grid">
+          <DashboardLeadsCardsList
+            ref="cardsListRef"
+            :leads="filteredLeads"
+            @postpone="handlePostpone"
+            @take="handleTake"
+            @show-more="leadsStore.fetchMore"
+            @details="handleShowDetails"
+            @hover="hoveredLeadId = $event"
+            @leave="hoveredLeadId = null"
+          />
+
+          <DashboardLeadsInfo :lead="selectedLead" />
+        </div>
+      </section>
+    </div>
+
+    <!-- Lead Detail Modal -->
+    <DashboardLeadDetailModal
+      v-model:open="isDetailModalOpen"
+      :lead="selectedLeadForModal"
+      @postpone="handleModalPostpone"
+      @take="handleModalTake"
     />
-
-    <span class="leads-page__sidebar-divider" aria-hidden="true" />
-
-    <section class="leads-page__content">
-      <DashboardLeadsSearchBar v-model="searchQuery" />
-
-      <div class="leads-page__main-grid">
-        <DashboardLeadsCardsList
-          ref="cardsListRef"
-          :leads="filteredLeads"
-          @postpone="handlePostpone"
-          @take="handleTake"
-          @show-more="leadsStore.fetchMore"
-        />
-
-        <DashboardLeadsInfo :lead="selectedLead" />
-      </div>
-    </section>
   </div>
 </template>
 
@@ -133,8 +180,16 @@ onMounted(() => {
   padding: 25px 64px;
   box-sizing: border-box;
   align-items: flex-start;
+  justify-content: center;
 }
-
+.leads-page-container {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  gap: 10px;
+  width: 80%;
+  max-width: 1300px;
+}
 .leads-page__sidebar-divider {
   width: 1px;
   align-self: stretch;
@@ -152,23 +207,17 @@ onMounted(() => {
 }
 
 .leads-page__main-grid {
-  display: grid;
+  display: flex;
   width: 100%;
   flex: 1;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   align-items: start;
   gap: 10px;
   min-height: 0;
-  overflow: hidden;
 }
 
 @media (max-width: 1280px) {
   .leads-page {
     padding: 20px 24px;
-  }
-
-  .leads-page__main-grid {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -180,10 +229,6 @@ onMounted(() => {
 
   .leads-page__sidebar-divider {
     display: none;
-  }
-
-  .leads-page__main-grid {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import DashboardLeadCard from "../lead-card.vue";
+import DashboardLeadCard from "./lead-card.vue";
 import type { Lead } from "./types";
 
 defineProps<{
@@ -10,9 +10,14 @@ const emit = defineEmits<{
   postpone: [leadId: string];
   take: [leadId: string];
   showMore: [];
+  hover: [leadId: string];
+  leave: [];
+  details: [leadId: string];
 }>();
 
-const cardRefs = ref<Record<string, InstanceType<typeof DashboardLeadCard>>>({});
+const cardRefs = ref<Record<string, InstanceType<typeof DashboardLeadCard>>>(
+  {},
+);
 
 const setCardRef = (leadId: string, el: any) => {
   if (el) {
@@ -31,7 +36,11 @@ defineExpose({
 
 <template>
   <section class="leads-cards-list" aria-label="Список лидов">
-    <TransitionGroup name="lead-card" tag="div" class="leads-cards-list__container">
+    <TransitionGroup
+      name="lead-card"
+      tag="div"
+      class="leads-cards-list__container"
+    >
       <DashboardLeadCard
         v-for="lead in leads"
         :key="lead.id"
@@ -46,6 +55,9 @@ defineExpose({
         :open-status="lead.openStatus"
         @postpone="emit('postpone', $event)"
         @take="emit('take', $event)"
+        @hover="emit('hover', $event)"
+        @leave="emit('leave')"
+        @details="emit('details', $event)"
       />
     </TransitionGroup>
 
@@ -55,7 +67,7 @@ defineExpose({
       @click="emit('showMore')"
     >
       Показать еще
-      <Icon name="other-arrow-down" mode="svg" :size="10" />
+      <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
     </button>
   </section>
 </template>
@@ -90,11 +102,8 @@ defineExpose({
 }
 
 .lead-card-enter-active {
+  z-index: -1;
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.lead-card-leave-active {
-  transition: all 0.4s ease-out;
 }
 
 .lead-card-enter-from {
@@ -132,7 +141,6 @@ defineExpose({
 }
 </style>
 
-
 <style scoped>
 .leads-cards-list {
   display: flex;
@@ -166,10 +174,6 @@ defineExpose({
 }
 
 @media (max-width: 700px) {
-  .leads-cards-list {
-    max-width: 100%;
-  }
-
   .leads-cards-list :deep(.lead-card) {
     max-width: 100%;
   }

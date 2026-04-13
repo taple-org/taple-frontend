@@ -209,7 +209,7 @@ export const useAuthStore = defineStore('auth', () => {
         otpType,
 
         isAuthenticated,
-
+        clearAuth,
         setPendingEmail,
         resetPendingEmail,
         login,
