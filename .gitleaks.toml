@@ -1,7 +1,5 @@
 title = "taple-frontend gitleaks config"
 
-# ─── Custom rules ──────────────────────────────────────
-
 [[rules]]
 id = "generic-api-key"
 description = "Generic API Key"
@@ -44,8 +42,6 @@ description = "Slack Webhook URL"
 regex = '''https://hooks\.slack\.com/services/T[a-zA-Z0-9_]+/B[a-zA-Z0-9_]+/[a-zA-Z0-9_]+'''
 keywords = ["hooks.slack.com"]
 
-# ─── Allowlist (false positives) ───────────────────────
-
 [allowlist]
 description = "Global allowlist"
 commits = ["a7b98f2efab694941ebb062f79c756fe34055f3e"]
@@ -58,12 +54,6 @@ paths = [
   '''app/api/generated''',
   '''\.git''',
 ]
-regexTarget = "line"
-regexes = [
-  '''(?i)example|placeholder|changeme|your[_-]?(api|token|key|secret)|xxx|TODO''',
-]
-
-regexTarget = "line"
 regexes = [
   '''(?i)example|placeholder|changeme|your[_-]?(api|token|key|secret)|xxx|TODO''',
 ]
