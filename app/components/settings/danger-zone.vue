@@ -54,7 +54,7 @@ async function confirmDeactivate() {
         <div class="danger-name">Деактивировать аккаунт</div>
         <div class="danger-desc">Аккаунт будет временно скрыт. Вы сможете восстановить его в течение 30 дней</div>
       </div>
-      <ui-button variant="warning" @click="showDeactivateModal = true">
+      <ui-button variant="outline" @click="showDeactivateModal = true">
         Деактивировать
       </ui-button>
     </div>
@@ -85,7 +85,6 @@ async function confirmDeactivate() {
     </template>
   </ui-modal>
 
-  <!-- ── Delete confirmation modal (ui-modal → Ark UI Dialog) ── -->
   <ui-modal
     v-model:open="showDeleteModal"
     title="Удалить аккаунт?"
@@ -139,7 +138,7 @@ async function confirmDeactivate() {
   font-size: 15px;
   font-weight: 500;
   color: var(--color-error);
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .card-desc {

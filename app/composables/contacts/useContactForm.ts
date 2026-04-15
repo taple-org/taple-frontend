@@ -24,5 +24,5 @@ export const useContactForm = () => {
     },
   });
 
-  return { r$ };
+  return { r$, state };
 };

@@ -1,190 +1,190 @@
 <script setup lang="ts">
-import { Field } from "@ark-ui/vue/field";
-import { useContactForm } from "~/composables/contacts/useContactForm";
+import { Field } from '@ark-ui/vue/field'
 
-const { r$ } = useContactForm();
+const { r$, state } = useContactForm()
 
-const isSubmitting = ref(false);
-const submitStatus = ref<"idle" | "success" | "error">("idle");
+const isSending = ref(false)
+const sent = ref(false)
 
-const handleSubmit = async () => {
-  const result = await r$.$validate();
-  if (!result.valid) return;
+async function handleSubmit() {
+  const result = await r$.$validate()
+  if (!result.$valid) return
 
-  isSubmitting.value = true;
+  isSending.value = true
   try {
-    // TODO: wire up real API call when endpoint is available
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    submitStatus.value = "success";
-    r$.$reset();
-  } catch {
-    submitStatus.value = "error";
+    // TODO: await $fetch('/api/contact', { method: 'POST', body: { name: state.name, email: state.email, message: state.message } })
+    await new Promise(r => setTimeout(r, 800))
+    sent.value = true
+    r$.$reset()
+    setTimeout(() => { sent.value = false }, 5000)
   } finally {
-    isSubmitting.value = false;
+    isSending.value = false
   }
-};
+}
 </script>
 
 <template>
   <section class="contact-section">
     <ui-container :padding="[80, 15]">
       <div class="contact-section__inner">
-
-        <!-- Left: copy -->
         <div class="contact-section__copy">
-          <h2 class="contact-section__heading">Остались вопросы?</h2>
-          <h3 class="contact-section__subheading">Заполните форму</h3>
-          <p class="contact-section__description">
-            Наша команда свяжется с вами в ближайшее время и ответит на все
-            интересующие вопросы.
-          </p>
+          <h2 class="contact-section__heading">Свяжитесь с нами</h2>
+          <p class="contact-section__subheading">Расскажите о задаче — мы подберём решение</p>
+          <ul class="contact-section__list">
+            <li>Демонстрация платформы</li>
+            <li>Вопросы по интеграции</li>
+            <li>Корпоративные условия</li>
+            <li>Техническая поддержка</li>
+          </ul>
         </div>
 
-        <!-- Right: form card -->
         <div class="contact-section__form-wrap">
-          <form class="contact-form" @submit.prevent="handleSubmit" novalidate>
+          <form class="contact-form" @submit.prevent="handleSubmit">
+            <h3 class="contact-form__title">Напишите нам</h3>
 
             <ui-form-field
-              v-model="r$.$value.name"
               type="text"
-              label="Имя"
-              placeholder="Введите ваше имя"
-              required
+              v-model="r$.$value.name"
               :error="r$.name.$errors[0]"
+              label="Имя"
+              placeholder="Ваше имя"
             />
-
             <ui-form-field
-              v-model="r$.$value.email"
               type="email"
-              label="Email"
-              placeholder="Введите email"
-              required
+              v-model="r$.$value.email"
               :error="r$.email.$errors[0]"
+              label="Email"
+              placeholder="email@company.com"
             />
 
-            <!-- Textarea: Field.Root drives data-invalid on Field.Textarea automatically -->
             <Field.Root
               class="field"
-              :required="true"
               :invalid="!!r$.message.$errors[0]"
             >
-              <Field.Label class="field__label">
-                Сообщение
-                <span class="field__required" aria-hidden="true">*</span>
-              </Field.Label>
+              <Field.Label class="field__label">Сообщение</Field.Label>
               <Field.Textarea
                 class="field-textarea"
                 v-model="r$.$value.message"
-                placeholder="Введите ваше сообщение"
-                rows="5"
+                placeholder="Опишите вашу задачу..."
+                rows="4"
               />
               <Field.ErrorText v-if="r$.message.$errors[0]" class="field__error">
                 {{ r$.message.$errors[0] }}
               </Field.ErrorText>
             </Field.Root>
 
-            <div v-if="submitStatus === 'success'" class="contact-form__success">
-              Сообщение отправлено! Мы скоро свяжемся с вами.
+            <div v-if="sent" class="success-banner">
+              Сообщение отправлено! Мы ответим в течение одного рабочего дня.
             </div>
 
-            <div v-if="submitStatus === 'error'" class="contact-form__error">
-              Произошла ошибка. Попробуйте ещё раз.
-            </div>
-
-            <ui-button
-              type="submit"
-              :disabled="isSubmitting"
-              class="contact-form__submit"
-            >
-              {{ isSubmitting ? "Отправка..." : "Отправить" }}
+            <ui-button type="submit" :disabled="isSending" class="contact-form__submit">
+              {{ isSending ? 'Отправка...' : 'Отправить сообщение' }}
             </ui-button>
-
           </form>
         </div>
-
       </div>
     </ui-container>
   </section>
 </template>
 
 <style scoped>
-/* ── Section shell ──────────────────────────────────── */
 .contact-section {
-  background-color: var(--color-primary);
+  background: var(--color-primary);
 }
 
-/* ── Two-column inner ───────────────────────────────── */
 .contact-section__inner {
   display: flex;
   align-items: center;
   gap: 60px;
 }
 
-/* ── Left copy ──────────────────────────────────────── */
 .contact-section__copy {
   flex: 1;
   color: var(--color-secondary);
 }
 
 .contact-section__heading {
-  font-family: var(--font-base), sans-serif;
   font-size: 48px;
   font-weight: 700;
   line-height: 1.1;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .contact-section__subheading {
-  font-family: var(--font-base), sans-serif;
-  font-size: 36px;
-  font-weight: 500;
-  margin-bottom: 24px;
+  font-size: 22px;
+  font-weight: 400;
+  opacity: 0.85;
+  margin-bottom: 32px;
 }
 
-.contact-section__description {
-  font-family: var(--font-base), sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
-  color: color-mix(in srgb, var(--color-secondary) 75%, transparent);
-}
-
-/* ── Right form wrap ────────────────────────────────── */
-.contact-section__form-wrap {
-  flex: 0 0 480px;
-}
-
-/* ── Form card ──────────────────────────────────────── */
-.contact-form {
-  background-color: var(--color-secondary);
-  border-radius: 24px;
-  padding: 40px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+.contact-section__list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
 }
 
-/* ── Textarea (mirrors TextField.vue .field-input) ──── */
+.contact-section__list li {
+  font-size: 16px;
+  padding-left: 24px;
+  position: relative;
+  opacity: 0.9;
+}
+
+.contact-section__list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+
+.contact-section__form-wrap {
+  flex: 0 0 460px;
+}
+
+.contact-form {
+  background: var(--color-secondary);
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.contact-form__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-neutral-dd);
+}
+
+/* Field.Root / Field.Textarea styles mirroring TextField.vue */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-neutral-dm);
+}
+
 .field-textarea {
-  font-family: var(--font-base), sans-serif;
-  font-size: 14px;
-  padding: 16px;
   width: 100%;
+  font-family: var(--font-base);
+  font-size: 14px;
+  padding: 12px;
   border: 1px solid var(--color-neutral-lm);
   border-radius: var(--radius-md);
   outline: none;
-  background-color: var(--color-neutral-ll);
-  color: var(--color-neutral-dd);
   resize: vertical;
-  min-height: 120px;
-  box-sizing: border-box;
-  transition:
-    border-color var(--transition-base),
-    box-shadow var(--transition-base);
-}
-
-.field-textarea::placeholder {
-  color: var(--color-neutral-dl);
+  min-height: 100px;
+  color: var(--color-neutral-dd);
+  background: var(--color-secondary);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .field-textarea:focus {
@@ -192,82 +192,44 @@ const handleSubmit = async () => {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
 }
 
-/* Ark UI sets data-invalid on Field.Textarea when Field.Root :invalid is true */
-.field-textarea[data-invalid] {
+.field[data-invalid] .field-textarea {
   border-color: var(--color-error);
 }
 
-.field-textarea[data-invalid]:focus {
+.field[data-invalid] .field-textarea:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 15%, transparent);
 }
 
-/* ── Inline field wrappers (mirrors FormField.vue) ──── */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.field__label {
-  font-family: var(--font-base);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-neutral-dd);
-}
-
-.field__required {
-  color: var(--color-error);
-  margin-left: 2px;
-}
-
 .field__error {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-error);
 }
 
-/* ── Status banners ─────────────────────────────────── */
-.contact-form__success {
-  font-size: 14px;
+.success-banner {
+  padding: 12px 16px;
+  background: var(--color-success-l);
   color: var(--color-success);
-  background-color: var(--color-success-l);
   border-radius: var(--radius-md);
-  padding: 12px 16px;
-  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.contact-form__error {
-  font-size: 14px;
-  color: var(--color-error);
-  background-color: var(--color-error-l);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
-  text-align: center;
-}
-
-/* ── Submit button ──────────────────────────────────── */
 .contact-form__submit {
-  border-radius: 40px;
   width: 100%;
+  border-radius: 40px;
 }
 
-/* ── Responsive ─────────────────────────────────────── */
 @media (max-width: 900px) {
   .contact-section__inner {
     flex-direction: column;
-    align-items: stretch;
     gap: 40px;
   }
-
   .contact-section__form-wrap {
-    flex: unset;
+    flex: none;
+    width: 100%;
   }
-
   .contact-section__heading {
-    font-size: 32px;
-  }
-
-  .contact-section__subheading {
-    font-size: 24px;
+    font-size: 36px;
   }
 }
 </style>

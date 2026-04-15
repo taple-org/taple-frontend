@@ -124,7 +124,6 @@ function removeAvatar() {
   line-height: 1.5;
 }
 
-/* ── Avatar (Ark UI Avatar.Root) ─────────────── */
 .avatar-row {
   display: flex;
   align-items: center;
@@ -149,7 +148,6 @@ function removeAvatar() {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Ark UI hides the image while loading via data-state='hidden' */
 }
 
 .avatar__image[data-state='hidden'] {
@@ -160,14 +158,12 @@ function removeAvatar() {
   font-size: 22px;
   font-weight: 600;
   color: var(--color-primary);
-  /* Ark UI hides the fallback once image loads via data-state='hidden' */
 }
 
 .avatar__fallback[data-state='hidden'] {
   display: none;
 }
 
-/* ── Upload button (FileUpload.Trigger) ──────── */
 .avatar-actions {
   display: flex;
   gap: 10px;
@@ -202,18 +198,11 @@ function removeAvatar() {
   cursor: wait;
 }
 
-/* FileUpload.Trigger exposes data-disabled */
 .btn-upload[data-disabled] {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.btn-icon {
-  width: 15px;
-  height: 15px;
-}
-
-/* ── Error text ──────────────────────────────── */
 .error-text {
   margin-top: 12px;
   font-size: 13px;

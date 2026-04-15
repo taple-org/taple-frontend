@@ -7,75 +7,67 @@
 
     <form class="form-grid" @submit.prevent="handleSubmit">
       <ui-form-field
-          type="text"
-          v-model="form.firstName"
-          :error="errors.firstName"
-          label="Имя"
-          placeholder="Введите имя"
+        type="text"
+        v-model="r$.$value.firstName"
+        :error="r$.firstName.$errors[0]"
+        label="Имя"
+        placeholder="Введите имя"
       />
       <ui-form-field
-          type="text"
-          v-model="form.lastName"
-          :error="errors.lastName"
-          label="Фамилия"
-          placeholder="Введите фамилию"
+        type="text"
+        v-model="r$.$value.lastName"
+        :error="r$.lastName.$errors[0]"
+        label="Фамилия"
+        placeholder="Введите фамилию"
       />
 
-
       <ui-form-field
-          class="form__lang"
+        class="form__lang"
         type="select"
-        v-model="form.language"
-        :error="errors.language"
+        v-model="r$.$value.language"
         label="Язык"
         placeholder="Выберите язык"
         :options="[
-            { label: 'Русский', value: 'ru' },
-            { label: 'English', value: 'en' }
+          { label: 'Русский', value: 'ru' },
+          { label: 'English', value: 'en' }
         ]"
-        />
+      />
 
       <div class="form-footer">
-        <ui-button variant="outline">
+        <ui-button variant="outline" type="button" @click="r$.$reset()">
           Отмена
         </ui-button>
-        <ui-button type="submit" variant="primary">
-          Сохранить изменения
+        <ui-button type="submit" variant="primary" :disabled="isLoading">
+          {{ isLoading ? 'Сохранение...' : 'Сохранить изменения' }}
         </ui-button>
       </div>
     </form>
 
-    <ui-badge v-if="successMessage" variant="primary">
-      {{ successMessage }}
-    </ui-badge>
+    <div v-if="successMessage" class="success-banner">{{ successMessage }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-interface ProfileForm {
-  firstName: string
-  lastName: string
-  language: string
+const { r$ } = useProfileForm()
 
-}
-
-const initialForm: ProfileForm = {
-  firstName: '',
-  lastName: '',
-  language: 'ru',
-}
-
-const form = reactive<ProfileForm>({ ...initialForm })
-const savedForm = ref<ProfileForm>({ ...initialForm })
-
-const errors = reactive<Partial<Record<keyof ProfileForm, string>>>({})
 const isLoading = ref(false)
 const successMessage = ref('')
-const handleSubmit = () => {
-  console.log(form)
+
+async function handleSubmit() {
+  const result = await r$.$validate()
+  if (!result.$valid) return
+
+  isLoading.value = true
+  successMessage.value = ''
+  try {
+    // TODO: await $fetch('/api/user/profile', { method: 'PUT', body: { ... } })
+    await new Promise(r => setTimeout(r, 600))
+    successMessage.value = 'Профиль обновлён'
+    setTimeout(() => { successMessage.value = '' }, 3000)
+  } finally {
+    isLoading.value = false
+  }
 }
-
-
 </script>
 
 <style scoped>
@@ -108,6 +100,10 @@ const handleSubmit = () => {
   gap: 14px;
 }
 
+.form__lang {
+  grid-column: 1 / -1;
+}
+
 .form-footer {
   grid-column: 1 / -1;
   display: flex;
@@ -116,15 +112,21 @@ const handleSubmit = () => {
   margin-top: 4px;
 }
 
-.form__lang{
-  grid-column: 1 / -1;
+.success-banner {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--color-success-l);
+  color: var(--color-success);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 @media (max-width: 600px) {
   .form-grid {
     grid-template-columns: 1fr;
   }
-  .field-full {
+  .form__lang {
     grid-column: 1;
   }
 }

@@ -5,7 +5,6 @@ import type { TemplateLink } from "~/interfaces/link.interfaces";
 
 const links: TemplateLink[] = [
   { to: "/contacts", label: "Контакты" },
-  { to: "/tariffs", label: "Тарифы" },
   { to: "/api", label: "API" },
 ];
 

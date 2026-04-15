@@ -2,10 +2,13 @@
   <div class="subscription-page">
     <div class="page-header">
       <h1 class="page-title">Подписка</h1>
-      <p class="page-desc">Управляйте тарифом, способом оплаты и историей платежей</p>
+      <p class="page-desc">Управляйте планом, оплатой и историей транзакций</p>
     </div>
 
-    <settings-subscription-card />
+    <settings-subscription-current-plan-card />
+    <settings-subscription-plans-grid />
+    <settings-subscription-payment-method-card />
+    <settings-subscription-billing-history-card />
   </div>
 </template>
 

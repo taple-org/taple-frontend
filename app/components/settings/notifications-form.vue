@@ -19,7 +19,6 @@
       </div>
     </div>
 
-    <!-- Footer only on the last card -->
     <div v-if="group === groups[groups.length - 1]" class="form-footer">
       <div v-if="saved" class="success-banner">Настройки сохранены</div>
       <ui-button variant="outline" @click="resetToDefault">Сбросить</ui-button>
@@ -49,27 +48,27 @@ const groups = reactive<NotificationGroup[]>([
     title: 'Уведомления по Email',
     description: 'Выберите, какие письма вы хотите получать на почту',
     items: [
-      { key: 'email_security', label: 'Безопасность', description: 'Входы с новых устройств, смена пароля и подозрительная активность', enabled: true },
-      { key: 'email_activity', label: 'Активность аккаунта', description: 'Обновления лидов, изменения в рабочих пространствах и задачи', enabled: true },
-      { key: 'email_product', label: 'Новости продукта', description: 'Анонсы функций, обновления и советы по использованию', enabled: false },
-      { key: 'email_billing', label: 'Биллинг и оплата', description: 'Квитанции, предстоящие списания и уведомления о подписке', enabled: true },
+      { key: 'email_security',  label: 'Безопасность',        description: 'Входы с новых устройств, смена пароля и подозрительная активность', enabled: true },
+      { key: 'email_activity',  label: 'Активность аккаунта', description: 'Обновления лидов, изменения в рабочих пространствах и задачи',     enabled: true },
+      { key: 'email_product',   label: 'Новости продукта',    description: 'Анонсы функций, обновления и советы по использованию',              enabled: false },
+      { key: 'email_billing',   label: 'Биллинг и оплата',    description: 'Квитанции, предстоящие списания и уведомления о подписке',          enabled: true },
     ],
   },
   {
     title: 'Push-уведомления',
     description: 'Уведомления прямо в браузере или мобильном приложении',
     items: [
-      { key: 'push_leads', label: 'Новые лиды', description: 'Уведомления о новых контрагентах, найденных системой', enabled: true },
-      { key: 'push_tasks', label: 'Задачи', description: 'Напоминания о дедлайнах и назначенных задачах', enabled: true },
-      { key: 'push_team', label: 'Действия команды', description: 'Когда участники команды вносят изменения в общее пространство', enabled: false },
+      { key: 'push_leads', label: 'Новые лиды',      description: 'Уведомления о новых контрагентах, найденных системой',           enabled: true },
+      { key: 'push_tasks', label: 'Задачи',           description: 'Напоминания о дедлайнах и назначенных задачах',                  enabled: true },
+      { key: 'push_team',  label: 'Действия команды', description: 'Когда участники команды вносят изменения в общее пространство',  enabled: false },
     ],
   },
   {
     title: 'Уведомления по SMS',
     description: 'Важные оповещения через текстовые сообщения',
     items: [
-      { key: 'sms_security', label: 'Критическая безопасность', description: 'Только самые важные предупреждения о безопасности аккаунта', enabled: true },
-      { key: 'sms_billing', label: 'Платёжные уведомления', description: 'Подтверждение транзакций и предупреждения о сбоях оплаты', enabled: false },
+      { key: 'sms_security', label: 'Критическая безопасность', description: 'Только самые важные предупреждения о безопасности аккаунта',    enabled: true },
+      { key: 'sms_billing',  label: 'Платёжные уведомления',    description: 'Подтверждение транзакций и предупреждения о сбоях оплаты',      enabled: false },
     ],
   },
 ])

@@ -2,7 +2,7 @@
   <div class="notifications-page">
     <div class="page-header">
       <h1 class="page-title">Уведомления</h1>
-      <p class="page-desc">Настройте, как и когда вы получаете уведомления</p>
+      <p class="page-desc">Настройте, как и когда вы хотите получать уведомления</p>
     </div>
 
     <settings-notifications-form />

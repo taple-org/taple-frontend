@@ -45,7 +45,7 @@ const { disabled = false } = defineProps<{
   border-radius: 100px;
   background: var(--color-neutral-lm);
   border: none;
-  transition: background var(--transition-base), box-shadow var(--transition-base), justify-content var(--transition-base);
+  transition: background var(--transition-base), box-shadow var(--transition-base);
 }
 
 .switch__control[data-state='checked'] {
@@ -64,8 +64,5 @@ const { disabled = false } = defineProps<{
   border-radius: 50%;
   background: var(--color-white);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
-  transition: transform var(--transition-base);
 }
-
-
 </style>
