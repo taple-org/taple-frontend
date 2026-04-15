@@ -3,9 +3,9 @@ import { computed } from 'vue'
 import { Select } from '@ark-ui/vue/select'
 import { createListCollection } from '@ark-ui/vue'
 import type { SelectOption } from './registry'
-const props = defineProps<{
+const { options = [], modelValue } = defineProps<{
   modelValue: string
-  options: SelectOption[]
+  options?: SelectOption[]
   placeholder?: string
   disabled?: boolean
 }>()
@@ -14,13 +14,13 @@ const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
 const collection = computed(() =>
   createListCollection({
-    items: props.options,
+    items: options,
     itemToValue: (item) => item.value,
     itemToString: (item) => item.label,
   })
 )
 
-const selected = computed(() => (props.modelValue ? [props.modelValue] : []))
+const selected = computed(() => (modelValue ? [modelValue] : []))
 
 function handleValueChange(details: { value: string[] }) {
   emit('update:modelValue', details.value[0] ?? '')
