@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Field } from '@ark-ui/vue/field'
+import {useContactForm} from "~/composables/contacts/useContactForm";
 
 const { r$, state } = useContactForm()
 
@@ -8,7 +9,7 @@ const sent = ref(false)
 
 async function handleSubmit() {
   const result = await r$.$validate()
-  if (!result.$valid) return
+  if (!result.valid) return
 
   isSending.value = true
   try {

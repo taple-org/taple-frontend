@@ -48,6 +48,8 @@
 </template>
 
 <script setup lang="ts">
+import { useProfileForm } from "~/composables/settings/useProfileForm";
+
 const { r$ } = useProfileForm()
 
 const isLoading = ref(false)

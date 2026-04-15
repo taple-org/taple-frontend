@@ -105,6 +105,7 @@ async function saveTags() {
 </script>
 
 <template>
+  <ui-container :padding="[20, 15, 20]">
   <div class="ws-settings">
     <div class="page-header">
       <h1 class="page-title">Настройки пространства</h1>
@@ -212,6 +213,7 @@ async function saveTags() {
       </div>
     </div>
   </div>
+  </ui-container>
 </template>
 
 <style scoped>

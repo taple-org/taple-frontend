@@ -57,6 +57,8 @@
 </template>
 
 <script setup lang="ts">
+import {usePasswordForm} from "~/composables/settings/usePasswordForm";
+
 const { r$, state } = usePasswordForm()
 
 const isLoading = ref(false)
