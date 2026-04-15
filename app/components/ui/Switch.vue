@@ -35,20 +35,21 @@ const { disabled = false } = defineProps<{
   cursor: not-allowed;
 }
 
-/* Track */
 .switch__control {
   display: inline-flex;
   align-items: center;
-  width: 42px;
+  justify-content: flex-start;
+  width: 50px;
   height: 24px;
   padding: 3px;
   border-radius: 100px;
   background: var(--color-neutral-lm);
   border: none;
-  transition: background var(--transition-base), box-shadow var(--transition-base);
+  transition: background var(--transition-base), box-shadow var(--transition-base), justify-content var(--transition-base);
 }
 
 .switch__control[data-state='checked'] {
+  justify-content: flex-end;
   background: var(--color-primary);
 }
 
@@ -57,7 +58,6 @@ const { disabled = false } = defineProps<{
   outline-offset: 2px;
 }
 
-/* Thumb */
 .switch__thumb {
   width: 18px;
   height: 18px;
@@ -67,7 +67,5 @@ const { disabled = false } = defineProps<{
   transition: transform var(--transition-base);
 }
 
-.switch__thumb[data-state='checked'] {
-  transform: translateX(18px);
-}
+
 </style>

@@ -70,7 +70,7 @@ function handleValueChange(details: { value: string[] }) {
   padding: 16px;
   border: 1px solid var(--color-neutral-lm);
   border-radius: var(--radius-md);
-  background-color: var(--color-neutral-ll);
+  background-color: var(--color-secondary);
   color: var(--color-neutral-dl);
   cursor: pointer;
   outline: none;

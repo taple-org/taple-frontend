@@ -49,20 +49,18 @@ async function confirmDeactivate() {
       <p class="card-desc">Эти действия необратимы. Будьте внимательны</p>
     </div>
 
-    <!-- Deactivate row -->
     <div class="danger-item">
       <div class="danger-info">
         <div class="danger-name">Деактивировать аккаунт</div>
         <div class="danger-desc">Аккаунт будет временно скрыт. Вы сможете восстановить его в течение 30 дней</div>
       </div>
-      <ui-button variant="outline" class="btn-warning" @click="showDeactivateModal = true">
+      <ui-button variant="warning" @click="showDeactivateModal = true">
         Деактивировать
       </ui-button>
     </div>
 
     <div class="divider" />
 
-    <!-- Delete row -->
     <div class="danger-item">
       <div class="danger-info">
         <div class="danger-name">Удалить аккаунт</div>
@@ -74,7 +72,6 @@ async function confirmDeactivate() {
     </div>
   </div>
 
-  <!-- ── Deactivate confirmation modal (ui-modal → Ark UI Dialog) ── -->
   <ui-modal
     v-model:open="showDeactivateModal"
     title="Деактивировать аккаунт?"
@@ -142,7 +139,7 @@ async function confirmDeactivate() {
   font-size: 15px;
   font-weight: 500;
   color: var(--color-error);
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
 
 .card-desc {
@@ -178,17 +175,6 @@ async function confirmDeactivate() {
   border-top: 1px solid var(--color-neutral-ll);
 }
 
-/* Deactivate button: warning styling override on outline variant */
-.btn-warning {
-  border-color: var(--color-warning) !important;
-  color: #7a4a0a !important;
-}
-
-.btn-warning:hover {
-  background-color: var(--color-warning-l) !important;
-}
-
-/* ── Modal body ──────────────────────────────── */
 .confirm-body {
   display: flex;
   flex-direction: column;

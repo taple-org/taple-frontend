@@ -23,6 +23,7 @@
 
 
       <ui-form-field
+          class="form__lang"
         type="select"
         v-model="form.language"
         :error="errors.language"
@@ -113,6 +114,10 @@ const handleSubmit = () => {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 4px;
+}
+
+.form__lang{
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 600px) {

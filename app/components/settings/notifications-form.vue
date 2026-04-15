@@ -77,7 +77,6 @@ const groups = reactive<NotificationGroup[]>([
 const isSaving = ref(false)
 const saved = ref(false)
 
-// Snapshot defaults at mount time
 const defaults = groups.map(g => ({
   key: g.title,
   items: g.items.map(i => ({ key: i.key, enabled: i.enabled })),

@@ -54,7 +54,6 @@ function removeAvatar() {
     </div>
 
     <div class="avatar-row">
-      <!-- Avatar display: Ark UI Avatar handles image/fallback state automatically -->
       <Avatar.Root class="avatar">
         <Avatar.Image
           v-if="previewUrl"
@@ -68,7 +67,6 @@ function removeAvatar() {
       </Avatar.Root>
 
       <div class="avatar-actions">
-        <!-- FileUpload: Ark UI handles input, accept, size validation -->
         <FileUpload.Root
           :max-files="1"
           accept="image/jpeg, image/png, image/webp"
@@ -81,7 +79,6 @@ function removeAvatar() {
             :class="{ 'btn-upload--loading': isUploading }"
             :disabled="isUploading"
           >
-            <Icon name="my-icon:inbox" class="btn-icon" />
             {{ isUploading ? 'Загрузка...' : 'Загрузить фото' }}
           </FileUpload.Trigger>
           <FileUpload.HiddenInput />
