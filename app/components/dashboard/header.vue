@@ -1,21 +1,57 @@
 <script setup lang="ts">
-import {useAuthModalController} from "~/composables/modals/useAuthModalController";
+import { useAuthModalController } from "~/composables/modals/useAuthModalController";
+import type { TenantRead } from "~/api/generated/api";
 
 const route = useRoute();
+const { $apiClient } = useNuxtApp();
+const { isAuthenticated } = storeToRefs(useAuthStore());
 
-const workspaceId = computed(() => route.params.workspaceId as string)
+const workspaceId = computed(() => route.params.workspaceId as string);
+
+// Fetch workspace name
+const workspace = ref<TenantRead | null>(null);
+
+async function fetchWorkspace() {
+  if (!workspaceId.value || !isAuthenticated.value) return;
+  try {
+    const response = await $apiClient.api.getTenantApiV1TenantsTenantIdGet(
+      workspaceId.value,
+    );
+    workspace.value = response.data.result;
+  } catch (error: any) {
+    if (error?.status !== 401) {
+      console.error("Failed to fetch workspace:", error);
+    }
+  }
+}
+
+watch(
+  [workspaceId, isAuthenticated],
+  () => {
+    fetchWorkspace();
+  },
+  { immediate: true },
+);
 
 const tabs = computed(() => [
   { label: "Дэшбоард", to: `/workspaces/${workspaceId.value}/dashboard` },
   { label: "Лиды", to: `/workspaces/${workspaceId.value}/dashboard/leads` },
-  { label: "Воронка", to: `/workspaces/${workspaceId.value}/dashboard/pipeline` },
-  { label: "Мониторинг", to: `/workspaces/${workspaceId.value}/dashboard/monitoring` },
+  {
+    label: "Воронка",
+    to: `/workspaces/${workspaceId.value}/dashboard/pipeline`,
+  },
+  {
+    label: "Мониторинг",
+    to: `/workspaces/${workspaceId.value}/dashboard/monitoring`,
+  },
   { label: "Задачи", to: `/workspaces/${workspaceId.value}/dashboard/tasks` },
-  { label: "Настройки", to: `/workspaces/${workspaceId.value}/dashboard/settings` },
+  {
+    label: "Настройки",
+    to: `/workspaces/${workspaceId.value}/dashboard/settings`,
+  },
 ]);
 
-const { isAuthenticated } = storeToRefs(useAuthStore())
-const controller = useAuthModalController()
+const controller = useAuthModalController();
 const isActive = (to: string) => {
   if (to === `/workspaces/${workspaceId.value}/dashboard`) {
     return route.path === `/workspaces/${workspaceId.value}/dashboard`;
@@ -26,7 +62,12 @@ const isActive = (to: string) => {
 
 <template>
   <header class="dashboard-header">
-    <h1 class="dashboard-header__logo">TAPLE</h1>
+    <div class="dashboard-header__brand">
+      <h1 class="dashboard-header__logo" @click="$router.push('/')">TAPLE</h1>
+      <span v-if="workspace?.name" class="dashboard-header__workspace">{{
+        workspace.name?? "helloaasdfasd"
+      }}</span>
+    </div>
 
     <nav class="dashboard-header__tabs" aria-label="Dashboard sections">
       <NuxtLink
@@ -40,7 +81,6 @@ const isActive = (to: string) => {
         <span class="dashboard-header__tab-indicator" />
       </NuxtLink>
     </nav>
-
 
     <div class="dashboard-header__profile">
       <client-only>
@@ -68,6 +108,13 @@ const isActive = (to: string) => {
   box-shadow: 0 2px 10px 0 #0000001a;
 }
 
+.dashboard-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
 .dashboard-header__logo {
   margin: 0;
   color: #2f3036;
@@ -75,6 +122,14 @@ const isActive = (to: string) => {
   line-height: normal;
   letter-spacing: 0.24px;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.dashboard-header__workspace {
+  color: var(--color-neutral-dl);
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .dashboard-header__tabs {

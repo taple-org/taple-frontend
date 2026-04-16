@@ -47,27 +47,24 @@
       </div>
     </div>
 
-    <div v-if="!showAddForm" class="add-row">
-      <button class="btn-ghost" @click="showAddForm = true">
-        + Добавить email
-      </button>
+    <div v-if="!showAddForm">
+      <ui-button @click="showAddForm = true" variant="outline">
+        Добавить email
+      </ui-button>
     </div>
 
     <form v-else class="add-form" @submit.prevent="addEmail">
-      <input
+      <ui-form-field
+          class="add-form__email"
+          type="text"
           v-model="newEmail"
-          class="field-input"
-          type="email"
           placeholder="new@example.com"
-          :class="{ error: newEmailError }"
-          autofocus
       />
-      <span v-if="newEmailError" class="field-error">{{ newEmailError }}</span>
       <div class="add-form-footer">
-        <button type="button" class="btn-ghost" @click="cancelAdd">Отмена</button>
-        <button type="submit" class="btn-primary" :disabled="isLoading">
+        <ui-button type="button" variant="ghost" @click="cancelAdd" size="sm" >Отмена</ui-button>
+        <ui-button type="submit" :disabled="isLoading" size="sm">
           {{ isLoading ? 'Добавление...' : 'Добавить' }}
-        </button>
+        </ui-button>
       </div>
     </form>
   </div>
@@ -247,42 +244,11 @@ function cancelAdd() {
   color: var(--color-error);
 }
 
-.add-row {
-  padding-top: 4px;
-}
-
 .add-form {
+  margin-top: 24px;
   display: flex;
-  flex-direction: column;
   gap: 8px;
-  padding-top: 4px;
-}
-
-.field-input {
-  border: 1px solid var(--color-neutral-lm);
-  border-radius: var(--radius-md);
-  padding: 9px 12px;
-  font-size: 14px;
-  font-family: var(--font-base);
-  color: var(--color-neutral-dd);
-  background: var(--color-white);
-  outline: none;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
-  width: 100%;
-}
-
-.field-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(0, 111, 253, 0.12);
-}
-
-.field-input.error {
-  border-color: var(--color-error);
-}
-
-.field-error {
-  font-size: 12px;
-  color: var(--color-error);
+  align-items: center;
 }
 
 .add-form-footer {
@@ -291,37 +257,8 @@ function cancelAdd() {
   gap: 10px;
 }
 
-.btn-primary {
-  background: var(--color-primary);
-  color: var(--color-white);
-  border: none;
-  padding: 9px 20px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: var(--font-base);
-  cursor: pointer;
-  transition: opacity var(--transition-base);
+.add-form__email{
+  flex-grow: 1;
 }
 
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--color-neutral-lm);
-  padding: 9px 16px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: var(--font-base);
-  color: var(--color-neutral-dm);
-  cursor: pointer;
-  transition: background var(--transition-base);
-}
-
-.btn-ghost:hover {
-  background: var(--color-neutral-ll);
-}
 </style>

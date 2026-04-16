@@ -182,6 +182,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const signOut = withLoading(async () => {
         clearAuth()
+        navigateTo('/')
     })
 
     const forgotPassword = async ({ email }: { email: string }) => {

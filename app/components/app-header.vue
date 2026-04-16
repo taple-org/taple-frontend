@@ -4,14 +4,12 @@ import { useAuthModalController } from "~/composables/modals/useAuthModalControl
 import type { TemplateLink } from "~/interfaces/link.interfaces";
 
 const links: TemplateLink[] = [
-  { to: "#", label: "Контакты" },
-  { to: "#tariffs", label: "Тарифы" },
-  { to: "#", label: "API" },
+  { to: "/contacts", label: "Контакты" },
+  { to: "/api", label: "API" },
+  { to: "/tariffs", label: "Тарифы" },
 ];
-
-const {open} = useAuthModalController();
-const {isAuthenticated} = storeToRefs(useAuthStore());
-
+const { open } = useAuthModalController();
+const { isAuthenticated } = storeToRefs(useAuthStore());
 </script>
 <template>
   <header class="header">
@@ -31,14 +29,13 @@ const {isAuthenticated} = storeToRefs(useAuthStore());
       </section>
     </ui-container>
   </header>
-  <auth-modal/>
+  <auth-modal />
 </template>
 
 <style scoped>
 .header {
   box-shadow: var(--app-header-box-shadow);
   padding: var(--app-header-padding);
-
 }
 
 .content {

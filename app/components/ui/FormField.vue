@@ -6,7 +6,7 @@ import { fieldRegistry, type SelectOption } from './fields/registry'
 type TextProps = { type: 'text' | 'email'; modelValue: string; iconLeft?: string; iconRight?: string; }
 type PasswordProps = { type: 'password'; modelValue: string; iconLeft?: string; iconRight?: string }
 type CheckboxProps = { type: 'checkbox'; modelValue: boolean; }
-type SelectProps = { type: 'select'; modelValue: string; options: SelectOption[]; }
+type SelectProps = { type: 'select'; modelValue: string; options?: SelectOption[]; }
 type MultiSelectProps = { type: 'multi-select'; modelValue: string[]; options: SelectOption[]; }
 
 export type FieldWrapperProps = {

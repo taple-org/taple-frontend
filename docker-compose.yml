@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        # Set this to update openapi.json from backend during build
+        # Or pass via: docker-compose build --build-arg API_BASE_URL=https://api.example.com
+        - API_BASE_URL=${API_BASE_URL:-}
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

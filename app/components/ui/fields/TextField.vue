@@ -45,7 +45,7 @@ const modelValue = defineModel<string>()
   border: 1px solid var(--color-neutral-lm);
   border-radius: var(--radius-md);
   outline: none;
-  background-color: var(--color-neutral-ll);
+  background-color: var(--color-secondary);
   transition:
       border-color var(--transition-base),
       box-shadow var(--transition-base);

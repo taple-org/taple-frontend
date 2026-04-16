@@ -37,12 +37,12 @@ const route = useRoute()
 
 const accountLinks = [
   { to: '/settings/profile',  label: 'Профиль',       icon: "profile" },
-  { to: '/settings/security', label: 'Безопасность',  icon: "lock" },
+  { to: '/settings/security', label: 'Безопасность',  icon: "settings" },
 ]
 
 const settingsLinks = [
-  { to: '/settings/notifications', label: 'Уведомления', icon: "bell" },
-  { to: '/settings/subscription',  label: 'Подписка',    icon: "credit-card" },
+  { to: '/settings/notifications', label: 'Уведомления', icon: "inbox" },
+  { to: '/settings/subscription',  label: 'Подписка',    icon: "star-filled" },
 ]
 
 function isActive(path: string) {

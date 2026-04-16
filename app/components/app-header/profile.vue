@@ -17,13 +17,13 @@ const configs = computed<ProfileListConfig>(() => {
       title: 'Профиль',
       icon: 'my-icon:profile',
       type: 'link',
-      to: 'settings/profile'
+      to: '/settings/profile'
     },
     {
       title: 'Безопасность',
       icon: 'my-icon:lock',
       type: 'link',
-      to: 'settings/security'
+      to: '/settings/security'
     },
     {
       title: 'Рабочие пространства',

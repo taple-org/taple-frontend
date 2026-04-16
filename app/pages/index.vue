@@ -1,14 +1,15 @@
 <script setup lang="ts">
-
 definePageMeta({
-  title: "Home",
+  title: "Taple — автопоиск бизнес-лидов",
   layout: 'default'
 })
-
 </script>
+
 <template>
-  <landing-hero title="TAPLE" subtitle="Автопоиск свежих контрагентов"/>
-  <landing-tariffs/>
+  <landing-hero />
+  <landing-value-section />
+  <landing-features-section />
+  <landing-how-it-works-section />
+  <landing-comparison-section />
+  <landing-contact-section />
 </template>
-<style scoped>
-</style>
