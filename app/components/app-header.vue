@@ -7,7 +7,6 @@ const links: TemplateLink[] = [
   { to: "/contacts", label: "Контакты" },
   { to: "/api", label: "API" },
 ];
-
 const {open} = useAuthModalController();
 const {isAuthenticated} = storeToRefs(useAuthStore());
 

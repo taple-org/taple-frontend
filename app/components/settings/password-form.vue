@@ -58,8 +58,10 @@
 
 <script setup lang="ts">
 import {usePasswordForm} from "~/composables/settings/usePasswordForm";
+import notifications from "~~/.output/server/chunks/build/notifications-CByfZsqj";
+import {extractApiClientError} from "~/utils/extractApiClientError";
 
-const { r$, state } = usePasswordForm()
+const { r$, state, externalErrors } = usePasswordForm()
 
 const isLoading = ref(false)
 const successMsg = ref('')
@@ -80,21 +82,26 @@ function strengthClass(segment: number) {
   const classes = ['', 'weak', 'medium', 'good', 'strong']
   return classes[strength.value.score]
 }
+const { $apiClient } = useNuxtApp()
 
 async function handleSubmit() {
-  const result = await r$.$validate()
-  if (!result.$valid) return
+  const { data, valid } = await r$.$validate()
+  if (!valid) return
 
   isLoading.value = true
   successMsg.value = ''
   try {
-    // TODO: await $fetch('/api/user/password', { method: 'PUT', body: { currentPassword: state.currentPassword, newPassword: state.newPassword } })
-    await new Promise(r => setTimeout(r, 600))
+    const result = await $apiClient.api
+        .changePasswordApiV1AuthChangePasswordPost(
+            { old_password: data.currentPassword, new_password: data.newPassword, new_password_confirm: data.confirmPassword }
+        )
     r$.$reset()
     successMsg.value = 'Пароль успешно изменён'
     setTimeout(() => { successMsg.value = '' }, 3000)
-  } catch {
-    r$.currentPassword.$externalErrors = ['Неверный текущий пароль']
+  } catch(e) {
+    console.log('error', e)
+    const error = extractApiClientError(e)
+    useNotification().error('Упс!', error?.message, 1000 )
   } finally {
     isLoading.value = false
   }

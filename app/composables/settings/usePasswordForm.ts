@@ -1,4 +1,6 @@
-import { required, minLength, sameAs } from "@regle/rules";
+import { required, minLength, sameAs, string } from "@regle/rules";
+import type {RegleExternalErrorTree} from "@regle/core";
+import {password} from "~/rules/password";
 
 export interface IPasswordFormState {
   currentPassword: string;
@@ -7,25 +9,29 @@ export interface IPasswordFormState {
 }
 
 export const usePasswordForm = () => {
-  const state = reactive<IPasswordFormState>({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+    const state = reactive<IPasswordFormState>({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+    });
+    const externalErrors = ref<RegleExternalErrorTree<IPasswordFormState>>({})
 
-  const { r$ } = useRegle(state, {
-    currentPassword: {
-      required: withMessage(required, "Обязательное поле"),
-    },
-    newPassword: {
-      required: withMessage(required, "Обязательное поле"),
-      minLength: withMessage(minLength(8), "Минимум 8 символов"),
-    },
-    confirmPassword: {
-      required: withMessage(required, "Обязательное поле"),
-      sameAs: withMessage(sameAs(() => state.newPassword), "Пароли не совпадают"),
-    },
-  });
 
-  return { r$, state };
+    const {r$} = useRegle(state, {
+        currentPassword: {
+            ...password
+        },
+        newPassword: {
+            ...password
+        },
+        confirmPassword: {
+            ...password,
+            sameAs: withMessage(sameAs(() => state.newPassword), "Пароли не совпадают"),
+        },
+    }, {
+        id: 'password-form',
+        externalErrors,
+    });
+
+    return {r$, state, externalErrors};
 };
