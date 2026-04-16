@@ -6,121 +6,73 @@
     </div>
 
     <form class="form" @submit.prevent="handleSubmit">
-      <div class="field">
-        <label class="field-label" for="currentPassword">Текущий пароль</label>
-        <div class="password-wrapper">
-          <input
-              id="currentPassword"
-              v-model="form.currentPassword"
-              class="field-input"
-              :class="{ error: errors.currentPassword }"
-              :type="showPasswords.current ? 'text' : 'password'"
-              placeholder="Введите текущий пароль"
-              autocomplete="current-password"
-          />
-          <button
-              type="button"
-              class="eye-btn"
-              @click="showPasswords.current = !showPasswords.current"
-          >
-            <Icon name="my-icon:visible" v-if="!showPasswords.current" />
-            <Icon name="my-icon:invisible" v-else />
-          </button>
-        </div>
-        <span v-if="errors.currentPassword" class="field-error">{{ errors.currentPassword }}</span>
-      </div>
+      <ui-form-field
+        type="password"
+        v-model="r$.$value.currentPassword"
+        :error="r$.currentPassword.$errors[0]"
+        label="Текущий пароль"
+        placeholder="Введите текущий пароль"
+      />
 
-      <div class="field">
-        <label class="field-label" for="newPassword">Новый пароль</label>
-        <div class="password-wrapper">
-          <input
-              id="newPassword"
-              v-model="form.newPassword"
-              class="field-input"
-              :class="{ error: errors.newPassword }"
-              :type="showPasswords.new ? 'text' : 'password'"
-              placeholder="Минимум 8 символов"
-              autocomplete="new-password"
-          />
-          <button
-              type="button"
-              class="eye-btn"
-              @click="showPasswords.new = !showPasswords.new"
-          >
-            <Icon name="my-icon:visible" v-if="!showPasswords.new" />
-            <Icon name="my-icon:invisible" v-else />
-          </button>
-        </div>
-        <span v-if="errors.newPassword" class="field-error">{{ errors.newPassword }}</span>
-
-        <div v-if="form.newPassword" class="strength-bar">
-          <div
+      <div class="field-with-strength">
+        <ui-form-field
+          type="password"
+          v-model="r$.$value.newPassword"
+          :error="r$.newPassword.$errors[0]"
+          label="Новый пароль"
+          placeholder="Минимум 8 символов"
+        />
+        <template v-if="r$.$value.newPassword">
+          <div class="strength-bar">
+            <div
               v-for="i in 4"
               :key="i"
               class="strength-segment"
               :class="strengthClass(i)"
-          />
-        </div>
-        <span v-if="form.newPassword" class="strength-label" :class="`strength-text-${strength.level}`">
-          {{ strength.label }}
-        </span>
+            />
+          </div>
+          <span class="strength-label" :class="`strength-text-${strength.level}`">
+            {{ strength.label }}
+          </span>
+        </template>
       </div>
 
-      <div class="field">
-        <label class="field-label" for="confirmPassword">Повторите пароль</label>
-        <div class="password-wrapper">
-          <input
-              id="confirmPassword"
-              v-model="form.confirmPassword"
-              class="field-input"
-              :class="{ error: errors.confirmPassword }"
-              :type="showPasswords.confirm ? 'text' : 'password'"
-              placeholder=""
-              autocomplete="new-password"
-          />
-          <button
-              type="button"
-              class="eye-btn"
-              @click="showPasswords.confirm = !showPasswords.confirm"
-          >
-            <Icon name="my-icon:visible" v-if="!showPasswords.confirm" />
-            <Icon name="my-icon:invisible" v-else />
-          </button>
-        </div>
-        <span v-if="errors.confirmPassword" class="field-error">{{ errors.confirmPassword }}</span>
-      </div>
+      <ui-form-field
+        type="password"
+        v-model="r$.$value.confirmPassword"
+        :error="r$.confirmPassword.$errors[0]"
+        label="Подтверждение пароля"
+        placeholder="Повторите пароль"
+      />
 
       <div v-if="successMsg" class="success-banner">{{ successMsg }}</div>
 
       <div class="form-footer">
-        <button type="submit" class="btn-primary" :disabled="isLoading">
+        <ui-button type="submit" :disabled="isLoading">
           {{ isLoading ? 'Сохранение...' : 'Сменить пароль' }}
-        </button>
+        </ui-button>
       </div>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-const form = reactive({
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: '',
-})
+import {usePasswordForm} from "~/composables/settings/usePasswordForm";
+import notifications from "~~/.output/server/chunks/build/notifications-CByfZsqj";
+import {extractApiClientError} from "~/utils/extractApiClientError";
 
-const showPasswords = reactive({ current: false, new: false, confirm: false })
-const errors = reactive<Record<string, string>>({})
+const { r$, state, externalErrors } = usePasswordForm()
+
 const isLoading = ref(false)
 const successMsg = ref('')
 
 const strength = computed(() => {
-  const p = form.newPassword
+  const p = state.newPassword
   let score = 0
   if (p.length >= 8) score++
   if (p.length >= 12) score++
   if (/[A-Z]/.test(p) && /[a-z]/.test(p)) score++
   if (/\d/.test(p) && /[^A-Za-z0-9]/.test(p)) score++
-
   const labels = ['', 'Слабый', 'Средний', 'Хороший', 'Надёжный']
   return { score, level: score, label: labels[score] || 'Слабый' }
 })
@@ -130,33 +82,26 @@ function strengthClass(segment: number) {
   const classes = ['', 'weak', 'medium', 'good', 'strong']
   return classes[strength.value.score]
 }
-
-function validate(): boolean {
-  Object.keys(errors).forEach(k => delete errors[k])
-
-  if (!form.currentPassword) errors.currentPassword = 'Введите текущий пароль'
-  if (form.newPassword.length < 8) errors.newPassword = 'Пароль должен содержать минимум 8 символов'
-  if (form.newPassword !== form.confirmPassword) errors.confirmPassword = 'Пароли не совпадают'
-
-  return Object.keys(errors).length === 0
-}
+const { $apiClient } = useNuxtApp()
 
 async function handleSubmit() {
-  if (!validate()) return
+  const { data, valid } = await r$.$validate()
+  if (!valid) return
 
   isLoading.value = true
   successMsg.value = ''
-
   try {
-    // TODO: await $fetch('/api/user/password', { method: 'PUT', body: { currentPassword: form.currentPassword, newPassword: form.newPassword } })
-    await new Promise(r => setTimeout(r, 600))
-    form.currentPassword = ''
-    form.newPassword = ''
-    form.confirmPassword = ''
+    const result = await $apiClient.api
+        .changePasswordApiV1AuthChangePasswordPost(
+            { old_password: data.currentPassword, new_password: data.newPassword, new_password_confirm: data.confirmPassword }
+        )
+    r$.$reset()
     successMsg.value = 'Пароль успешно изменён'
     setTimeout(() => { successMsg.value = '' }, 3000)
-  } catch {
-    errors.currentPassword = 'Неверный текущий пароль'
+  } catch(e) {
+    console.log('error', e)
+    const error = extractApiClientError(e)
+    useNotification().error('Упс!', error?.message, 1000 )
   } finally {
     isLoading.value = false
   }
@@ -194,77 +139,15 @@ async function handleSubmit() {
   max-width: 440px;
 }
 
-.field {
+.field-with-strength {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-}
-
-.field-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-neutral-dm);
-}
-
-.password-wrapper {
-  position: relative;
-}
-
-.field-input {
-  border: 1px solid var(--color-neutral-lm);
-  border-radius: var(--radius-md);
-  padding: 9px 40px 9px 12px;
-  font-size: 14px;
-  font-family: var(--font-base);
-  color: var(--color-neutral-dd);
-  background: var(--color-white);
-  outline: none;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
-  width: 100%;
-}
-
-.field-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(0, 111, 253, 0.12);
-}
-
-.field-input.error {
-  border-color: var(--color-error);
-}
-
-.eye-btn {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-neutral-dl);
-  display: flex;
-  align-items: center;
-  padding: 0;
-  transition: color var(--transition-base);
-}
-
-.eye-btn:hover {
-  color: var(--color-neutral-dm);
-}
-
-.eye-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-.field-error {
-  font-size: 12px;
-  color: var(--color-error);
+  gap: 6px;
 }
 
 .strength-bar {
   display: flex;
   gap: 4px;
-  margin-top: 6px;
 }
 
 .strength-segment {
@@ -303,23 +186,5 @@ async function handleSubmit() {
 .form-footer {
   display: flex;
   justify-content: flex-end;
-}
-
-.btn-primary {
-  background: var(--color-primary);
-  color: var(--color-white);
-  border: none;
-  padding: 10px 22px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: var(--font-base);
-  cursor: pointer;
-  transition: opacity var(--transition-base);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>

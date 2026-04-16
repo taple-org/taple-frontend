@@ -80,7 +80,7 @@ export default function buildFetcher(baseUrl: string, backendKey: string) {
       const authStore = useAuthStore();
       authStore.clearAuth();
       const router = useRouter();
-      await router.push('/login');
+      await router.push('/');
       return response;
     }
 

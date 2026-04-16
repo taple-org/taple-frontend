@@ -4,7 +4,7 @@ import type { TemplateLink } from '~/interfaces/link.interfaces';
 const { links } = defineProps<{
     links: TemplateLink[]
 }>()
-const isLastLink = (index: number) => index === links.length - 1 
+const isLastLink = (index: number) => index === links.length - 1
 </script>
 <template>
     <ul class="links">
