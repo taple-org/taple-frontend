@@ -1,0 +1,60 @@
+name: Deploy Frontend Taple
+
+on:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: deploy-frontend-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH agent
+        uses: tanmancan/action-setup-ssh-agent-key@1.0.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Setup SSH known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Check SSH connectivity
+        run: |
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo SSH OK"
+
+      - name: Create .env for frontend
+        run: |
+          cat > .env << 'EOF'
+          NODE_ENV=production
+          API_BASE_URL=${{ vars.API_BASE_URL }}
+          EOF
+
+      - name: Copy .env to server
+        run: |
+          scp .env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/taple-frontend/.env
+
+      - name: Deploy frontend to production
+        run: |
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
+
+            cd /opt/taple-frontend
+
+            git fetch origin
+            git reset --hard origin/main
+
+            docker compose down
+            docker compose up -d --build --remove-orphans
+
+            docker compose ps
+          EOF
