@@ -9,7 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "generate:api": "swagger-typescript-api generate -p openapi.json -o ./app/api/generated -n api.ts --fetch"
+    "generate:api": "swagger-typescript-api generate -p openapi.json -o ./app/api/generated -n api.ts --fetch",
+    "update:openapi": "node scripts/update-openapi.js"
   },
   "dependencies": {
     "@ark-ui/vue": "^5.34.0",
