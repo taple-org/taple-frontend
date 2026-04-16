@@ -1,15 +1,12 @@
 <script setup lang="ts">
 definePageMeta({
-  title: "Тарифы",
+  title: "Тарифы — Taple",
   layout: "default",
 });
 </script>
 
 <template>
-  <landing-hero title="Тарифы" subtitle="Выберите подходящий план" />
-  <landing-tariffs />
-  <landing-contact-section />
+  <landing-pricing-section />
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

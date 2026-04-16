@@ -48,6 +48,7 @@
     "eslint-plugin-security": "^4.0.0",
     "swagger-typescript-api": "^13.6.3",
     "typescript": "^5.9.3",
-    "vue-eslint-parser": "^10.4.0"
+    "vue-eslint-parser": "^10.4.0",
+    "vue-tsc": "^3.2.6"
   }
 }

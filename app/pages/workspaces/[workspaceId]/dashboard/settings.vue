@@ -1,222 +1,331 @@
 <script setup lang="ts">
+import type {
+  TenantRead,
+  TenantMemberRead,
+  TenantUserRole,
+} from "~/api/generated/api";
+
 definePageMeta({
   title: "Настройки рабочего пространства",
-  layout: 'dashboard'
-})
+  layout: "dashboard",
+});
 
-const route = useRoute()
-const workspaceId = computed(() => route.params.workspaceId as string)
+const route = useRoute();
+const workspaceId = computed(() => route.params.workspaceId as string);
+const { $apiClient } = useNuxtApp();
 
 // ── Workspace Profile ───────────────────────────────────────────
-const workspaceName = ref('Моё рабочее пространство')
-const isSavingName = ref(false)
-const nameSaved = ref(false)
+const workspace = ref<TenantRead | null>(null);
+const workspaceName = ref("");
+const isLoadingWorkspace = ref(true);
+const isSavingName = ref(false);
+const nameSaved = ref(false);
+
+// Fetch workspace data
+async function fetchWorkspace() {
+  try {
+    isLoadingWorkspace.value = true;
+    const response = await $apiClient.api.getTenantApiV1TenantsTenantIdGet(
+      workspaceId.value,
+    );
+    workspace.value = response.data.result;
+    workspaceName.value = workspace.value?.name ?? "";
+  } catch (error) {
+    console.error("Failed to fetch workspace:", error);
+  } finally {
+    isLoadingWorkspace.value = false;
+  }
+}
+
+onMounted(() => {
+  fetchWorkspace();
+});
 
 async function saveWorkspaceName() {
-  if (!workspaceName.value.trim()) return
-  isSavingName.value = true
-  nameSaved.value = false
+  if (!workspaceName.value.trim()) return;
+  isSavingName.value = true;
+  nameSaved.value = false;
   try {
-    // TODO: await $apiClient.updateTenant(workspaceId.value, { name: workspaceName.value })
-    await new Promise(r => setTimeout(r, 500))
-    nameSaved.value = true
-    setTimeout(() => { nameSaved.value = false }, 3000)
+    await $apiClient.api.updateTenantApiV1TenantsTenantIdPatch(
+      workspaceId.value,
+      { name: workspaceName.value },
+    );
+    nameSaved.value = true;
+    setTimeout(() => {
+      nameSaved.value = false;
+    }, 3000);
+  } catch (error) {
+    console.error("Failed to update workspace name:", error);
   } finally {
-    isSavingName.value = false
+    isSavingName.value = false;
   }
 }
 
 // ── Members ─────────────────────────────────────────────────────
-type MemberRole = 'Owner' | 'Admin' | 'Member'
+type MemberRole = "Owner" | "Admin" | "Member";
 
 interface Member {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  role: MemberRole
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: MemberRole;
 }
 
-const members = ref<Member[]>([
-  { id: '1', firstName: 'Алихан',  lastName: 'Толебердиев', email: 'alikhan@example.com', role: 'Owner' },
-  { id: '2', firstName: 'Даулет',  lastName: 'Карменов',    email: 'daulet@example.com',  role: 'Admin' },
-  { id: '3', firstName: 'Айгерим', lastName: 'Сейткали',    email: 'aigul@example.com',   role: 'Member' },
-])
+const members = ref<Member[]>([]);
+const isLoadingMembers = ref(true);
 
-const inviteEmail = ref('')
-const isInviting = ref(false)
+// Map API role to local role type
+function mapApiRole(role: TenantUserRole): MemberRole {
+  switch (role) {
+    case "owner":
+      return "Owner";
+    case "admin":
+      return "Admin";
+    case "member":
+      return "Member";
+    default:
+      return "Member";
+  }
+}
+
+// Fetch members
+async function fetchMembers() {
+  try {
+    isLoadingMembers.value = true;
+    const response =
+      await $apiClient.api.listMembersApiV1TenantsTenantIdMembersGet(
+        workspaceId.value,
+      );
+    members.value = response.data.result.map((m: TenantMemberRead) => ({
+      id: m.id,
+      firstName: m.first_name ?? "",
+      lastName: m.last_name ?? "",
+      email: m.email ?? "",
+      role: mapApiRole(m.role_code),
+    }));
+  } catch (error) {
+    console.error("Failed to fetch members:", error);
+  } finally {
+    isLoadingMembers.value = false;
+  }
+}
+
+onMounted(() => {
+  fetchMembers();
+});
+
+const inviteEmail = ref("");
+const isInviting = ref(false);
 
 async function inviteMember() {
-  if (!inviteEmail.value.trim()) return
-  isInviting.value = true
+  if (!inviteEmail.value.trim()) return;
+  isInviting.value = true;
   try {
     // TODO: await $apiClient.inviteToTenant({ workspaceId: workspaceId.value, email: inviteEmail.value })
-    await new Promise(r => setTimeout(r, 500))
-    inviteEmail.value = ''
+    await new Promise((r) => setTimeout(r, 500));
+    inviteEmail.value = "";
   } finally {
-    isInviting.value = false
+    isInviting.value = false;
   }
 }
 
 async function removeMember(id: string) {
-  members.value = members.value.filter(m => m.id !== id)
+  members.value = members.value.filter((m) => m.id !== id);
   // TODO: await $apiClient.removeTenantMember(workspaceId.value, id)
 }
 
 function initials(m: Member) {
-  return ((m.firstName[0] ?? '') + (m.lastName[0] ?? '')).toUpperCase()
+  return ((m.firstName[0] ?? "") + (m.lastName[0] ?? "")).toUpperCase();
 }
 
 const roleLabel: Record<MemberRole, string> = {
-  Owner: 'Владелец',
-  Admin: 'Администратор',
-  Member: 'Участник',
-}
+  Owner: "Владелец",
+  Admin: "Администратор",
+  Member: "Участник",
+};
 
 // ── Lead Tags ───────────────────────────────────────────────────
-const tags = ref<string[]>(['Горячий лид', 'В работе', 'Ожидание', 'Потенциал'])
-const newTag = ref('')
-const isSavingTags = ref(false)
-const tagsSaved = ref(false)
+const tags = ref<string[]>([
+  "Горячий лид",
+  "В работе",
+  "Ожидание",
+  "Потенциал",
+]);
+const newTag = ref("");
+const isSavingTags = ref(false);
+const tagsSaved = ref(false);
 
 function addTag() {
-  const t = newTag.value.trim()
-  if (!t || tags.value.includes(t)) return
-  tags.value.push(t)
-  newTag.value = ''
+  const t = newTag.value.trim();
+  if (!t || tags.value.includes(t)) return;
+  tags.value.push(t);
+  newTag.value = "";
 }
 
 function removeTag(tag: string) {
-  tags.value = tags.value.filter(t => t !== tag)
+  tags.value = tags.value.filter((t) => t !== tag);
 }
 
 async function saveTags() {
-  isSavingTags.value = true
-  tagsSaved.value = false
+  isSavingTags.value = true;
+  tagsSaved.value = false;
   try {
     // TODO: await $apiClient.updateTenantTags(workspaceId.value, tags.value)
-    await new Promise(r => setTimeout(r, 400))
-    tagsSaved.value = true
-    setTimeout(() => { tagsSaved.value = false }, 3000)
+    await new Promise((r) => setTimeout(r, 400));
+    tagsSaved.value = true;
+    setTimeout(() => {
+      tagsSaved.value = false;
+    }, 3000);
   } finally {
-    isSavingTags.value = false
+    isSavingTags.value = false;
   }
 }
 </script>
 
 <template>
-  <ui-container :padding="[20, 15, 20]">
-  <div class="ws-settings">
-    <div class="page-header">
-      <h1 class="page-title">Настройки пространства</h1>
-      <p class="page-desc">Управляйте профилем, участниками и настройками рабочего пространства</p>
-    </div>
-
-    <!-- Workspace Profile -->
-    <div class="settings-card">
-      <div class="card-header">
-        <h2 class="card-title">Профиль пространства</h2>
-        <p class="card-desc">Название отображается в шапке и ссылках</p>
+  <ui-container :padding="[20, 15, 20]" class="settings-container">
+    <div class="ws-settings">
+      <div class="page-header">
+        <h1 class="page-title">Настройки пространства</h1>
+        <p class="page-desc">
+          Управляйте профилем, участниками и настройками рабочего пространства
+        </p>
       </div>
 
-      <form class="name-form" @submit.prevent="saveWorkspaceName">
-        <ui-form-field
-          type="text"
-          v-model="workspaceName"
-          label="Название"
-          placeholder="Название рабочего пространства"
-        />
-        <div class="form-footer">
-          <span v-if="nameSaved" class="saved-hint">Сохранено</span>
-          <ui-button type="submit" :disabled="isSavingName">
-            {{ isSavingName ? 'Сохранение...' : 'Сохранить' }}
+      <!-- Workspace Profile -->
+      <div class="settings-card">
+        <div class="card-header">
+          <h2 class="card-title">Профиль пространства</h2>
+          <p class="card-desc">Название отображается в шапке и ссылках</p>
+        </div>
+
+        <form class="name-form" @submit.prevent="saveWorkspaceName">
+          <ui-form-field
+            type="text"
+            v-model="workspaceName"
+            label="Название"
+            placeholder="Название рабочего пространства"
+            :disabled="isLoadingWorkspace"
+          />
+          <div class="form-footer">
+            <span v-if="isLoadingWorkspace" class="saved-hint"
+              >Загрузка...</span
+            >
+            <span v-else-if="nameSaved" class="saved-hint">Сохранено</span>
+            <ui-button
+              type="submit"
+              :disabled="isSavingName || isLoadingWorkspace"
+            >
+              {{ isSavingName ? "Сохранение..." : "Сохранить" }}
+            </ui-button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Members -->
+      <div class="settings-card">
+        <div class="card-header">
+          <h2 class="card-title">Участники</h2>
+          <p class="card-desc">Управляйте доступом к рабочему пространству</p>
+        </div>
+
+        <div class="invite-row">
+          <ui-form-field
+            type="email"
+            v-model="inviteEmail"
+            placeholder="email@company.com"
+            label="Email для приглашения"
+            class="invite-input"
+          />
+          <ui-button
+            :disabled="isInviting || !inviteEmail"
+            @click="inviteMember"
+          >
+            {{ isInviting ? "Отправка..." : "Пригласить" }}
           </ui-button>
         </div>
-      </form>
-    </div>
 
-    <!-- Members -->
-    <div class="settings-card">
-      <div class="card-header">
-        <h2 class="card-title">Участники</h2>
-        <p class="card-desc">Управляйте доступом к рабочему пространству</p>
-      </div>
-
-      <div class="invite-row">
-        <ui-form-field
-          type="email"
-          v-model="inviteEmail"
-          placeholder="email@company.com"
-          label="Email для приглашения"
-          class="invite-input"
-        />
-        <ui-button :disabled="isInviting || !inviteEmail" @click="inviteMember">
-          {{ isInviting ? 'Отправка...' : 'Пригласить' }}
-        </ui-button>
-      </div>
-
-      <div class="member-list">
-        <div v-for="member in members" :key="member.id" class="member-row">
-          <div class="member-avatar">{{ initials(member) }}</div>
-          <div class="member-info">
-            <div class="member-name">{{ member.firstName }} {{ member.lastName }}</div>
-            <div class="member-email">{{ member.email }}</div>
+        <div class="member-list">
+          <div v-if="isLoadingMembers" class="member-loading">
+            Загрузка участников...
           </div>
-          <span class="role-badge" :class="`role-badge--${member.role.toLowerCase()}`">
-            {{ roleLabel[member.role] }}
-          </span>
-          <button
-            v-if="member.role !== 'Owner'"
-            class="btn-remove"
-            @click="removeMember(member.id)"
-            title="Удалить участника"
-          >
-            <Icon name="my-icon:close" class="btn-remove__icon" />
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Lead Tags -->
-    <div class="settings-card">
-      <div class="card-header">
-        <h2 class="card-title">Теги лидов</h2>
-        <p class="card-desc">Теги для организации лидов в этом пространстве</p>
-      </div>
-
-      <div class="tags-wrap">
-        <div class="tag-chips">
-          <span v-for="tag in tags" :key="tag" class="tag-chip">
-            {{ tag }}
-            <button class="tag-chip__remove" @click="removeTag(tag)">
-              <Icon name="my-icon:close" class="tag-chip__icon" />
+          <div v-else-if="members.length === 0" class="member-empty">
+            Нет участников
+          </div>
+          <div v-for="member in members" :key="member.id" class="member-row">
+            <div class="member-avatar">{{ initials(member) }}</div>
+            <div class="member-info">
+              <div class="member-name">
+                {{ member.firstName }} {{ member.lastName }}
+              </div>
+              <div class="member-email">{{ member.email }}</div>
+            </div>
+            <span
+              class="role-badge"
+              :class="`role-badge--${member.role.toLowerCase()}`"
+            >
+              {{ roleLabel[member.role] }}
+            </span>
+            <button
+              v-if="member.role !== 'Owner'"
+              class="btn-remove"
+              @click="removeMember(member.id)"
+              title="Удалить участника"
+            >
+              <Icon name="my-icon:close" class="btn-remove__icon" />
             </button>
-          </span>
-        </div>
-
-        <div class="tag-add-row">
-          <input
-            v-model="newTag"
-            class="tag-input"
-            placeholder="Добавить тег..."
-            @keydown.enter.prevent="addTag"
-          />
-          <ui-button variant="outline" @click="addTag">Добавить</ui-button>
+          </div>
         </div>
       </div>
 
-      <div class="form-footer form-footer--tags">
-        <span v-if="tagsSaved" class="saved-hint">Сохранено</span>
-        <ui-button :disabled="isSavingTags" @click="saveTags">
-          {{ isSavingTags ? 'Сохранение...' : 'Сохранить теги' }}
-        </ui-button>
+      <!-- Lead Tags -->
+      <div class="settings-card">
+        <div class="card-header">
+          <h2 class="card-title">Теги лидов</h2>
+          <p class="card-desc">
+            Теги для организации лидов в этом пространстве
+          </p>
+        </div>
+
+        <div class="tags-wrap">
+          <div class="tag-chips">
+            <span v-for="tag in tags" :key="tag" class="tag-chip">
+              {{ tag }}
+              <button class="tag-chip__remove" @click="removeTag(tag)">
+                <Icon name="my-icon:close" class="tag-chip__icon" />
+              </button>
+            </span>
+          </div>
+
+          <div class="tag-add-row">
+            <input
+              v-model="newTag"
+              class="tag-input"
+              placeholder="Добавить тег..."
+              @keydown.enter.prevent="addTag"
+            />
+            <ui-button variant="outline" @click="addTag">Добавить</ui-button>
+          </div>
+        </div>
+
+        <div class="form-footer form-footer--tags">
+          <span v-if="tagsSaved" class="saved-hint">Сохранено</span>
+          <ui-button :disabled="isSavingTags" @click="saveTags">
+            {{ isSavingTags ? "Сохранение..." : "Сохранить теги" }}
+          </ui-button>
+        </div>
       </div>
     </div>
-  </div>
   </ui-container>
 </template>
 
 <style scoped>
+.settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
 .ws-settings {
   display: flex;
   flex-direction: column;
@@ -341,9 +450,18 @@ async function saveTags() {
   white-space: nowrap;
 }
 
-.role-badge--owner  { background: var(--color-highlight-l); color: var(--color-primary); }
-.role-badge--admin  { background: #FFF4E5; color: #B05C0A; }
-.role-badge--member { background: var(--color-neutral-ll);  color: var(--color-neutral-dm); }
+.role-badge--owner {
+  background: var(--color-highlight-l);
+  color: var(--color-primary);
+}
+.role-badge--admin {
+  background: #fff4e5;
+  color: #b05c0a;
+}
+.role-badge--member {
+  background: var(--color-neutral-ll);
+  color: var(--color-neutral-dm);
+}
 
 .btn-remove {
   width: 28px;
@@ -356,7 +474,9 @@ async function saveTags() {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--transition-base), color var(--transition-base);
+  transition:
+    background var(--transition-base),
+    color var(--transition-base);
 }
 
 .btn-remove:hover {
@@ -406,7 +526,9 @@ async function saveTags() {
   transition: opacity var(--transition-base);
 }
 
-.tag-chip__remove:hover { opacity: 1; }
+.tag-chip__remove:hover {
+  opacity: 1;
+}
 
 .tag-chip__icon {
   width: 12px;
@@ -430,12 +552,15 @@ async function saveTags() {
   color: var(--color-neutral-dd);
   background: var(--color-white);
   outline: none;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .tag-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
 
 /* ── Form footer ─────────────────────────── */
@@ -456,5 +581,13 @@ async function saveTags() {
   font-size: 13px;
   color: var(--color-success);
   font-weight: 500;
+}
+
+.member-loading,
+.member-empty {
+  font-size: 14px;
+  color: var(--color-neutral-dl);
+  padding: 20px 0;
+  text-align: center;
 }
 </style>

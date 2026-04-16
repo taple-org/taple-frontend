@@ -31,7 +31,10 @@
               :class="strengthClass(i)"
             />
           </div>
-          <span class="strength-label" :class="`strength-text-${strength.level}`">
+          <span
+            class="strength-label"
+            :class="`strength-text-${strength.level}`"
+          >
             {{ strength.label }}
           </span>
         </template>
@@ -49,7 +52,7 @@
 
       <div class="form-footer">
         <ui-button type="submit" :disabled="isLoading">
-          {{ isLoading ? 'Сохранение...' : 'Сменить пароль' }}
+          {{ isLoading ? "Сохранение..." : "Сменить пароль" }}
         </ui-button>
       </div>
     </form>
@@ -57,53 +60,56 @@
 </template>
 
 <script setup lang="ts">
-import {usePasswordForm} from "~/composables/settings/usePasswordForm";
-import notifications from "~~/.output/server/chunks/build/notifications-CByfZsqj";
-import {extractApiClientError} from "~/utils/extractApiClientError";
+import { usePasswordForm } from "~/composables/settings/usePasswordForm";
+import { extractApiClientError } from "~/utils/extractApiClientError";
 
-const { r$, state, externalErrors } = usePasswordForm()
+const { r$, state, externalErrors } = usePasswordForm();
 
-const isLoading = ref(false)
-const successMsg = ref('')
+const isLoading = ref(false);
+const successMsg = ref("");
 
 const strength = computed(() => {
-  const p = state.newPassword
-  let score = 0
-  if (p.length >= 8) score++
-  if (p.length >= 12) score++
-  if (/[A-Z]/.test(p) && /[a-z]/.test(p)) score++
-  if (/\d/.test(p) && /[^A-Za-z0-9]/.test(p)) score++
-  const labels = ['', 'Слабый', 'Средний', 'Хороший', 'Надёжный']
-  return { score, level: score, label: labels[score] || 'Слабый' }
-})
+  const p = state.newPassword;
+  let score = 0;
+  if (p.length >= 8) score++;
+  if (p.length >= 12) score++;
+  if (/[A-Z]/.test(p) && /[a-z]/.test(p)) score++;
+  if (/\d/.test(p) && /[^A-Za-z0-9]/.test(p)) score++;
+  const labels = ["", "Слабый", "Средний", "Хороший", "Надёжный"];
+  return { score, level: score, label: labels[score] || "Слабый" };
+});
 
 function strengthClass(segment: number) {
-  if (strength.value.score < segment) return 'empty'
-  const classes = ['', 'weak', 'medium', 'good', 'strong']
-  return classes[strength.value.score]
+  if (strength.value.score < segment) return "empty";
+  const classes = ["", "weak", "medium", "good", "strong"];
+  return classes[strength.value.score];
 }
-const { $apiClient } = useNuxtApp()
+const { $apiClient } = useNuxtApp();
 
 async function handleSubmit() {
-  const { data, valid } = await r$.$validate()
-  if (!valid) return
+  const { data, valid } = await r$.$validate();
+  if (!valid) return;
 
-  isLoading.value = true
-  successMsg.value = ''
+  isLoading.value = true;
+  successMsg.value = "";
   try {
-    const result = await $apiClient.api
-        .changePasswordApiV1AuthChangePasswordPost(
-            { old_password: data.currentPassword, new_password: data.newPassword, new_password_confirm: data.confirmPassword }
-        )
-    r$.$reset()
-    successMsg.value = 'Пароль успешно изменён'
-    setTimeout(() => { successMsg.value = '' }, 3000)
-  } catch(e) {
-    console.log('error', e)
-    const error = extractApiClientError(e)
-    useNotification().error('Упс!', error?.message, 1000 )
+    const result =
+      await $apiClient.api.changePasswordApiV1AuthChangePasswordPost({
+        old_password: data.currentPassword,
+        new_password: data.newPassword,
+        new_password_confirm: data.confirmPassword,
+      });
+    r$.$reset();
+    successMsg.value = "Пароль успешно изменён";
+    setTimeout(() => {
+      successMsg.value = "";
+    }, 3000);
+  } catch (e) {
+    console.log("error", e);
+    const error = extractApiClientError(e);
+    useNotification().error("Упс!", error?.message, 1000);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 </script>
@@ -158,21 +164,39 @@ async function handleSubmit() {
   transition: background var(--transition-base);
 }
 
-.strength-segment.weak   { background: var(--color-error); }
-.strength-segment.medium { background: var(--color-warning); }
-.strength-segment.good   { background: #3AC0A0; }
-.strength-segment.strong { background: var(--color-success); }
-.strength-segment.empty  { background: var(--color-neutral-lm); }
+.strength-segment.weak {
+  background: var(--color-error);
+}
+.strength-segment.medium {
+  background: var(--color-warning);
+}
+.strength-segment.good {
+  background: #3ac0a0;
+}
+.strength-segment.strong {
+  background: var(--color-success);
+}
+.strength-segment.empty {
+  background: var(--color-neutral-lm);
+}
 
 .strength-label {
   font-size: 11px;
   font-weight: 500;
 }
 
-.strength-text-1 { color: var(--color-error); }
-.strength-text-2 { color: var(--color-warning); }
-.strength-text-3 { color: var(--color-success); }
-.strength-text-4 { color: var(--color-success); }
+.strength-text-1 {
+  color: var(--color-error);
+}
+.strength-text-2 {
+  color: var(--color-warning);
+}
+.strength-text-3 {
+  color: var(--color-success);
+}
+.strength-text-4 {
+  color: var(--color-success);
+}
 
 .success-banner {
   padding: 10px 14px;
