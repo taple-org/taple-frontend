@@ -23,6 +23,7 @@ export default defineNuxtConfig({
         prefix: "my-icon",
         dir: "./app/assets/icons",
         recursive: true,
+        normalizeIconName: true
       },
     ],
   },
@@ -46,6 +47,9 @@ export default defineNuxtConfig({
         "@ark-ui/vue/progress",
         "@ark-ui/vue/toggle-group",
         "@ark-ui/vue/tabs",
+        "@ark-ui/vue/avatar",
+        "@ark-ui/vue/file-upload",
+        "@ark-ui/vue/switch"
       ],
     },
   },
