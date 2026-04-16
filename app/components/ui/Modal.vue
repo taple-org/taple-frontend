@@ -1,19 +1,25 @@
 <script lang="ts" setup>
-import { Dialog } from '@ark-ui/vue/dialog'
+import { Dialog } from "@ark-ui/vue/dialog";
 
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false });
 
 defineProps<{
-  title?: string
-  description?: string
-}>()
+  title?: string;
+  description?: string;
+  persistent?: boolean;
+}>();
 
-const open = defineModel<boolean>('open')
+const open = defineModel<boolean>("open");
 </script>
 
 <template>
   <div>
-    <Dialog.Root v-model:open="open" lazy-mount unmount-on-exit>
+    <Dialog.Root
+      v-model:open="open"
+      lazy-mount
+      unmount-on-exit
+      :closeOnInteractOutside="!persistent"
+    >
       <Teleport to="body">
         <Dialog.Backdrop class="dialog-backdrop" />
         <Dialog.Positioner class="dialog-positioner">
@@ -26,7 +32,10 @@ const open = defineModel<boolean>('open')
                 <Dialog.Title class="dialog-header__title">
                   {{ title }}
                 </Dialog.Title>
-                <Dialog.Description v-if="description" class="dialog-header__description">
+                <Dialog.Description
+                  v-if="description"
+                  class="dialog-header__description"
+                >
                   {{ description }}
                 </Dialog.Description>
               </div>
@@ -66,11 +75,11 @@ const open = defineModel<boolean>('open')
   /* НЕТ постоянного will-change */
 }
 
-.dialog-backdrop[data-state='open'] {
+.dialog-backdrop[data-state="open"] {
   animation: dialog-backdrop-in 150ms ease forwards;
 }
 
-.dialog-backdrop[data-state='closed'] {
+.dialog-backdrop[data-state="closed"] {
   animation: dialog-backdrop-out 120ms ease forwards;
 }
 
@@ -104,11 +113,11 @@ const open = defineModel<boolean>('open')
   contain: layout style;
 }
 
-.dialog-content[data-state='open'] {
+.dialog-content[data-state="open"] {
   animation: dialog-content-in 150ms ease forwards;
 }
 
-.dialog-content[data-state='closed'] {
+.dialog-content[data-state="closed"] {
   animation: dialog-content-out 120ms ease forwards;
 }
 
@@ -160,22 +169,46 @@ const open = defineModel<boolean>('open')
   compositor layer лишь на время анимации и сразу освобождает память.
 */
 @keyframes dialog-backdrop-in {
-  from { will-change: opacity; opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    will-change: opacity;
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes dialog-backdrop-out {
-  from { will-change: opacity; opacity: 1; }
-  to   { opacity: 0; }
+  from {
+    will-change: opacity;
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes dialog-content-in {
-  from { will-change: transform, opacity; opacity: 0; transform: translate3d(0, 8px, 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  from {
+    will-change: transform, opacity;
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @keyframes dialog-content-out {
-  from { will-change: transform, opacity; opacity: 1; transform: translate3d(0, 0, 0); }
-  to   { opacity: 0; transform: translate3d(0, 8px, 0); }
+  from {
+    will-change: transform, opacity;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
 }
 </style>
