@@ -1,7 +1,16 @@
 <script lang="ts" setup>
 import {useWorkspacePipelineFilter} from "~/composables/workspace/useWorkspacePipelineFilter";
 
-definePageMeta({ title: "Pipeline", layout: 'dashboard' })
+definePageMeta({
+  layout: 'dashboard',
+  middleware: 'auth',
+})
+
+useSeoMeta({
+  title: "Воронка — Taple",
+  description: "Управление воронкой продаж и этапами обработки лидов в Taple.",
+  robots: "noindex, nofollow",
+})
 
 const route = useRoute();
 const workspaceId = route.params.workspaceId as string;

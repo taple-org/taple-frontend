@@ -1,8 +1,15 @@
 <script setup lang="ts">
 definePageMeta({
-  title: "Dashboard",
-  layout: 'dashboard'
+  layout: 'dashboard',
+  middleware: 'auth',
 })
+
+useSeoMeta({
+  title: "Дэшборд рабочего пространства — Taple",
+  description: "Обзор статистики и ключевых показателей рабочего пространства в Taple.",
+  robots: "noindex, nofollow",
+})
+
 const period = ref(['today'])
 
 const periodItems = [

@@ -1,8 +1,13 @@
 <script lang="ts" setup>
 definePageMeta({
-  title: "Приглашение в рабочее пространство",
   layout: "empty",
 });
+
+useSeoMeta({
+  title: "Приглашение в рабочее пространство — Taple",
+  description: "Подтверждение приглашения в рабочее пространство Taple.",
+  robots: "noindex, nofollow",
+})
 
 const route = useRoute();
 const router = useRouter();

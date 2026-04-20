@@ -1,7 +1,13 @@
-<script>
+<script setup lang="ts">
 definePageMeta({
-  title: "Monitoring",
-  layout: 'dashboard'
+  layout: 'dashboard',
+  middleware: 'auth',
+})
+
+useSeoMeta({
+  title: "Мониторинг — Taple",
+  description: "Мониторинг рабочих процессов и активности в рабочем пространстве Taple.",
+  robots: "noindex, nofollow",
 })
 
 </script>

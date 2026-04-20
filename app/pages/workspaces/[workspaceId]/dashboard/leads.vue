@@ -8,9 +8,15 @@ import type { FilterOption, Lead } from "~/components/dashboard/leads/types";
 import leadsMockJson from "~/constants/leads.mock.json";
 
 definePageMeta({
-  title: "Leads",
   layout: "dashboard",
+  middleware: "auth",
 });
+
+useSeoMeta({
+  title: "Лиды — Taple",
+  description: "Список и обработка лидов в рабочем пространстве Taple.",
+  robots: "noindex, nofollow",
+})
 
 const route = useRoute();
 const workspaceId = route.params.workspaceId as string;
@@ -32,26 +38,23 @@ const leadsMock = leadsMockJson as {
 };
 
 const cloneFilters = (filters: FilterOption[]) =>
-  filters.map((filter) => ({ ...filter }));
+    filters.map((filter) => ({ ...filter }));
 
 const selectedCity = ref<string | null>(null);
 const searchQuery = ref("");
 
-const productFilters = ref<FilterOption[]>(
-  cloneFilters(leadsMock.productFilters),
-);
-const pointTypeFilters = ref<FilterOption[]>(
-  cloneFilters(leadsMock.pointTypeFilters),
-);
-const requiredFilters = ref<FilterOption[]>(
-  cloneFilters(leadsMock.requiredFilters),
-);
+const productFilters = ref<FilterOption[]>(cloneFilters(leadsMock.productFilters));
+const pointTypeFilters = ref<FilterOption[]>(cloneFilters(leadsMock.pointTypeFilters));
+const requiredFilters = ref<FilterOption[]>(cloneFilters(leadsMock.requiredFilters));
 
 // Only show leads with "Новый" status
 const newLeads = computed<Lead[]>(() =>
-  leadsStore.leads.filter((lead) => lead.openStatus === "Новый"),
+    leadsStore.leads.filter((lead) => lead.openStatus === "Новый")
 );
-
+type DropdownOption = {
+  label: string;
+  value: string;
+};
 const dropdownOptions = computed<DropdownOption[]>(() => {
   const cities = [
     ...new Set(newLeads.value.map((l) => l.locationShort).filter(Boolean)),
@@ -69,21 +72,22 @@ const filteredLeads = computed<Lead[]>(() => {
   return newLeads.value.filter((lead) => {
     const matchesCity = !city || lead.locationShort === city;
     const matchesQuery =
-      !query ||
-      [lead.title, lead.address, lead.phone].some((f) =>
-        f.toLowerCase().includes(query),
-      );
+        !query ||
+        [lead.title, lead.address, lead.phone].some((f) =>
+            f?.toLowerCase().includes(query)
+        );
     return matchesCity && matchesQuery;
   });
 });
+
 const hoveredLeadId = ref<string | null>(null);
 
 const selectedLead = computed(() => {
   if (hoveredLeadId.value) {
     return (
-      filteredLeads.value.find((l) => l.id === hoveredLeadId.value) ??
-      filteredLeads.value[0] ??
-      null
+        filteredLeads.value.find((l) => l.id === hoveredLeadId.value) ??
+        filteredLeads.value[0] ??
+        null
     );
   }
   return filteredLeads.value[0] ?? null;
@@ -94,11 +98,10 @@ const handlePostpone = async (leadId: string) => {
   if (!success) {
     cardsListRef.value?.triggerShake(leadId);
   }
-  // On success, lead will automatically disappear from the list
 };
 
 const handleTake = async (leadId: string) => {
-  const success = await leadsStore.takeLead(leadId, workspaceId);
+  await leadsStore.takeLead(leadId, workspaceId);
   isDetailModalOpen.value = false;
 };
 
@@ -115,12 +118,13 @@ const handleModalPostpone = (leadId: string) => {
   isDetailModalOpen.value = false;
 };
 
-const handleModalTake = (leadId: string) => {
-  handleTake(leadId);
+// BUG FIX: removed reference to undefined `success` variable
+const handleModalTake = async (leadId: string) => {
+  const success = await leadsStore.takeLead(leadId, workspaceId);
   if (!success) {
     cardsListRef.value?.triggerShake(leadId);
   }
-  // On success, lead will automatically disappear from the list
+  isDetailModalOpen.value = false;
 };
 
 onMounted(() => {
@@ -132,11 +136,11 @@ onMounted(() => {
   <div class="leads-page">
     <div class="leads-page-container">
       <DashboardLeadsFilters
-        v-model:selected-city="selectedCity"
-        :dropdown-options="dropdownOptions"
-        :product-filters="productFilters"
-        :point-type-filters="pointTypeFilters"
-        :required-filters="requiredFilters"
+          v-model:selected-city="selectedCity"
+          :dropdown-options="dropdownOptions"
+          :product-filters="productFilters"
+          :point-type-filters="pointTypeFilters"
+          :required-filters="requiredFilters"
       />
 
       <span class="leads-page__sidebar-divider" aria-hidden="true" />
@@ -146,14 +150,14 @@ onMounted(() => {
 
         <div class="leads-page__main-grid">
           <DashboardLeadsCardsList
-            ref="cardsListRef"
-            :leads="filteredLeads"
-            @postpone="handlePostpone"
-            @take="handleTake"
-            @show-more="leadsStore.fetchMore"
-            @details="handleShowDetails"
-            @hover="hoveredLeadId = $event"
-            @leave="hoveredLeadId = null"
+              ref="cardsListRef"
+              :leads="filteredLeads"
+              @postpone="handlePostpone"
+              @take="handleTake"
+              @show-more="leadsStore.fetchMore"
+              @details="handleShowDetails"
+              @hover="hoveredLeadId = $event"
+              @leave="hoveredLeadId = null"
           />
 
           <DashboardLeadsInfo :lead="selectedLead" />
@@ -161,12 +165,11 @@ onMounted(() => {
       </section>
     </div>
 
-    <!-- Lead Detail Modal -->
     <DashboardLeadDetailModal
-      v-model:open="isDetailModalOpen"
-      :lead="selectedLeadForModal"
-      @postpone="handleModalPostpone"
-      @take="handleModalTake"
+        v-model:open="isDetailModalOpen"
+        :lead="selectedLeadForModal"
+        @postpone="handleModalPostpone"
+        @take="handleModalTake"
     />
   </div>
 </template>
@@ -195,7 +198,6 @@ onMounted(() => {
   align-self: stretch;
   background: var(--color-neutral-ld);
 }
-
 .leads-page__content {
   height: 100%;
   flex: 1;
@@ -205,7 +207,6 @@ onMounted(() => {
   gap: 10px;
   overflow: hidden;
 }
-
 .leads-page__main-grid {
   display: flex;
   width: 100%;
@@ -216,25 +217,13 @@ onMounted(() => {
 }
 
 @media (max-width: 1280px) {
-  .leads-page {
-    padding: 20px 24px;
-  }
+  .leads-page { padding: 20px 24px; }
 }
-
 @media (max-width: 980px) {
-  .leads-page {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .leads-page__sidebar-divider {
-    display: none;
-  }
+  .leads-page { flex-direction: column; gap: 16px; }
+  .leads-page__sidebar-divider { display: none; }
 }
-
 @media (max-width: 700px) {
-  .leads-page {
-    padding: 24px 16px;
-  }
+  .leads-page { padding: 24px 16px; }
 }
 </style>

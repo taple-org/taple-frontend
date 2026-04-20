@@ -10,9 +10,15 @@ import { useNotification } from "~/composables/useNotification";
 import { useAuthStore } from "~/stores/auth.store";
 
 definePageMeta({
-  title: "Настройки рабочего пространства",
   layout: "dashboard",
+  middleware: "auth",
 });
+
+useSeoMeta({
+  title: "Настройки рабочего пространства — Taple",
+  description: "Управление участниками, ролями и параметрами рабочего пространства в Taple.",
+  robots: "noindex, nofollow",
+})
 
 const route = useRoute();
 const router = useRouter();
