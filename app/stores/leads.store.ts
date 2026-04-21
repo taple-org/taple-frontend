@@ -292,7 +292,10 @@ export const useLeadsStore = defineStore("leads", () => {
       if (raw) raw.stage_code = toStage;
       if (selectedLeadDetail.value?.id === leadId)
         selectedLeadDetail.value.stage_code = toStage;
-      notification.success("Успешно", `Лид перемещён: ${STAGE_LABELS[toStage]}`);
+      notification.success(
+        "Успешно",
+        `Лид перемещён: ${STAGE_LABELS[toStage]}`,
+      );
       return true;
     } catch {
       notification.error("Ошибка", "Не удалось переместить лид");
@@ -474,10 +477,12 @@ export const useLeadsStore = defineStore("leads", () => {
   const fetchNotes = async (leadId: string, workspaceId: string) => {
     isLoadingNotes.value = true;
     try {
-      const resp =
-        await $apiClient.api.listNotesApiV1LeadsTenantLeadIdNotesGet(leadId, {
+      const resp = await $apiClient.api.listNotesApiV1LeadsTenantLeadIdNotesGet(
+        leadId,
+        {
           tenant_id: workspaceId,
-        });
+        },
+      );
       notes.value = resp.data.result;
     } catch {
       notification.error("Ошибка", "Не удалось загрузить заметки");
@@ -496,7 +501,7 @@ export const useLeadsStore = defineStore("leads", () => {
         await $apiClient.api.createNoteApiV1LeadsTenantLeadIdNotesPost(
           leadId,
           { tenant_id: workspaceId },
-          { text },
+          { note: text },
         );
       notes.value.unshift(resp.data.result);
       notification.success("Успешно", "Заметка добавлена");
@@ -511,10 +516,12 @@ export const useLeadsStore = defineStore("leads", () => {
   const fetchTasks = async (leadId: string, workspaceId: string) => {
     isLoadingTasks.value = true;
     try {
-      const resp =
-        await $apiClient.api.listTasksApiV1LeadsTenantLeadIdTasksGet(leadId, {
+      const resp = await $apiClient.api.listTasksApiV1LeadsTenantLeadIdTasksGet(
+        leadId,
+        {
           tenant_id: workspaceId,
-        });
+        },
+      );
       tasks.value = resp.data.result;
     } catch {
       notification.error("Ошибка", "Не удалось загрузить задачи");

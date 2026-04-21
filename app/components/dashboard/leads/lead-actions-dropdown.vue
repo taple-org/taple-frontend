@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { TenantLeadListItem, TenantMemberBrief } from "~/api/generated/api";
+import type {
+  TenantLeadListItem,
+  TenantMemberBrief,
+} from "~/api/generated/api";
 import { TenantLeadStage } from "~/api/generated/api";
 import { STAGE_LABELS, STAGE_OPTIONS } from "~/stores/leads.store";
 
@@ -9,7 +12,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  move: [toStage: TenantLeadStage, comment?: string];
+  takeToWork: [];
   snooze: [until: string];
   hide: [];
   assign: [memberId: string];
@@ -17,18 +20,12 @@ const emit = defineEmits<{
 }>();
 
 const isOpen = ref(false);
-const subMenu = ref<"move" | "snooze" | "assign" | null>(null);
-const moveComment = ref("");
+const subMenu = ref<"snooze" | "assign" | null>(null);
 const snoozeDate = ref("");
 const dropdownRef = ref<HTMLElement | null>(null);
 
-const availableStages = computed(() =>
-  STAGE_OPTIONS.filter((s) => s.value !== props.lead.stage_code),
-);
-
-const handleMove = (stage: TenantLeadStage) => {
-  emit("move", stage, moveComment.value || undefined);
-  moveComment.value = "";
+const handleTakeToWork = () => {
+  emit("takeToWork");
   closeAll();
 };
 
@@ -93,7 +90,10 @@ const handleSnoozePreset = (hours: number) => {
     <button
       class="lead-actions__trigger"
       :class="{ 'lead-actions__trigger--active': isOpen }"
-      @click.stop="isOpen = !isOpen; subMenu = null"
+      @click.stop="
+        isOpen = !isOpen;
+        subMenu = null;
+      "
     >
       <span class="lead-actions__dot" />
       <span class="lead-actions__dot" />
@@ -103,9 +103,8 @@ const handleSnoozePreset = (hours: number) => {
     <div v-if="isOpen" class="lead-actions__dropdown">
       <!-- Main menu -->
       <template v-if="!subMenu">
-        <button class="lead-actions__item" @click="subMenu = 'move'">
-          Переместить
-          <Icon name="my-icon-arrow-right" mode="svg" :size="10" />
+        <button class="lead-actions__item" @click="handleTakeToWork">
+          Взять в работу
         </button>
         <button class="lead-actions__item" @click="subMenu = 'snooze'">
           Отложить
@@ -114,39 +113,14 @@ const handleSnoozePreset = (hours: number) => {
           Назначить
           <Icon name="my-icon-arrow-right" mode="svg" :size="10" />
         </button>
-        <button class="lead-actions__item" @click="handleHide">
-          Скрыть
-        </button>
-        <div class="lead-actions__divider" />
-        <button class="lead-actions__item lead-actions__item--danger" @click="handleDelete">
-          Удалить
-        </button>
-      </template>
-
-      <!-- Move submenu -->
-      <template v-else-if="subMenu === 'move'">
-        <button class="lead-actions__back" @click="subMenu = null">
-          <Icon name="my-icon-arrow-left" mode="svg" :size="10" />
-          Переместить
-        </button>
+        <button class="lead-actions__item" @click="handleHide">Скрыть</button>
         <div class="lead-actions__divider" />
         <button
-          v-for="stage in availableStages"
-          :key="stage.value"
-          class="lead-actions__item"
-          @click="handleMove(stage.value)"
+          class="lead-actions__item lead-actions__item--danger"
+          @click="handleDelete"
         >
-          {{ stage.label }}
+          Удалить
         </button>
-        <div class="lead-actions__divider" />
-        <div class="lead-actions__comment-block">
-          <input
-            v-model="moveComment"
-            class="lead-actions__comment-input"
-            placeholder="Комментарий (необязательно)"
-            @click.stop
-          />
-        </div>
       </template>
 
       <!-- Snooze submenu -->
@@ -166,12 +140,7 @@ const handleSnoozePreset = (hours: number) => {
         </button>
         <div class="lead-actions__divider" />
         <div class="lead-actions__comment-block">
-          <input
-            v-model="snoozeDate"
-            type="datetime-local"
-            class="lead-actions__comment-input"
-            @click.stop
-          />
+          <UiDatePicker v-model="snoozeDate" placeholder="Выберите дату" />
           <button
             class="lead-actions__confirm-btn"
             :disabled="!snoozeDate"
@@ -189,10 +158,7 @@ const handleSnoozePreset = (hours: number) => {
           Назначить
         </button>
         <div class="lead-actions__divider" />
-        <div
-          v-if="members.length === 0"
-          class="lead-actions__empty"
-        >
+        <div v-if="members.length === 0" class="lead-actions__empty">
           Нет доступных участников
         </div>
         <button

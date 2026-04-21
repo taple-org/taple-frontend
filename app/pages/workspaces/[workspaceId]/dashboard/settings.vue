@@ -289,7 +289,7 @@ async function leaveWorkspace() {
     );
     notification.success("Успех", "Вы покинули рабочее пространство");
     // Redirect to workspaces list
-    await router.push("/workspaces");
+    await router.push("/");
   } catch (error) {
     console.error("Failed to leave workspace:", error);
     notification.error("Ошибка", "Не удалось покинуть рабочее пространство");

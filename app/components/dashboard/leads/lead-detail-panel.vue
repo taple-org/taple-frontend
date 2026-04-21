@@ -1,9 +1,18 @@
 <script setup lang="ts">
+import { Dialog } from "@ark-ui/vue/dialog";
+import { TenantLeadTaskType } from "~/api/generated/api";
 import type { TenantLeadDetail } from "~/api/generated/api";
 import { STAGE_LABELS } from "~/stores/leads.store";
 import type { ContentSwitcherItem } from "~/components/ui/ContentSwitcher.vue";
+import {
+  fromDateAndTime,
+  TASK_TYPE_OPTIONS,
+} from "~/components/workspace/tasks/model";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
+  open: boolean;
   lead: TenantLeadDetail | null;
   isLoading: boolean;
   notes: any[];
@@ -14,11 +23,25 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: [];
-  moveLead: [toStage: string];
   createNote: [text: string];
-  createTask: [data: { title: string; due_at?: string }];
+  createTask: [
+    data: {
+      title: string;
+      description?: string;
+      task_type: string;
+      due_at?: string;
+    },
+  ];
   completeTask: [taskId: string];
+  takeToWork: [];
 }>();
+
+const open = computed({
+  get: () => props.open,
+  set: (v) => {
+    if (!v) emit("close");
+  },
+});
 
 const tabs: ContentSwitcherItem[] = [
   { value: "info", label: "Информация" },
@@ -29,14 +52,39 @@ const tabs: ContentSwitcherItem[] = [
 
 const selectedTab = ref<string[]>(["info"]);
 const newNoteText = ref("");
-const newTaskTitle = ref("");
-const newTaskDueAt = ref("");
 const isAddingNote = ref(false);
-const isAddingTask = ref(false);
 
-const formatDate = (dateStr: string | null | undefined) => {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("ru-RU", {
+// ── Task creation modal state ──────────────────────────────────────────────
+const showTaskModal = ref(false);
+const taskTitle = ref("");
+const taskDescription = ref("");
+const taskType = ref<TenantLeadTaskType>(TenantLeadTaskType.FollowUp);
+const taskDueDate = ref("");
+const taskDueTime = ref("10:00");
+const isCreatingTask = ref(false);
+
+// Reset state whenever the modal opens
+watch(
+  () => props.open,
+  (v) => {
+    if (v) {
+      selectedTab.value = ["info"];
+      newNoteText.value = "";
+      isAddingNote.value = false;
+      // Reset task modal state
+      showTaskModal.value = false;
+      taskTitle.value = "";
+      taskDescription.value = "";
+      taskType.value = TenantLeadTaskType.FollowUp;
+      taskDueDate.value = "";
+      taskDueTime.value = "10:00";
+    }
+  },
+);
+
+const formatDate = (d?: string | null) => {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("ru-RU", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -45,8 +93,8 @@ const formatDate = (dateStr: string | null | undefined) => {
   });
 };
 
-const formatScore = (score: number | null | undefined) =>
-  score != null ? Math.round(score * 100) : null;
+const fmtScore = (s?: number | null) =>
+  s != null ? Math.round(s * 100) : null;
 
 const phones = computed(() =>
   (props.lead?.contacts ?? []).filter((c) => c.type === "phone"),
@@ -60,934 +108,1125 @@ const otherContacts = computed(() =>
   ),
 );
 
-const contactIcon = (type: string) => {
-  const icons: Record<string, string> = {
+const contactIcon = (type: string) =>
+  ({
     phone: "other-icon-phone",
     email: "my-icon-inbox",
     whatsapp: "other-icon-whatsapp",
     telegram: "other-icon-telegram",
     instagram: "other-icon-instagram",
     website: "other-icon-globe",
-  };
-  return icons[type] ?? "other-icon-link";
-};
+  })[type] ?? "other-icon-link";
 
-const handleSubmitNote = () => {
+const submitNote = () => {
   if (!newNoteText.value.trim()) return;
   emit("createNote", newNoteText.value.trim());
   newNoteText.value = "";
   isAddingNote.value = false;
 };
 
-const handleSubmitTask = () => {
-  if (!newTaskTitle.value.trim()) return;
+const openTaskModal = () => {
+  taskTitle.value = "";
+  taskDescription.value = "";
+  taskType.value = TenantLeadTaskType.FollowUp;
+  taskDueDate.value = "";
+  taskDueTime.value = "10:00";
+  showTaskModal.value = true;
+};
+
+const closeTaskModal = () => {
+  showTaskModal.value = false;
+};
+
+const submitTask = () => {
+  if (!taskTitle.value.trim()) return;
+  isCreatingTask.value = true;
   emit("createTask", {
-    title: newTaskTitle.value.trim(),
-    ...(newTaskDueAt.value ? { due_at: newTaskDueAt.value } : {}),
+    title: taskTitle.value.trim(),
+    description: taskDescription.value.trim() || undefined,
+    task_type: taskType.value,
+    due_at: fromDateAndTime(taskDueDate.value, taskDueTime.value) || undefined,
   });
-  newTaskTitle.value = "";
-  newTaskDueAt.value = "";
-  isAddingTask.value = false;
+  closeTaskModal();
+  isCreatingTask.value = false;
 };
 
-const activityIcon = (type: string) => {
-  const icons: Record<string, string> = {
-    stage_change: "my-icon-arrow-right",
-    note_added: "my-icon-inbox",
-    task_created: "my-icon-check",
-    member_assigned: "my-icon-user",
-  };
-  return icons[type] ?? "my-icon-circle";
-};
-
-const activityColor = (type: string) => {
-  const colors: Record<string, string> = {
+const activityColor = (type: string) =>
+  ({
     stage_change: "#006FFD",
     note_added: "#298267",
     task_created: "#FF8C00",
     member_assigned: "#9B59B6",
-  };
-  return colors[type] ?? "#71727A";
+  })[type] ?? "#71727A";
+
+// ── Activity history description formatter ────────────────────────────────
+const getActivityDescription = (item: any): string => {
+  const actor = item.actor?.full_name ?? "Система";
+
+  switch (item.type) {
+    case "stage_change":
+      return `${actor} переместил(а) лид: ${item.from_stage} → ${item.to_stage}`;
+    case "note_added":
+      return `${actor} добавил(а) заметку: ${item.note_text ?? ""}`;
+    case "task_created":
+      return `${actor} создал(а) задачу: ${item.task_title}`;
+    case "member_assigned":
+      return `${actor} назначил(а) ответственного: ${item.assigned_member_name ?? ""}`;
+    default:
+      return `${actor} выполнил(а) действие`;
+  }
 };
+
+// ── Task creation with lead status check ─────────────────────────────────
+const showTakeToWorkModal = ref(false);
+const isTakingToWork = ref(false);
+
+const isInProgress = computed(() => props.lead?.stage_code === "in_progress");
+
+const handleAddTaskClick = () => {
+  if (!isInProgress.value) {
+    showTakeToWorkModal.value = true;
+    return;
+  }
+  openTaskModal();
+};
+
+const confirmTakeToWorkAndAddTask = async () => {
+  isTakingToWork.value = true;
+  emit("takeToWork");
+  showTakeToWorkModal.value = false;
+  isTakingToWork.value = false;
+  // Open task modal after taking to work
+  openTaskModal();
+};
+
+const scores = computed(() => {
+  const l = props.lead;
+  if (!l) return [];
+  return [
+    {
+      key: "priority",
+      label: "Приоритет",
+      val: fmtScore(l.priority_score),
+      bg: "#EAF2FF",
+      color: "#006FFD",
+    },
+    {
+      key: "fit",
+      label: "Соответствие",
+      val: fmtScore(l.fit_score),
+      bg: "#E7F4E8",
+      color: "#298267",
+    },
+    {
+      key: "freshness",
+      label: "Свежесть",
+      val: fmtScore(l.freshness_score),
+      bg: "#FFF4E5",
+      color: "#FF8C00",
+    },
+    {
+      key: "contact",
+      label: "Доступность",
+      val: fmtScore(l.contactability_score),
+      bg: "#F3EAFF",
+      color: "#9B59B6",
+    },
+  ].filter((s) => s.val != null);
+});
 </script>
 
 <template>
-  <aside class="detail-panel" aria-label="Детали лида">
-    <!-- Loading skeleton -->
-    <div v-if="isLoading" class="detail-panel__loading">
-      <div class="detail-panel__skeleton detail-panel__skeleton--title" />
-      <div class="detail-panel__skeleton detail-panel__skeleton--subtitle" />
-      <div class="detail-panel__skeleton detail-panel__skeleton--block" />
-      <div class="detail-panel__skeleton detail-panel__skeleton--block" />
-    </div>
-
-    <!-- Empty state -->
-    <div v-else-if="!lead" class="detail-panel__empty">
-      <Icon name="my-icon-inbox" mode="svg" :size="28" />
-      <p>Выберите лид для просмотра</p>
-    </div>
-
-    <template v-else>
-      <!-- Header -->
-      <header class="detail-panel__header">
-        <div class="detail-panel__header-top">
-          <span
-            class="detail-panel__stage"
-            :title="lead.stage_code"
-          >
-            {{ STAGE_LABELS[lead.stage_code] ?? lead.stage_code }}
-          </span>
-          <button class="detail-panel__close" @click="emit('close')">
-            <Icon name="other-icon-close" mode="svg" :size="10" />
-          </button>
-        </div>
-
-        <h2 class="detail-panel__title">{{ lead.lead_name }}</h2>
-        <p v-if="lead.lead_legal_name" class="detail-panel__legal-name">
-          {{ lead.lead_legal_name }}
-        </p>
-        <p class="detail-panel__subtitle">{{ lead.business_category_name_ru }}</p>
-
-        <div v-if="lead.lead_bin_iin" class="detail-panel__bin">
-          БИН/ИИН: <strong>{{ lead.lead_bin_iin }}</strong>
-        </div>
-
-        <!-- Score badges -->
-        <div class="detail-panel__scores">
-          <div
-            v-if="formatScore(lead.priority_score) != null"
-            class="detail-panel__score-badge detail-panel__score-badge--priority"
-          >
-            <span class="detail-panel__score-label">Приоритет</span>
-            <span class="detail-panel__score-val">{{ formatScore(lead.priority_score) }}</span>
+  <Dialog.Root v-model:open="open" lazy-mount unmount-on-exit>
+    <Teleport to="body">
+      <Dialog.Backdrop class="ldp-backdrop" />
+      <Dialog.Positioner class="ldp-positioner">
+        <Dialog.Content class="ldp-modal">
+          <!-- ── Loading skeleton ── -->
+          <div v-if="isLoading" class="ldp-skeleton-wrap">
+            <div class="ldp-skeleton ldp-skeleton--title" />
+            <div class="ldp-skeleton ldp-skeleton--sub" />
+            <div class="ldp-skeleton ldp-skeleton--block" />
+            <div class="ldp-skeleton ldp-skeleton--block" />
           </div>
-          <div
-            v-if="formatScore(lead.fit_score) != null"
-            class="detail-panel__score-badge detail-panel__score-badge--fit"
-          >
-            <span class="detail-panel__score-label">Соответствие</span>
-            <span class="detail-panel__score-val">{{ formatScore(lead.fit_score) }}</span>
-          </div>
-          <div
-            v-if="formatScore(lead.freshness_score) != null"
-            class="detail-panel__score-badge detail-panel__score-badge--freshness"
-          >
-            <span class="detail-panel__score-label">Свежесть</span>
-            <span class="detail-panel__score-val">{{ formatScore(lead.freshness_score) }}</span>
-          </div>
-          <div
-            v-if="formatScore(lead.contactability_score) != null"
-            class="detail-panel__score-badge detail-panel__score-badge--contact"
-          >
-            <span class="detail-panel__score-label">Доступность</span>
-            <span class="detail-panel__score-val">{{ formatScore(lead.contactability_score) }}</span>
-          </div>
-        </div>
-      </header>
 
-      <!-- Responsible member -->
-      <div v-if="lead.responsible_member" class="detail-panel__member">
-        <span class="detail-panel__member-label">Ответственный:</span>
-        <span class="detail-panel__member-name">
-          {{ lead.responsible_member.first_name ?? "" }}
-          {{ lead.responsible_member.last_name ?? "" }}
-          <span v-if="!lead.responsible_member.first_name && !lead.responsible_member.last_name">
-            {{ lead.responsible_member.email ?? "—" }}
-          </span>
-        </span>
-      </div>
-
-      <!-- Tabs -->
-      <ui-content-switcher v-model="selectedTab" :items="tabs" class="detail-panel__tabs" />
-
-      <!-- Tab content -->
-      <div class="detail-panel__content">
-
-        <!-- ── INFO TAB ── -->
-        <div v-if="selectedTab[0] === 'info'" class="detail-panel__tab-panel">
-
-          <!-- Contacts -->
-          <section v-if="phones.length || emails.length || otherContacts.length" class="detail-panel__section">
-            <h4 class="detail-panel__section-label">Контакты</h4>
-            <ul class="detail-panel__contact-list">
-              <li v-for="c in phones" :key="c.id ?? c.value" class="detail-panel__contact-item">
-                <Icon :name="contactIcon('phone')" mode="svg" :size="12" />
-                <a :href="`tel:${c.value}`" class="detail-panel__contact-link">{{ c.value }}</a>
-              </li>
-              <li v-for="c in emails" :key="c.id ?? c.value" class="detail-panel__contact-item">
-                <Icon :name="contactIcon('email')" mode="svg" :size="12" />
-                <a :href="`mailto:${c.value}`" class="detail-panel__contact-link">{{ c.value }}</a>
-              </li>
-              <li v-for="c in otherContacts" :key="c.id ?? c.value" class="detail-panel__contact-item">
-                <Icon :name="contactIcon(c.type)" mode="svg" :size="12" />
-                <span class="detail-panel__contact-text">{{ c.value }}</span>
-              </li>
-            </ul>
-          </section>
-
-          <!-- Addresses -->
-          <section v-if="lead.addresses?.length" class="detail-panel__section">
-            <h4 class="detail-panel__section-label">Адреса</h4>
-            <ul class="detail-panel__address-list">
-              <li v-for="addr in lead.addresses" :key="addr.id" class="detail-panel__address-item">
-                <span class="detail-panel__address-text">{{ addr.full_address ?? addr.city_name_ru }}</span>
-                <a
-                  v-if="addr.full_address"
-                  href="#"
-                  class="detail-panel__map-link"
-                  @click.prevent
-                >2GIS</a>
-              </li>
-            </ul>
-          </section>
-
-          <!-- Signals -->
-          <section v-if="lead.signals" class="detail-panel__section">
-            <h4 class="detail-panel__section-label">Сигналы</h4>
-            <div class="detail-panel__signals">
-              <div v-if="lead.signals.rating != null" class="detail-panel__signal">
-                <span class="detail-panel__signal-key">Рейтинг</span>
-                <span class="detail-panel__signal-val">⭐ {{ lead.signals.rating }}</span>
-              </div>
-              <div v-if="lead.signals.review_count != null" class="detail-panel__signal">
-                <span class="detail-panel__signal-key">Отзывы</span>
-                <span class="detail-panel__signal-val">{{ lead.signals.review_count }}</span>
-              </div>
-              <div v-if="lead.signals.branch_count != null" class="detail-panel__signal">
-                <span class="detail-panel__signal-key">Филиалы</span>
-                <span class="detail-panel__signal-val">{{ lead.signals.branch_count }}</span>
-              </div>
-              <div v-if="lead.signals.has_delivery != null" class="detail-panel__signal">
-                <span class="detail-panel__signal-key">Доставка</span>
-                <span class="detail-panel__signal-val">{{ lead.signals.has_delivery ? "Да" : "Нет" }}</span>
-              </div>
-              <div v-if="lead.signals.is_open_24_7 != null" class="detail-panel__signal">
-                <span class="detail-panel__signal-key">24/7</span>
-                <span class="detail-panel__signal-val">{{ lead.signals.is_open_24_7 ? "Да" : "Нет" }}</span>
-              </div>
-            </div>
-          </section>
-
-          <!-- Branches -->
-          <section v-if="lead.branches?.length" class="detail-panel__section">
-            <h4 class="detail-panel__section-label">Филиалы ({{ lead.branches.length }})</h4>
-            <ul class="detail-panel__branches">
-              <li v-for="branch in lead.branches" :key="branch.id" class="detail-panel__branch">
-                <div class="detail-panel__branch-header">
-                  <span class="detail-panel__branch-name">{{ branch.name ?? "Без названия" }}</span>
-                  <span
-                    class="detail-panel__branch-status"
-                    :class="branch.is_active ? 'detail-panel__branch-status--active' : 'detail-panel__branch-status--inactive'"
-                  >
-                    {{ branch.is_active ? "Активен" : "Неактивен" }}
-                  </span>
+          <template v-else-if="lead">
+            <!-- ── Header ── -->
+            <header class="ldp-header">
+              <div class="ldp-header__top">
+                <div class="ldp-header__badges">
+                  <span class="ldp-stage">{{
+                    STAGE_LABELS[lead.stage_code] ?? lead.stage_code
+                  }}</span>
+                  <div class="ldp-header__scores">
+                    <span
+                      v-for="s in scores"
+                      :key="s.key"
+                      class="ldp-score-chip"
+                      :style="{ background: s.bg, color: s.color }"
+                    >
+                      {{ s.label }}: <strong>{{ s.val }}</strong>
+                    </span>
+                  </div>
                 </div>
-                <p v-if="branch.full_address" class="detail-panel__branch-address">
-                  {{ branch.full_address }}
+                <Dialog.CloseTrigger class="ldp-close">
+                  <Icon name="other-icon-close" mode="svg" :size="12" />
+                </Dialog.CloseTrigger>
+              </div>
+
+              <div class="ldp-header__title-row">
+                <h2 class="ldp-title">{{ lead.lead_name }}</h2>
+                <p v-if="lead.lead_legal_name" class="ldp-legal">
+                  {{ lead.lead_legal_name }}
                 </p>
-                <div v-if="branch.signals" class="detail-panel__branch-signals">
-                  <span v-if="branch.signals.rating != null">⭐ {{ branch.signals.rating }}</span>
-                  <span v-if="branch.signals.review_count != null">💬 {{ branch.signals.review_count }}</span>
-                </div>
-              </li>
-            </ul>
-          </section>
-
-          <!-- Dates -->
-          <section class="detail-panel__section">
-            <h4 class="detail-panel__section-label">Даты</h4>
-            <div class="detail-panel__dates">
-              <div class="detail-panel__date-row">
-                <span class="detail-panel__date-key">Создан</span>
-                <span class="detail-panel__date-val">{{ formatDate(lead.created_at) }}</span>
               </div>
-              <div v-if="lead.snoozed_until" class="detail-panel__date-row">
-                <span class="detail-panel__date-key">Отложен до</span>
-                <span class="detail-panel__date-val">{{ formatDate(lead.snoozed_until) }}</span>
-              </div>
-              <div v-if="lead.hidden_until" class="detail-panel__date-row">
-                <span class="detail-panel__date-key">Скрыт до</span>
-                <span class="detail-panel__date-val">{{ formatDate(lead.hidden_until) }}</span>
-              </div>
-            </div>
-          </section>
-        </div>
 
-        <!-- ── NOTES TAB ── -->
-        <div v-if="selectedTab[0] === 'notes'" class="detail-panel__tab-panel">
-          <div class="detail-panel__tab-actions">
-            <button
-              v-if="!isAddingNote"
-              class="detail-panel__add-btn"
-              @click="isAddingNote = true"
-            >
-              + Добавить заметку
-            </button>
-          </div>
-
-          <div v-if="isAddingNote" class="detail-panel__note-form">
-            <textarea
-              v-model="newNoteText"
-              class="detail-panel__textarea"
-              placeholder="Введите заметку..."
-              rows="3"
-              autofocus
-            />
-            <div class="detail-panel__form-actions">
-              <ui-button variant="ghost" @click="isAddingNote = false; newNoteText = ''">
-                Отмена
-              </ui-button>
-              <ui-button variant="primary" @click="handleSubmitNote">
-                Сохранить
-              </ui-button>
-            </div>
-          </div>
-
-          <div v-if="isLoadingNotes" class="detail-panel__tab-loading">Загрузка...</div>
-
-          <div v-else-if="notes.length === 0 && !isAddingNote" class="detail-panel__tab-empty">
-            Заметок нет
-          </div>
-
-          <ul v-else class="detail-panel__notes-list">
-            <li v-for="note in notes" :key="note.id" class="detail-panel__note">
-              <p class="detail-panel__note-text">{{ note.text }}</p>
-              <span class="detail-panel__note-date">{{ formatDate(note.created_at) }}</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- ── TASKS TAB ── -->
-        <div v-if="selectedTab[0] === 'tasks'" class="detail-panel__tab-panel">
-          <div class="detail-panel__tab-actions">
-            <button
-              v-if="!isAddingTask"
-              class="detail-panel__add-btn"
-              @click="isAddingTask = true"
-            >
-              + Добавить задачу
-            </button>
-          </div>
-
-          <div v-if="isAddingTask" class="detail-panel__task-form">
-            <input
-              v-model="newTaskTitle"
-              class="detail-panel__input"
-              placeholder="Название задачи"
-            />
-            <input
-              v-model="newTaskDueAt"
-              type="datetime-local"
-              class="detail-panel__input"
-            />
-            <div class="detail-panel__form-actions">
-              <ui-button variant="ghost" @click="isAddingTask = false; newTaskTitle = ''; newTaskDueAt = ''">
-                Отмена
-              </ui-button>
-              <ui-button variant="primary" @click="handleSubmitTask">
-                Создать
-              </ui-button>
-            </div>
-          </div>
-
-          <div v-if="isLoadingTasks" class="detail-panel__tab-loading">Загрузка...</div>
-
-          <div v-else-if="tasks.length === 0 && !isAddingTask" class="detail-panel__tab-empty">
-            Задач нет
-          </div>
-
-          <ul v-else class="detail-panel__tasks-list">
-            <li
-              v-for="task in tasks"
-              :key="task.id"
-              class="detail-panel__task"
-              :class="{ 'detail-panel__task--done': task.completed_at }"
-            >
-              <button
-                class="detail-panel__task-check"
-                :disabled="!!task.completed_at"
-                @click="emit('completeTask', task.id)"
-              >
-                <Icon
-                  :name="task.completed_at ? 'my-icon-check' : 'my-icon-circle'"
-                  mode="svg"
-                  :size="14"
-                />
-              </button>
-              <div class="detail-panel__task-content">
-                <span class="detail-panel__task-title">{{ task.title }}</span>
-                <span v-if="task.due_at" class="detail-panel__task-due">
-                  {{ formatDate(task.due_at) }}
+              <div class="ldp-header__meta">
+                <span class="ldp-category">{{
+                  lead.business_category_name_ru
+                }}</span>
+                <span v-if="lead.lead_bin_iin" class="ldp-bin"
+                  >БИН/ИИН: {{ lead.lead_bin_iin }}</span
+                >
+                <span v-if="lead.responsible_member" class="ldp-member">
+                  Ответственный:
+                  <strong>
+                    {{
+                      lead.responsible_member.first_name ??
+                      lead.responsible_member.email ??
+                      "—"
+                    }}
+                    {{ lead.responsible_member.last_name ?? "" }}
+                  </strong>
                 </span>
               </div>
-            </li>
-          </ul>
+            </header>
+
+            <!-- ── Tabs ── -->
+            <ui-content-switcher
+              v-model="selectedTab"
+              :items="tabs"
+              class="ldp-tabs"
+            />
+
+            <!-- ── Body ── -->
+            <div class="ldp-body">
+              <!-- INFO -->
+              <div v-if="selectedTab[0] === 'info'" class="ldp-panel">
+                <div class="ldp-columns">
+                  <!-- Left col: contacts + addresses + dates -->
+                  <div class="ldp-col">
+                    <section
+                      v-if="
+                        phones.length || emails.length || otherContacts.length
+                      "
+                      class="ldp-section"
+                    >
+                      <h4 class="ldp-section__label">Контакты</h4>
+                      <ul class="ldp-contact-list">
+                        <li
+                          v-for="c in phones"
+                          :key="c.id ?? c.value"
+                          class="ldp-contact-item"
+                        >
+                          <Icon
+                            :name="contactIcon('phone')"
+                            mode="svg"
+                            :size="13"
+                          />
+                          <a
+                            :href="`tel:${c.value}`"
+                            class="ldp-contact-link"
+                            >{{ c.value }}</a
+                          >
+                        </li>
+                        <li
+                          v-for="c in emails"
+                          :key="c.id ?? c.value"
+                          class="ldp-contact-item"
+                        >
+                          <Icon
+                            :name="contactIcon('email')"
+                            mode="svg"
+                            :size="13"
+                          />
+                          <a
+                            :href="`mailto:${c.value}`"
+                            class="ldp-contact-link"
+                            >{{ c.value }}</a
+                          >
+                        </li>
+                        <li
+                          v-for="c in otherContacts"
+                          :key="c.id ?? c.value"
+                          class="ldp-contact-item"
+                        >
+                          <Icon
+                            :name="contactIcon(c.type)"
+                            mode="svg"
+                            :size="13"
+                          />
+                          <span class="ldp-contact-text">{{ c.value }}</span>
+                        </li>
+                      </ul>
+                    </section>
+
+                    <section v-if="lead.addresses?.length" class="ldp-section">
+                      <h4 class="ldp-section__label">Адреса</h4>
+                      <ul class="ldp-address-list">
+                        <li
+                          v-for="addr in lead.addresses"
+                          :key="addr.id"
+                          class="ldp-address-item"
+                        >
+                          <span class="ldp-address-text">{{
+                            addr.full_address ?? addr.city_name_ru
+                          }}</span>
+                          <a
+                            v-if="addr.full_address"
+                            href="#"
+                            class="ldp-map-link"
+                            @click.prevent
+                            >2GIS</a
+                          >
+                        </li>
+                      </ul>
+                    </section>
+
+                    <section class="ldp-section">
+                      <h4 class="ldp-section__label">Даты</h4>
+                      <div class="ldp-date-grid">
+                        <span class="ldp-date-key">Создан</span>
+                        <span class="ldp-date-val">{{
+                          formatDate(lead.created_at)
+                        }}</span>
+                        <template v-if="lead.snoozed_until">
+                          <span class="ldp-date-key">Отложен до</span>
+                          <span class="ldp-date-val">{{
+                            formatDate(lead.snoozed_until)
+                          }}</span>
+                        </template>
+                        <template v-if="lead.hidden_until">
+                          <span class="ldp-date-key">Скрыт до</span>
+                          <span class="ldp-date-val">{{
+                            formatDate(lead.hidden_until)
+                          }}</span>
+                        </template>
+                      </div>
+                    </section>
+                  </div>
+
+                  <!-- Right col: signals + branches -->
+                  <div class="ldp-col">
+                    <section v-if="lead.signals" class="ldp-section">
+                      <h4 class="ldp-section__label">Сигналы</h4>
+                      <div class="ldp-signals-grid">
+                        <div
+                          v-if="lead.signals.rating != null"
+                          class="ldp-signal-chip"
+                        >
+                          <span class="ldp-signal-key">Рейтинг</span>
+                          <span class="ldp-signal-val"
+                            >⭐ {{ lead.signals.rating }}</span
+                          >
+                        </div>
+                        <div
+                          v-if="lead.signals.review_count != null"
+                          class="ldp-signal-chip"
+                        >
+                          <span class="ldp-signal-key">Отзывы</span>
+                          <span class="ldp-signal-val">{{
+                            lead.signals.review_count
+                          }}</span>
+                        </div>
+                        <div
+                          v-if="lead.signals.branch_count != null"
+                          class="ldp-signal-chip"
+                        >
+                          <span class="ldp-signal-key">Филиалы</span>
+                          <span class="ldp-signal-val">{{
+                            lead.signals.branch_count
+                          }}</span>
+                        </div>
+                        <div
+                          v-if="lead.signals.has_delivery != null"
+                          class="ldp-signal-chip"
+                        >
+                          <span class="ldp-signal-key">Доставка</span>
+                          <span class="ldp-signal-val">{{
+                            lead.signals.has_delivery ? "Да" : "Нет"
+                          }}</span>
+                        </div>
+                        <div
+                          v-if="lead.signals.is_open_24_7 != null"
+                          class="ldp-signal-chip"
+                        >
+                          <span class="ldp-signal-key">24/7</span>
+                          <span class="ldp-signal-val">{{
+                            lead.signals.is_open_24_7 ? "Да" : "Нет"
+                          }}</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section v-if="lead.branches?.length" class="ldp-section">
+                      <h4 class="ldp-section__label">
+                        Филиалы ({{ lead.branches.length }})
+                      </h4>
+                      <ul class="ldp-branch-list">
+                        <li
+                          v-for="b in lead.branches"
+                          :key="b.id"
+                          class="ldp-branch"
+                        >
+                          <div class="ldp-branch__header">
+                            <span class="ldp-branch__addr">{{
+                              b.full_address ?? "Адрес не указан"
+                            }}</span>
+                            <span
+                              class="ldp-branch__status"
+                              :class="
+                                b.is_active
+                                  ? 'ldp-branch__status--on'
+                                  : 'ldp-branch__status--off'
+                              "
+                            >
+                              {{ b.is_active ? "Активен" : "Неактивен" }}
+                            </span>
+                          </div>
+                          <div v-if="b.signals" class="ldp-branch__sigs">
+                            <span v-if="b.signals.rating != null"
+                              >⭐ {{ b.signals.rating }}</span
+                            >
+                            <span v-if="b.signals.review_count != null"
+                              >💬 {{ b.signals.review_count }}</span
+                            >
+                          </div>
+                          <!-- Congestion heatmap (visit frequency) -->
+                          <div
+                            v-if="b.congestion?.present"
+                            class="ldp-branch__congestion"
+                          >
+                            <dashboard-leads-congestion-heatmap
+                              :congestion="b.congestion"
+                            />
+                          </div>
+                        </li>
+                      </ul>
+                    </section>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTES -->
+              <div v-if="selectedTab[0] === 'notes'" class="ldp-panel">
+                <div class="ldp-tab-action-row">
+                  <button
+                    v-if="!isAddingNote"
+                    class="ldp-add-btn"
+                    @click="isAddingNote = true"
+                  >
+                    + Добавить заметку
+                  </button>
+                </div>
+
+                <div v-if="isAddingNote" class="ldp-form">
+                  <textarea
+                    v-model="newNoteText"
+                    class="ldp-textarea"
+                    placeholder="Введите заметку..."
+                    rows="4"
+                    autofocus
+                  />
+                  <div class="ldp-form__actions">
+                    <ui-button
+                      variant="ghost"
+                      @click="
+                        isAddingNote = false;
+                        newNoteText = '';
+                      "
+                      >Отмена</ui-button
+                    >
+                    <ui-button variant="primary" @click="submitNote"
+                      >Сохранить</ui-button
+                    >
+                  </div>
+                </div>
+
+                <div v-if="isLoadingNotes" class="ldp-empty">Загрузка...</div>
+                <div
+                  v-else-if="notes.length === 0 && !isAddingNote"
+                  class="ldp-empty"
+                >
+                  Заметок пока нет
+                </div>
+
+                <ul v-else class="ldp-notes">
+                  <li v-for="note in notes" :key="note.id" class="ldp-note">
+                    <p class="ldp-note__text">{{ note.note }}</p>
+                    <div class="ldp-note__meta">
+                      <span class="ldp-note__author">{{
+                        note.author_full_name ?? note.author_email ?? "—"
+                      }}</span>
+                      <span class="ldp-note__date">{{
+                        formatDate(note.created_at)
+                      }}</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- TASKS -->
+              <div v-if="selectedTab[0] === 'tasks'" class="ldp-panel">
+                <div class="ldp-tab-action-row">
+                  <button class="ldp-add-btn" @click="handleAddTaskClick">
+                    + Добавить задачу
+                  </button>
+                </div>
+
+                <div v-if="isLoadingTasks" class="ldp-empty">Загрузка...</div>
+                <div v-else-if="tasks.length === 0" class="ldp-empty">
+                  Задач пока нет
+                </div>
+
+                <ul v-else class="ldp-tasks">
+                  <li
+                    v-for="task in tasks"
+                    :key="task.id"
+                    class="ldp-task"
+                    :class="{ 'ldp-task--done': task.completed_at }"
+                  >
+                    <button
+                      class="ldp-task__check"
+                      :disabled="!!task.completed_at"
+                      @click="emit('completeTask', task.id)"
+                    >
+                      <Icon
+                        :name="
+                          task.completed_at ? 'my-icon-check' : 'my-icon-circle'
+                        "
+                        mode="svg"
+                        :size="16"
+                      />
+                    </button>
+                    <div class="ldp-task__body">
+                      <span class="ldp-task__title">{{ task.title }}</span>
+                      <span v-if="task.due_at" class="ldp-task__due">{{
+                        formatDate(task.due_at)
+                      }}</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- HISTORY -->
+              <div v-if="selectedTab[0] === 'history'" class="ldp-panel">
+                <div v-if="!lead.activity_history?.length" class="ldp-empty">
+                  История появится после первого взаимодействия с лидом
+                </div>
+
+                <ul v-else class="ldp-timeline">
+                  <li
+                    v-for="(item, idx) in lead.activity_history"
+                    :key="idx"
+                    class="ldp-timeline__item"
+                  >
+                    <div
+                      class="ldp-timeline__dot"
+                      :style="{ background: activityColor(item.type) }"
+                    />
+                    <div class="ldp-timeline__body">
+                      <span class="ldp-timeline__desc">{{
+                        getActivityDescription(item)
+                      }}</span>
+                      <span class="ldp-timeline__date">{{
+                        formatDate(item.occurred_at)
+                      }}</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <!-- /ldp-body -->
+          </template>
+
+          <!-- Fallback (shouldn't normally show) -->
+          <div v-else class="ldp-empty-modal">
+            <p>Данные лида недоступны</p>
+          </div>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Teleport>
+  </Dialog.Root>
+
+  <!-- Take to work confirmation modal -->
+  <ui-simple-modal
+    v-model:open="showTakeToWorkModal"
+    @close="showTakeToWorkModal = false"
+  >
+    <div class="take-to-work-modal">
+      <h3 class="take-to-work-modal__title">Взять лид в работу?</h3>
+      <p class="take-to-work-modal__desc">
+        Чтобы создать задачу, лид должен быть в работе. Взять лида в работу
+        сейчас?
+      </p>
+      <div class="take-to-work-modal__actions">
+        <ui-button variant="outline" @click="showTakeToWorkModal = false"
+          >Отмена</ui-button
+        >
+        <ui-button
+          variant="primary"
+          :disabled="isTakingToWork"
+          @click="confirmTakeToWorkAndAddTask"
+        >
+          {{ isTakingToWork ? "Обработка..." : "Да, взять в работу" }}
+        </ui-button>
+      </div>
+    </div>
+  </ui-simple-modal>
+
+  <!-- Task creation modal -->
+  <ui-simple-modal v-model:open="showTaskModal" @close="closeTaskModal">
+    <div class="task-create">
+      <header class="task-create__header">
+        <div>
+          <h3 class="task-create__title">Создать задачу</h3>
+          <p class="task-create__description-text">
+            Для лида: <strong>{{ lead?.lead_name }}</strong>
+          </p>
+        </div>
+        <button
+          type="button"
+          class="task-create__close"
+          @click="closeTaskModal"
+        >
+          <Icon name="my-icon:close" width="14" height="14" />
+        </button>
+      </header>
+
+      <div class="task-create__group">
+        <label class="task-create__label">Заголовок</label>
+        <ui-form-field
+          v-model="taskTitle"
+          type="text"
+          placeholder="Например, созвониться с клиентом"
+        />
+      </div>
+
+      <div class="task-create__grid">
+        <div class="task-create__group">
+          <label class="task-create__label">Тип задачи</label>
+          <ui-form-field
+            v-model="taskType"
+            type="select"
+            :options="TASK_TYPE_OPTIONS"
+            placeholder="Тип задачи"
+          />
         </div>
 
-        <!-- ── HISTORY TAB ── -->
-        <div v-if="selectedTab[0] === 'history'" class="detail-panel__tab-panel">
-          <div
-            v-if="!lead.activity_history?.length"
-            class="detail-panel__tab-empty"
-          >
-            История будет доступна после первого взаимодействия
+        <div class="task-create__group">
+          <label class="task-create__label">Срок</label>
+          <div class="task-create__date-row">
+            <ui-date-picker v-model="taskDueDate" placeholder="Выберите дату" />
+            <input
+              v-model="taskDueTime"
+              class="task-create__input task-create__input--time"
+              type="time"
+            />
           </div>
-
-          <ul v-else class="detail-panel__timeline">
-            <li
-              v-for="(item, idx) in lead.activity_history"
-              :key="idx"
-              class="detail-panel__timeline-item"
-            >
-              <div
-                class="detail-panel__timeline-dot"
-                :style="{ background: activityColor(item.activity_type) }"
-              />
-              <div class="detail-panel__timeline-body">
-                <span class="detail-panel__timeline-desc">{{ item.description ?? item.activity_type }}</span>
-                <span class="detail-panel__timeline-date">{{ formatDate(item.created_at) }}</span>
-              </div>
-            </li>
-          </ul>
         </div>
       </div>
-    </template>
-  </aside>
+
+      <div class="task-create__group">
+        <label class="task-create__label">Описание</label>
+        <textarea
+          v-model="taskDescription"
+          class="task-create__textarea"
+          placeholder="Контекст задачи, детали разговора, что проверить..."
+        />
+      </div>
+
+      <div class="task-create__footer">
+        <ui-button variant="outline" @click="closeTaskModal">Отмена</ui-button>
+        <ui-button
+          :disabled="!taskTitle.trim() || isCreatingTask"
+          @click="submitTask"
+        >
+          {{ isCreatingTask ? "Создание..." : "Создать задачу" }}
+        </ui-button>
+      </div>
+    </div>
+  </ui-simple-modal>
 </template>
 
 <style scoped>
-.detail-panel {
+/* ── Backdrop ── */
+.ldp-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.45);
+}
+.ldp-backdrop[data-state="open"] {
+  animation: ldp-fade-in 200ms ease;
+}
+.ldp-backdrop[data-state="closed"] {
+  animation: ldp-fade-out 150ms ease;
+}
+
+/* ── Positioner ── */
+.ldp-positioner {
+  position: fixed;
+  inset: 0;
+  z-index: 101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  pointer-events: none;
+}
+
+/* ── Modal shell ── */
+.ldp-modal {
+  pointer-events: all;
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid #e8e9f1;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
-  min-width: 300px;
-  width: 300px;
-  height: 100%;
-  border-radius: 16px;
-  background: var(--color-neutral-ll);
   overflow: hidden;
+  contain: layout style;
+}
+.ldp-modal[data-state="open"] {
+  animation: ldp-slide-up 300ms ease;
+}
+.ldp-modal[data-state="closed"] {
+  animation: ldp-slide-down 200ms ease;
+}
+
+/* ── Animations ── */
+@keyframes ldp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ldp-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes ldp-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ldp-slide-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+/* ── Header ── */
+.ldp-header {
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid #e8e9f1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   flex-shrink: 0;
 }
 
-.detail-panel__loading {
-  padding: 16px;
+.ldp-header__top {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.detail-panel__skeleton {
-  background: linear-gradient(90deg, var(--color-neutral-ld) 25%, var(--color-neutral-ll) 50%, var(--color-neutral-ld) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 8px;
-}
-
-.detail-panel__skeleton--title { height: 20px; width: 70%; }
-.detail-panel__skeleton--subtitle { height: 14px; width: 50%; }
-.detail-panel__skeleton--block { height: 60px; width: 100%; }
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.detail-panel__empty {
-  flex: 1;
+.ldp-header__badges {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  color: var(--color-neutral-dl);
-  text-align: center;
-  padding: 20px;
+  flex-wrap: wrap;
 }
 
-.detail-panel__empty p {
-  margin: 0;
-  font-size: 13px;
+.ldp-stage {
+  display: inline-flex;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: #eaf2ff;
+  color: #006ffd;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ldp-header__scores {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ldp-score-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
   font-weight: 500;
 }
-
-/* Header */
-.detail-panel__header {
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid var(--color-neutral-ld);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.ldp-score-chip strong {
+  font-weight: 800;
+  font-size: 12px;
 }
 
-.detail-panel__header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.detail-panel__stage {
-  display: inline-flex;
-  padding: 3px 8px;
-  border-radius: 100px;
-  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
-  color: var(--color-primary);
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.detail-panel__close {
+.ldp-close {
   background: none;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-neutral-dl);
-  padding: 4px;
-  border-radius: 6px;
-  transition: background 0.15s;
-}
-
-.detail-panel__close:hover {
-  background: var(--color-neutral-ld);
-}
-
-.detail-panel__title {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-neutral-dd);
-  line-height: 1.25;
-}
-
-.detail-panel__legal-name {
-  margin: 0;
-  font-size: 11px;
-  color: var(--color-neutral-dm);
-}
-
-.detail-panel__subtitle {
-  margin: 0;
-  font-size: 11px;
-  color: #71727a;
-}
-
-.detail-panel__bin {
-  font-size: 10px;
-  color: var(--color-neutral-dl);
-}
-
-/* Scores */
-.detail-panel__scores {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-
-.detail-panel__score-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 4px 8px;
-  border-radius: 10px;
-  min-width: 48px;
-}
-
-.detail-panel__score-badge--priority {
-  background: color-mix(in srgb, #006FFD 12%, transparent);
-}
-.detail-panel__score-badge--fit {
-  background: color-mix(in srgb, #298267 12%, transparent);
-}
-.detail-panel__score-badge--freshness {
-  background: color-mix(in srgb, #FF8C00 12%, transparent);
-}
-.detail-panel__score-badge--contact {
-  background: color-mix(in srgb, #9B59B6 12%, transparent);
-}
-
-.detail-panel__score-label {
-  font-size: 8px;
-  font-weight: 500;
-  color: var(--color-neutral-dm);
-  white-space: nowrap;
-}
-
-.detail-panel__score-val {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-neutral-dd);
-}
-
-/* Member */
-.detail-panel__member {
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border-bottom: 1px solid var(--color-neutral-ld);
-}
-
-.detail-panel__member-label {
-  font-size: 11px;
-  color: var(--color-neutral-dm);
-}
-
-.detail-panel__member-name {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-neutral-dd);
-}
-
-/* Tabs */
-.detail-panel__tabs {
-  margin: 8px 12px 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: #8f9098;
   flex-shrink: 0;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.ldp-close:hover {
+  background: #f0f1f7;
+  color: #1f2024;
 }
 
-/* Content */
-.detail-panel__content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 0;
-  min-height: 0;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-neutral-ld) transparent;
-}
-
-.detail-panel__tab-panel {
+.ldp-header__title-row {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-/* Sections */
-.detail-panel__section {
-  padding: 8px 16px;
-  border-bottom: 1px solid var(--color-neutral-ld);
+.ldp-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2024;
+  line-height: 1.2;
+}
+.ldp-legal {
+  margin: 0;
+  font-size: 12px;
+  color: #8f9098;
 }
 
-.detail-panel__section:last-child {
-  border-bottom: 0;
+.ldp-header__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+.ldp-category,
+.ldp-bin,
+.ldp-member {
+  font-size: 12px;
+  color: #71727a;
+}
+.ldp-bin strong,
+.ldp-member strong {
+  color: #1f2024;
+  font-weight: 600;
 }
 
-.detail-panel__section-label {
-  margin: 0 0 5px;
+/* ── Tabs ── */
+.ldp-tabs {
+  margin: 12px 28px 0;
+  flex-shrink: 0;
+}
+
+/* ── Body ── */
+.ldp-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 400px;
+  max-height: 400px;
+  padding: 20px 28px 28px;
+  scrollbar-width: thin;
+  scrollbar-color: #e8e9f1 transparent;
+}
+
+.ldp-panel {
+  min-height: 360px;
+}
+
+.ldp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ldp-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.ldp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Section card ── */
+.ldp-section {
+  border: 1px solid #e8e9f1;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ldp-section__label {
+  margin: 0;
   font-size: 10px;
   font-weight: 700;
-  color: var(--color-neutral-dm);
+  color: #8f9098;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-/* Contacts */
-.detail-panel__contact-list {
+/* ── Contacts ── */
+.ldp-contact-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 7px;
 }
-
-.detail-panel__contact-item {
+.ldp-contact-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
-
-.detail-panel__contact-link {
-  font-size: 11px;
+.ldp-contact-link {
+  font-size: 13px;
   font-weight: 500;
-  color: var(--color-primary);
+  color: #006ffd;
   text-decoration: none;
 }
-
-.detail-panel__contact-link:hover {
+.ldp-contact-link:hover {
   text-decoration: underline;
 }
-
-.detail-panel__contact-text {
-  font-size: 11px;
-  color: var(--color-neutral-dm);
+.ldp-contact-text {
+  font-size: 13px;
+  color: #494a50;
 }
 
-/* Addresses */
-.detail-panel__address-list {
+/* ── Addresses ── */
+.ldp-address-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+}
+.ldp-address-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.ldp-address-text {
+  font-size: 12px;
+  color: #494a50;
+  flex: 1;
+}
+.ldp-map-link {
+  font-size: 11px;
+  color: #8f9098;
+  text-decoration: underline;
+  white-space: nowrap;
 }
 
-.detail-panel__address-item {
+/* ── Dates ── */
+.ldp-date-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 16px;
+}
+.ldp-date-key {
+  font-size: 12px;
+  color: #8f9098;
+}
+.ldp-date-val {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1f2024;
+}
+
+/* ── Signals ── */
+.ldp-signals-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ldp-signal-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 14px;
+  background: #f8f9fe;
+  border-radius: 12px;
+  min-width: 64px;
+}
+.ldp-signal-key {
+  font-size: 9px;
+  color: #8f9098;
+  font-weight: 500;
+}
+.ldp-signal-val {
+  font-size: 16px;
+  color: #1f2024;
+  font-weight: 700;
+}
+
+/* ── Branches ── */
+.ldp-branch-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ldp-branch {
+  background: #f8f9fe;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ldp-branch__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
 }
-
-.detail-panel__address-text {
-  font-size: 11px;
-  color: var(--color-neutral-dm);
-  flex: 1;
-}
-
-.detail-panel__map-link {
-  font-size: 10px;
-  color: var(--color-neutral-dl);
-  text-decoration: underline;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* Signals */
-.detail-panel__signals {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.detail-panel__signal {
-  display: flex;
-  flex-direction: column;
-  padding: 4px 8px;
-  background: var(--color-neutral-ld);
-  border-radius: 8px;
-  min-width: 50px;
-}
-
-.detail-panel__signal-key {
-  font-size: 9px;
-  color: var(--color-neutral-dl);
-  font-weight: 500;
-}
-
-.detail-panel__signal-val {
+.ldp-branch__addr {
   font-size: 12px;
-  font-weight: 700;
-  color: var(--color-neutral-dd);
-}
-
-/* Branches */
-.detail-panel__branches {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.detail-panel__branch {
-  padding: 6px 8px;
-  background: var(--color-neutral-ld);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.detail-panel__branch-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-}
-
-.detail-panel__branch-name {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-neutral-dd);
+  color: #494a50;
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.4;
 }
-
-.detail-panel__branch-status {
-  font-size: 9px;
+.ldp-branch__status {
+  font-size: 10px;
   font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 2px 8px;
+  border-radius: 100px;
   white-space: nowrap;
 }
-
-.detail-panel__branch-status--active {
+.ldp-branch__status--on {
   background: rgba(41, 130, 103, 0.15);
   color: #298267;
 }
-
-.detail-panel__branch-status--inactive {
+.ldp-branch__status--off {
   background: rgba(244, 67, 54, 0.15);
   color: #f44336;
 }
-
-.detail-panel__branch-address {
-  margin: 0;
-  font-size: 10px;
-  color: #71727a;
-}
-
-.detail-panel__branch-signals {
+.ldp-branch__sigs {
   display: flex;
-  gap: 8px;
-  font-size: 10px;
-  color: var(--color-neutral-dm);
+  gap: 10px;
+  font-size: 11px;
+  color: #494a50;
+}
+.ldp-branch__congestion {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-neutral-ld);
 }
 
-/* Dates */
-.detail-panel__dates {
+/* ── Notes ── */
+.ldp-notes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
-
-.detail-panel__date-row {
+.ldp-note {
+  padding: 14px 0;
+  border-bottom: 1px solid #e8e9f1;
+}
+.ldp-note:last-child {
+  border-bottom: 0;
+}
+.ldp-note__text {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #1f2024;
+  line-height: 1.5;
+}
+.ldp-note__meta {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-
-.detail-panel__date-key {
-  font-size: 11px;
-  color: var(--color-neutral-dl);
-}
-
-.detail-panel__date-val {
+.ldp-note__author {
   font-size: 11px;
   font-weight: 500;
-  color: var(--color-neutral-dd);
+  color: #006ffd;
+}
+.ldp-note__date {
+  font-size: 11px;
+  color: #8f9098;
 }
 
-/* Tab actions */
-.detail-panel__tab-actions {
-  padding: 8px 16px 4px;
-}
-
-.detail-panel__add-btn {
-  background: none;
-  border: 1px dashed var(--color-neutral-ld);
-  border-radius: 10px;
-  width: 100%;
-  padding: 8px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-primary);
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.detail-panel__add-btn:hover {
-  border-color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
-}
-
-.detail-panel__tab-loading,
-.detail-panel__tab-empty {
-  padding: 20px 16px;
-  text-align: center;
-  font-size: 12px;
-  color: var(--color-neutral-dl);
-}
-
-/* Note form */
-.detail-panel__note-form,
-.detail-panel__task-form {
-  padding: 8px 16px;
+/* ── Tasks ── */
+.ldp-tasks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
-
-.detail-panel__textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--color-neutral-ld);
-  border-radius: 10px;
-  font-family: var(--font-base), sans-serif;
-  font-size: 12px;
-  color: var(--color-neutral-dd);
-  resize: vertical;
-  outline: none;
-  box-sizing: border-box;
-}
-
-.detail-panel__textarea:focus {
-  border-color: var(--color-primary);
-}
-
-.detail-panel__input {
-  width: 100%;
-  height: 36px;
-  padding: 0 12px;
-  border: 1px solid var(--color-neutral-ld);
-  border-radius: 10px;
-  font-family: var(--font-base), sans-serif;
-  font-size: 12px;
-  color: var(--color-neutral-dd);
-  outline: none;
-  box-sizing: border-box;
-}
-
-.detail-panel__input:focus {
-  border-color: var(--color-primary);
-}
-
-.detail-panel__form-actions {
-  display: flex;
-  gap: 6px;
-  justify-content: flex-end;
-}
-
-/* Notes list */
-.detail-panel__notes-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.detail-panel__note {
-  padding: 8px 16px;
-  border-bottom: 1px solid var(--color-neutral-ld);
-}
-
-.detail-panel__note-text {
-  margin: 0 0 4px;
-  font-size: 12px;
-  color: var(--color-neutral-dd);
-  line-height: 1.4;
-}
-
-.detail-panel__note-date {
-  font-size: 10px;
-  color: var(--color-neutral-dl);
-}
-
-/* Tasks list */
-.detail-panel__tasks-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.detail-panel__task {
+.ldp-task {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding: 8px 16px;
-  border-bottom: 1px solid var(--color-neutral-ld);
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e8e9f1;
 }
-
-.detail-panel__task--done .detail-panel__task-title {
+.ldp-task:last-child {
+  border-bottom: 0;
+}
+.ldp-task--done .ldp-task__title {
   text-decoration: line-through;
-  color: var(--color-neutral-dl);
+  color: #8f9098;
 }
-
-.detail-panel__task-check {
+.ldp-task__check {
   background: none;
   border: none;
   cursor: pointer;
@@ -995,86 +1234,356 @@ const activityColor = (type: string) => {
   color: var(--color-primary);
   flex-shrink: 0;
 }
-
-.detail-panel__task-check:disabled {
+.ldp-task__check:disabled {
   color: #298267;
   cursor: default;
 }
-
-.detail-panel__task-content {
+.ldp-task__body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
-  min-width: 0;
 }
-
-.detail-panel__task-title {
-  font-size: 12px;
+.ldp-task__title {
+  font-size: 13px;
   font-weight: 500;
-  color: var(--color-neutral-dd);
+  color: #1f2024;
+}
+.ldp-task__due {
+  font-size: 11px;
+  color: #8f9098;
 }
 
-.detail-panel__task-due {
-  font-size: 10px;
-  color: var(--color-neutral-dl);
-}
-
-/* Timeline */
-.detail-panel__timeline {
+/* ── Timeline ── */
+.ldp-timeline {
   list-style: none;
-  padding: 8px 16px;
+  padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
-
-.detail-panel__timeline-item {
+.ldp-timeline__item {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
-  padding-bottom: 12px;
+  padding-bottom: 18px;
   position: relative;
 }
-
-.detail-panel__timeline-item::before {
-  content: '';
+.ldp-timeline__item::before {
+  content: "";
   position: absolute;
   left: 5px;
   top: 12px;
   bottom: 0;
   width: 1px;
-  background: var(--color-neutral-ld);
+  background: #e8e9f1;
 }
-
-.detail-panel__timeline-item:last-child::before {
+.ldp-timeline__item:last-child::before {
   display: none;
 }
-
-.detail-panel__timeline-dot {
+.ldp-timeline__dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 3px;
 }
-
-.detail-panel__timeline-body {
+.ldp-timeline__body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
+}
+.ldp-timeline__desc {
+  font-size: 13px;
+  color: #1f2024;
+}
+.ldp-timeline__date {
+  font-size: 11px;
+  color: #8f9098;
+}
+
+/* ── Form elements ── */
+.ldp-tab-action-row {
+  padding-bottom: 4px;
+}
+
+.ldp-add-btn {
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed #c5c6cc;
+  border-radius: 12px;
+  background: none;
+  font-family: var(--font-base), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.ldp-add-btn:hover {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.ldp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ldp-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e8e9f1;
+  border-radius: 12px;
+  font-family: var(--font-base), sans-serif;
+  font-size: 13px;
+  color: #1f2024;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+.ldp-textarea:focus {
+  border-color: var(--color-primary);
+}
+
+.ldp-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #e8e9f1;
+  border-radius: 12px;
+  font-family: var(--font-base), sans-serif;
+  font-size: 13px;
+  color: #1f2024;
+  outline: none;
+  box-sizing: border-box;
+}
+.ldp-input:focus {
+  border-color: var(--color-primary);
+}
+
+.ldp-form__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ── Empty states ── */
+.ldp-empty {
+  padding: 48px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #8f9098;
+}
+.ldp-empty-modal {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  font-size: 14px;
+  color: #8f9098;
+}
+
+/* ── Skeleton ── */
+.ldp-skeleton-wrap {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ldp-skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f1f7 25%, #f8f9fe 50%, #f0f1f7 75%);
+  background-size: 200% 100%;
+  animation: ldp-shimmer 1.4s infinite;
+}
+.ldp-skeleton--title {
+  height: 26px;
+  width: 50%;
+}
+.ldp-skeleton--sub {
+  height: 16px;
+  width: 30%;
+}
+.ldp-skeleton--block {
+  height: 90px;
+  width: 100%;
+}
+@keyframes ldp-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ── Task creation modal (from workspace/tasks) ── */
+.task-create {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: min(520px, calc(100vw - 96px));
+  padding: 28px;
+  box-sizing: border-box;
+}
+
+.task-create__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.task-create__title {
+  margin: 0 0 4px;
+  color: var(--color-neutral-dd);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.task-create__description-text {
+  margin: 0;
+  color: var(--color-neutral-dl);
+  font-size: 12px;
+}
+
+.task-create__close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-neutral-dl);
+  cursor: pointer;
+}
+
+.task-create__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.task-create__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   min-width: 0;
 }
 
-.detail-panel__timeline-desc {
+.task-create__label {
+  color: var(--color-neutral-dd);
   font-size: 12px;
+  font-weight: 700;
+}
+
+.task-create__date-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  gap: 10px;
+}
+
+.task-create__input,
+.task-create__textarea {
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+  padding: 16px;
+  border: 1px solid var(--color-neutral-lm);
+  border-radius: 12px;
+  background: var(--color-secondary);
+  font: inherit;
   color: var(--color-neutral-dd);
 }
 
-.detail-panel__timeline-date {
-  font-size: 10px;
-  color: var(--color-neutral-dl);
+.task-create__textarea {
+  min-height: 110px;
+  max-width: 100%;
+  resize: vertical;
+}
+
+.task-create__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ── Take to work modal ── */
+.take-to-work-modal {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 360px;
+}
+
+.take-to-work-modal__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2024;
+}
+
+.take-to-work-modal__desc {
+  margin: 0;
+  font-size: 13px;
+  color: #71727a;
+  line-height: 1.5;
+}
+
+.take-to-work-modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .ldp-modal {
+    max-height: 95vh;
+    border-radius: 16px;
+  }
+  .ldp-positioner {
+    padding: 12px 8px;
+  }
+  .ldp-header {
+    padding: 18px 18px 14px;
+  }
+  .ldp-body {
+    padding: 16px 18px 22px;
+  }
+  .ldp-tabs {
+    margin: 10px 18px 0;
+  }
+  .ldp-columns {
+    grid-template-columns: 1fr;
+  }
+  .take-to-work-modal {
+    min-width: 280px;
+    padding: 20px;
+  }
+  .task-create {
+    min-width: auto;
+    padding: 20px;
+  }
+  .task-create__grid {
+    grid-template-columns: 1fr;
+  }
+  .task-create__date-row {
+    grid-template-columns: 1fr;
+  }
+  .task-create__footer {
+    flex-direction: column-reverse;
+  }
 }
 </style>

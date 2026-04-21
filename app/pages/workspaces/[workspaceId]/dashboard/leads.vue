@@ -2,7 +2,6 @@
 import { TenantLeadStage } from "~/api/generated/api";
 import type { TenantLeadListItem } from "~/api/generated/api";
 import type { LeadFilters } from "~/stores/leads.store";
-import type { ContentSwitcherItem } from "~/components/ui/ContentSwitcher.vue";
 
 import DashboardLeadsLeadFiltersBar from "~/components/dashboard/leads/lead-filters-bar.vue";
 import DashboardLeadsLeadsTable from "~/components/dashboard/leads/leads-table.vue";
@@ -23,60 +22,12 @@ workspaceStore.setCurrentWorkspace(workspaceId);
 
 const leadsStore = useLeadsStore();
 
-// ── View mode ──────────────────────────────────────────────────────────────
-const viewItems: ContentSwitcherItem[] = [
-  { value: "table", label: "Таблица" },
-  { value: "kanban", label: "Канбан" },
-];
-const viewMode = ref<string[]>(["table"]);
-const isTableView = computed(() => viewMode.value[0] === "table");
-
 // ── Filters & search ───────────────────────────────────────────────────────
 const searchQuery = ref("");
 const filters = ref<LeadFilters>({
   stage: TenantLeadStage.New,
   sort_by: "priority_score",
   sort_dir: "desc",
-});
-
-// Pipeline (kanban) filter state
-const pipelineSearch = ref("");
-const pipelineCategoryCode = ref("");
-const pipelineResponsibleId = ref("");
-
-// ── Pipeline data ──────────────────────────────────────────────────────────
-const pipelineSearch$ = computed(() => pipelineSearch.value || undefined);
-const pipelineCategory$ = computed(() => pipelineCategoryCode.value || undefined);
-const pipelineResponsible$ = computed(() => pipelineResponsibleId.value || undefined);
-
-const {
-  data: pipelineData,
-  refresh: refreshPipeline,
-} = useAsyncData(
-  `leads-pipeline-${workspaceId}`,
-  (nuxtApp) =>
-    nuxtApp.$apiClient.api
-      .getPipelineApiV1LeadsPipelineGet({
-        tenant_id: workspaceId,
-        search: pipelineSearch$.value,
-        category_code: pipelineCategory$.value,
-        responsible_member_id: pipelineResponsible$.value,
-      })
-      .then((r) => r.data.result.columns),
-  { server: false, immediate: false },
-);
-
-const pipelineColumns = computed(() => pipelineData.value ?? []);
-
-watch(
-  [pipelineSearch$, pipelineCategory$, pipelineResponsible$],
-  () => {
-    if (!isTableView.value) refreshPipeline();
-  },
-);
-
-watch(isTableView, (isTable) => {
-  if (!isTable) refreshPipeline();
 });
 
 // ── Selected lead ──────────────────────────────────────────────────────────
@@ -111,12 +62,8 @@ const resetFilters = async () => {
 };
 
 // ── Per-lead actions ───────────────────────────────────────────────────────
-const handleMove = async (
-  lead: TenantLeadListItem,
-  toStage: TenantLeadStage,
-  comment?: string,
-) => {
-  await leadsStore.moveLead(lead.id, workspaceId, toStage, comment);
+const handleTakeToWork = async (lead: TenantLeadListItem) => {
+  await leadsStore.takeLead(lead.id, workspaceId);
 };
 
 const handleSnooze = async (lead: TenantLeadListItem, until: string) => {
@@ -170,12 +117,15 @@ const handleCompleteTask = async (taskId: string) => {
   await leadsStore.completeTask(selectedLeadId.value, taskId, workspaceId);
 };
 
-// ── Export & Refresh ───────────────────────────────────────────────────────
-const isRefreshing = ref(false);
-
-const handleExport = async () => {
-  await leadsStore.exportLeads(workspaceId);
+const handleTakeToWorkFromDetail = async () => {
+  if (!selectedLeadId.value) return;
+  await leadsStore.takeLead(selectedLeadId.value, workspaceId);
+  // Refresh lead detail to show updated stage
+  await leadsStore.fetchLeadDetail(selectedLeadId.value, workspaceId);
 };
+
+// ── Refresh ────────────────────────────────────────────────────────────────
+const isRefreshing = ref(false);
 
 const handleRefresh = async () => {
   isRefreshing.value = true;
@@ -198,7 +148,6 @@ provide("workspaceId", workspaceId);
 <template>
   <div class="leads-page">
     <div class="leads-page__inner">
-
       <!-- ── Top bar ── -->
       <div class="leads-page__topbar">
         <div class="leads-page__topbar-left">
@@ -209,8 +158,6 @@ provide("workspaceId", workspaceId);
         </div>
 
         <div class="leads-page__topbar-right">
-          <ui-content-switcher v-model="viewMode" :items="viewItems" class="leads-page__view-switcher" />
-
           <button
             class="leads-page__icon-btn"
             title="Обновить лиды"
@@ -219,104 +166,71 @@ provide("workspaceId", workspaceId);
           >
             <Icon name="my-icon-refresh" mode="svg" :size="16" />
           </button>
-
-          <button
-            class="leads-page__icon-btn"
-            title="Экспорт CSV"
-            @click="handleExport"
-          >
-            <Icon name="my-icon-download" mode="svg" :size="16" />
-          </button>
         </div>
       </div>
 
-      <!-- ── Table view ── -->
-      <template v-if="isTableView">
-        <!-- Filter bar -->
-        <DashboardLeadsLeadFiltersBar
-          v-model="filters"
-          v-model:search-query="searchQuery"
-          @apply="applyFilters"
-          @reset="resetFilters"
-        />
+      <!-- Filter bar -->
+      <DashboardLeadsLeadFiltersBar
+        v-model="filters"
+        v-model:search-query="searchQuery"
+        @apply="applyFilters"
+        @reset="resetFilters"
+      />
 
-        <!-- Bulk actions bar (shown when items selected) -->
-        <DashboardLeadsBulkActionsBar
-          v-if="leadsStore.hasSelection"
-          :selected-count="leadsStore.selectedCount"
-          :members="leadsStore.members"
-          @bulk-move="handleBulkMove"
-          @bulk-assign="handleBulkAssign"
-          @clear-selection="leadsStore.clearSelection"
-        />
+      <!-- Bulk actions bar (shown when items selected) -->
+      <DashboardLeadsBulkActionsBar
+        v-if="leadsStore.hasSelection"
+        :selected-count="leadsStore.selectedCount"
+        :members="leadsStore.members"
+        @bulk-move="handleBulkMove"
+        @bulk-assign="handleBulkAssign"
+        @clear-selection="leadsStore.clearSelection"
+      />
 
-        <!-- Main area: table + detail panel -->
-        <div class="leads-page__main" :class="{ 'leads-page__main--with-panel': selectedLeadId }">
-          <div class="leads-page__table-wrap">
-            <DashboardLeadsLeadsTable
-              :leads="leadsStore.rawLeads"
-              :selected-ids="leadsStore.selectedIds"
-              :is-loading="leadsStore.isLoading"
-              :has-more="leadsStore.hasMore"
-              @select="leadsStore.toggleSelection"
-              @select-all="leadsStore.selectAll"
-              @clear-selection="leadsStore.clearSelection"
-              @show-detail="handleShowDetail"
-              @show-more="leadsStore.fetchMore"
-            >
-              <template #actions="{ lead }">
-                <DashboardLeadsLeadActionsDropdown
-                  :lead="lead"
-                  :members="leadsStore.members"
-                  @move="(stage, comment) => handleMove(lead, stage, comment)"
-                  @snooze="(until) => handleSnooze(lead, until)"
-                  @hide="handleHide(lead)"
-                  @assign="(memberId) => handleAssign(lead, memberId)"
-                  @delete="handleDelete(lead)"
-                />
-              </template>
-            </DashboardLeadsLeadsTable>
-          </div>
-
-          <!-- Detail panel -->
-          <Transition name="slide-panel">
-            <DashboardLeadsLeadDetailPanel
-              v-if="selectedLeadId"
-              :lead="leadsStore.selectedLeadDetail"
-              :is-loading="leadsStore.isLoadingDetail"
-              :notes="leadsStore.notes"
-              :tasks="leadsStore.tasks"
-              :is-loading-notes="leadsStore.isLoadingNotes"
-              :is-loading-tasks="leadsStore.isLoadingTasks"
-              @close="handleCloseDetail"
-              @create-note="handleCreateNote"
-              @create-task="handleCreateTask"
-              @complete-task="handleCompleteTask"
-            />
-          </Transition>
+      <!-- Main area: table -->
+      <div class="leads-page__main">
+        <div class="leads-page__table-wrap">
+          <DashboardLeadsLeadsTable
+            :leads="leadsStore.rawLeads"
+            :selected-ids="leadsStore.selectedIds"
+            :is-loading="leadsStore.isLoading"
+            :has-more="leadsStore.hasMore"
+            @select="leadsStore.toggleSelection"
+            @select-all="leadsStore.selectAll"
+            @clear-selection="leadsStore.clearSelection"
+            @show-detail="handleShowDetail"
+            @show-more="leadsStore.fetchMore"
+          >
+            <template #actions="{ lead }">
+              <DashboardLeadsLeadActionsDropdown
+                :lead="lead"
+                :members="leadsStore.members"
+                @take-to-work="handleTakeToWork(lead)"
+                @snooze="(until) => handleSnooze(lead, until)"
+                @hide="handleHide(lead)"
+                @assign="(memberId) => handleAssign(lead, memberId)"
+                @delete="handleDelete(lead)"
+              />
+            </template>
+          </DashboardLeadsLeadsTable>
         </div>
-      </template>
+      </div>
 
-      <!-- ── Kanban view ── -->
-      <template v-else>
-        <div class="leads-page__pipeline-filters">
-          <workspace-pipeline-filters
-            v-model:search="pipelineSearch"
-            v-model:category_code="pipelineCategoryCode"
-            v-model:responsible_id="pipelineResponsibleId"
-            @search="refreshPipeline"
-            @reset="pipelineSearch = ''; pipelineCategoryCode = ''; pipelineResponsibleId = ''; refreshPipeline()"
-          />
-        </div>
-
-        <div class="leads-page__pipeline-board">
-          <workspace-pipeline-board
-            :columns="pipelineColumns"
-            @move="refreshPipeline"
-          />
-        </div>
-      </template>
-
+      <!-- Detail modal (teleported to body) -->
+      <DashboardLeadsLeadDetailPanel
+        :open="!!selectedLeadId"
+        :lead="leadsStore.selectedLeadDetail"
+        :is-loading="leadsStore.isLoadingDetail"
+        :notes="leadsStore.notes"
+        :tasks="leadsStore.tasks"
+        :is-loading-notes="leadsStore.isLoadingNotes"
+        :is-loading-tasks="leadsStore.isLoadingTasks"
+        @close="handleCloseDetail"
+        @create-note="handleCreateNote"
+        @create-task="handleCreateTask"
+        @complete-task="handleCompleteTask"
+        @take-to-work="handleTakeToWorkFromDetail"
+      />
     </div>
   </div>
 </template>
@@ -376,10 +290,6 @@ provide("workspaceId", workspaceId);
   gap: 8px;
 }
 
-.leads-page__view-switcher {
-  min-width: 160px;
-}
-
 .leads-page__icon-btn {
   display: flex;
   align-items: center;
@@ -391,7 +301,9 @@ provide("workspaceId", workspaceId);
   background: var(--color-neutral-ll);
   color: var(--color-neutral-dm);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .leads-page__icon-btn:hover {
@@ -405,7 +317,9 @@ provide("workspaceId", workspaceId);
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Main (table + panel) ── */
@@ -427,30 +341,6 @@ provide("workspaceId", workspaceId);
   scrollbar-color: var(--color-neutral-ld) transparent;
 }
 
-/* ── Pipeline ── */
-.leads-page__pipeline-filters {
-  flex-shrink: 0;
-}
-
-.leads-page__pipeline-board {
-  flex: 1;
-  min-height: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-/* ── Slide transition for detail panel ── */
-.slide-panel-enter-active,
-.slide-panel-leave-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-
-.slide-panel-enter-from,
-.slide-panel-leave-to {
-  transform: translateX(20px);
-  opacity: 0;
-}
-
 /* ── Responsive ── */
 @media (max-width: 1280px) {
   .leads-page {
@@ -460,7 +350,6 @@ provide("workspaceId", workspaceId);
 
 @media (max-width: 980px) {
   .leads-page__main {
-    flex-direction: column;
     overflow-y: auto;
   }
 
