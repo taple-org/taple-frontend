@@ -1,20 +1,25 @@
 import type {
   TenantLeadListItem,
   LeadBranchRead,
+  TenantLeadDetail,
+  MoveLeadRequest,
+  SnoozeLeadRequest,
+  AssignLeadRequest,
+  BulkMoveRequest,
+  BulkAssignRequest,
+  TenantMemberBrief,
+  ActivityHistoryItem,
 } from "~/api/generated/api";
 import { TenantLeadStage } from "~/api/generated/api";
 import type {
   Lead,
-  Branch,
-  LeadSignals,
-  Congestion,
-  TaxPaymentYear,
-  KgdSur,
+  LeadFit,
+  LeadBranch,
 } from "~/components/dashboard/leads/types";
 
 const LIMIT = 10;
 
-const STAGE_LABELS: Record<TenantLeadStage, string> = {
+export const STAGE_LABELS: Record<TenantLeadStage, string> = {
   [TenantLeadStage.New]: "Новый",
   [TenantLeadStage.Snoozed]: "Отложен",
   [TenantLeadStage.InProgress]: "В работе",
@@ -27,171 +32,134 @@ const STAGE_LABELS: Record<TenantLeadStage, string> = {
   [TenantLeadStage.Hidden]: "Скрыт",
 };
 
-// ─── Congestion mapper ────────────────────────────────────────────────────────
+export const STAGE_OPTIONS = Object.entries(STAGE_LABELS).map(
+  ([value, label]) => ({ value: value as TenantLeadStage, label }),
+);
 
-function mapCongestion(raw: any): Congestion | undefined {
-  if (!raw) return undefined;
-  return {
-    present: raw.present ?? false,
-    peak_level: raw.peak_level ?? 0,
-    avg_level: raw.avg_level ?? 0,
-    peak_hours_count: raw.peak_hours_count ?? 0,
-    evening_peak: raw.evening_peak ?? false,
-    weekend_peak: raw.weekend_peak ?? false,
-    levels: (raw.levels ?? []).map((l: any) => ({
-      level: l.level,
-      days: l.days ?? {},
-    })),
-  };
-}
-
-// ─── Branch mapper ────────────────────────────────────────────────────────────
-
-function mapBranch(b: LeadBranchRead): Branch {
-  return {
-    id: b.id,
-    name: b.name ?? '',
-    fullAddress: b.full_address ?? '',
-    isActive: b.is_active,
-    rating: b.signals?.rating ?? undefined,
-    reviewCount: b.signals?.review_count ?? undefined,
-    congestion: mapCongestion(b.signals?.congestion),
-  };
-}
-
-// ─── Signals mapper ───────────────────────────────────────────────────────────
-
-function mapSignals(raw: TenantLeadListItem["signals"], ): LeadSignals | undefined {
-  if (!raw) return undefined;
-  return {
-    rating: raw.rating ?? undefined,
-    reviewCount: raw.review_count ?? undefined,
-    hasDelivery: raw.has_delivery ?? undefined,
-    is24x7: raw.is_24x7 ?? undefined,
-    nearestStationDistance: raw.nearest_station_distance_m ?? undefined,
-    nearestParkingCount: raw.nearest_parking_count ?? undefined,
-  };
-}
-
-// ─── Tax payments mapper ──────────────────────────────────────────────────────
-
-function mapTaxPayments(raw: any[] | null | undefined): TaxPaymentYear[] | undefined {
-  if (!raw?.length) return undefined;
-  return raw.map((y) => ({
-    year: y.year,
-    items: (y.items ?? []).map((item: any) => ({
-      type: item.type,
-      amount: item.amount,
-    })),
-  }));
-}
-
-// ─── KGD SUR mapper ───────────────────────────────────────────────────────────
-
-function mapKgdSur(raw: any): KgdSur | undefined {
-  if (!raw) return undefined;
-  return {
-    taxMode: raw.tax_mode ?? null,
-    taxDebt: raw.tax_debt ?? null,
-    vatRegistered: raw.vat_registered ?? null,
-    statistics: (raw.statistics ?? []).map((s: any) => ({
-      year: s.year,
-      taxPaid: s.tax_paid,
-      workersCount: s.workers_count,
-      vatPaid: s.vat_paid,
-    })),
-  };
-}
-
-// ─── Lead mapper ──────────────────────────────────────────────────────────────
+export const SORT_OPTIONS = [
+  { value: "priority_score", label: "Приоритет" },
+  { value: "fit_score", label: "Соответствие" },
+  { value: "freshness_score", label: "Свежесть" },
+  { value: "contactability_score", label: "Доступность" },
+  { value: "created_at", label: "Дата создания" },
+] as const;
 
 function mapToLead(item: TenantLeadListItem): Lead {
   const contacts = item.contacts ?? [];
 
   const phones = contacts
-      .filter((c) => c.type === "phone")
-      .map((c) => c.value ?? "")
-      .filter(Boolean);
+    .filter((c) => c.type === "phone")
+    .map((c) => c.value ?? "")
+    .filter(Boolean);
 
   const emails = contacts
-      .filter((c) => c.type === "email")
-      .map((c) => c.value ?? "")
-      .filter(Boolean);
+    .filter((c) => c.type === "email")
+    .map((c) => c.value ?? "")
+    .filter(Boolean);
 
   const score = Math.round((item.priority_score ?? item.fit_score ?? 0) * 100);
 
-  const fitScores: Array<{ label: string; level: string }> = [];
+  const fitScores: LeadFit[] = [];
   if (item.signals?.rating != null)
     fitScores.push({ label: "Рейтинг", level: String(item.signals.rating) });
   if (item.signals?.review_count != null)
-    fitScores.push({ label: "Отзывы", level: String(item.signals.review_count) });
+    fitScores.push({
+      label: "Отзывы",
+      level: String(item.signals.review_count),
+    });
   if (item.signals?.branch_count != null)
-    fitScores.push({ label: "Филиалы", level: String(item.signals.branch_count) });
+    fitScores.push({
+      label: "Филиалы",
+      level: String(item.signals.branch_count),
+    });
 
   const locationParts = [
     item.address_city_name_ru,
     item.address_district_name_ru,
   ].filter(Boolean);
 
+  const branches: LeadBranch[] = (item.branches ?? []).map(
+    (b: LeadBranchRead) => ({
+      id: b.id,
+      name: b.name,
+      fullAddress: b.full_address,
+      isActive: b.is_active,
+      rating: b.signals?.rating,
+      reviewCount: b.signals?.review_count,
+    }),
+  );
+
   return {
     id: item.id,
     score,
-    openStatus: STAGE_LABELS[item.stage_code] ?? item.stage_code,
-
-    // Display
     title: item.lead_name,
     subtitle: item.lead_business_category_name_ru,
-    tags: [item.lead_business_category_name_ru].filter(Boolean),
-
-    // Contact
+    tags: [item.lead_business_category_name_ru],
+    address: item.address_full ?? "",
+    phone: phones[0] ?? "",
+    openStatus: STAGE_LABELS[item.stage_code] ?? item.stage_code,
     contacts: phones,
     email: emails[0] ?? "",
-    phone: phones[0] ?? "",
-
-    // Location
-    address: item.address_full ?? "",
     locationShort: locationParts.join(", "),
-
-    // Scoring
     fitScores,
     reasons: [],
     freshness:
-        item.freshness_score != null
-            ? `${Math.round(item.freshness_score * 100)}%`
-            : "",
-
-    // Raw scores (0–1)
-    fitScore: item.fit_score ?? undefined,
-    priorityScore: item.priority_score ?? undefined,
-    freshnessScore: item.freshness_score ?? undefined,
-    contactabilityScore: (item as any).contactability_score ?? undefined,
-    businessPotentialScore: (item as any).business_potential_score ?? undefined,
-
-    // Branches
-    branches: (item.branches ?? []).map(mapBranch),
-
-    // Signals, tax, KGD
-    signals: mapSignals(item.signals),
-    taxPayments: mapTaxPayments((item as any).tax_payments),
-    kgdSur: mapKgdSur((item as any).kgd_sur),
+      item.freshness_score != null
+        ? `${Math.round(item.freshness_score * 100)}%`
+        : "",
+    branches,
   };
 }
 
-// ─── Store ────────────────────────────────────────────────────────────────────
+export interface LeadFilters {
+  stage?: TenantLeadStage | null;
+  sort_by?: string;
+  sort_dir?: "asc" | "desc";
+  min_fit_score?: number | null;
+  max_fit_score?: number | null;
+  min_priority_score?: number | null;
+  max_priority_score?: number | null;
+  responsible_member_id?: string | null;
+}
 
 export const useLeadsStore = defineStore("leads", () => {
   const notification = useNotification();
   const { $apiClient } = useNuxtApp();
 
+  // ─── List state ───────────────────────────────────────────────────────────
   const rawLeads = ref<TenantLeadListItem[]>([]);
   const isLoading = ref(false);
   const isLoadingMore = ref(false);
   const hasMore = ref(true);
   const error = ref<string | null>(null);
   const currentWorkspaceId = ref<string | null>(null);
+  const totalCount = ref(0);
+  const filters = ref<LeadFilters>({});
 
+  // ─── Detail state ─────────────────────────────────────────────────────────
+  const selectedLeadDetail = ref<TenantLeadDetail | null>(null);
+  const isLoadingDetail = ref(false);
+
+  // ─── Members state ────────────────────────────────────────────────────────
+  const members = ref<TenantMemberBrief[]>([]);
+
+  // ─── Notes state ──────────────────────────────────────────────────────────
+  const notes = ref<any[]>([]);
+  const isLoadingNotes = ref(false);
+
+  // ─── Tasks state ──────────────────────────────────────────────────────────
+  const tasks = ref<any[]>([]);
+  const isLoadingTasks = ref(false);
+
+  // ─── Bulk selection ───────────────────────────────────────────────────────
+  const selectedIds = ref<Set<string>>(new Set());
+
+  // ─── Computed ─────────────────────────────────────────────────────────────
   const leads = computed<Lead[]>(() => rawLeads.value.map(mapToLead));
+  const hasSelection = computed(() => selectedIds.value.size > 0);
+  const selectedCount = computed(() => selectedIds.value.size);
 
+  // ─── Helpers ──────────────────────────────────────────────────────────────
   function withLoading<T extends unknown[]>(fn: (...args: T) => Promise<void>) {
     return async (...args: T): Promise<boolean> => {
       isLoading.value = true;
@@ -200,9 +168,13 @@ export const useLeadsStore = defineStore("leads", () => {
         await fn(...args);
         return true;
       } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : "Неизвестная ошибка";
-        error.value = msg;
-        notification.error("Ошибка", msg);
+        if (e instanceof Error) {
+          error.value = e.message;
+          notification.error("Ошибка", e.message);
+        } else {
+          error.value = "Неизвестная ошибка";
+          notification.error("Ошибка", "Неизвестная ошибка");
+        }
         return false;
       } finally {
         isLoading.value = false;
@@ -210,87 +182,441 @@ export const useLeadsStore = defineStore("leads", () => {
     };
   }
 
-  const fetchLeads = withLoading(async (workspaceId: string) => {
-    currentWorkspaceId.value = workspaceId;
-    const resp =
-        await $apiClient.api.listTenantLeadsApiV1TenantsTenantIdLeadsGet(
-            workspaceId,
-            { offset: 0, limit: LIMIT },
-        );
-    rawLeads.value = resp.data.result;
-    hasMore.value = resp.data.result.length >= LIMIT;
-  });
+  // ─── List actions ─────────────────────────────────────────────────────────
+  const fetchLeads = withLoading(
+    async (workspaceId: string, opts?: LeadFilters) => {
+      currentWorkspaceId.value = workspaceId;
+      if (opts) filters.value = opts;
 
-  const fetchMore = async (): Promise<boolean> => {
+      const params: Record<string, any> = {
+        offset: 0,
+        limit: LIMIT,
+        ...(filters.value.stage ? { stage: filters.value.stage } : {}),
+        ...(filters.value.sort_by ? { sort_by: filters.value.sort_by } : {}),
+        ...(filters.value.sort_dir ? { sort_dir: filters.value.sort_dir } : {}),
+        ...(filters.value.min_fit_score != null
+          ? { min_fit_score: filters.value.min_fit_score }
+          : {}),
+        ...(filters.value.max_fit_score != null
+          ? { max_fit_score: filters.value.max_fit_score }
+          : {}),
+        ...(filters.value.min_priority_score != null
+          ? { min_priority_score: filters.value.min_priority_score }
+          : {}),
+        ...(filters.value.max_priority_score != null
+          ? { max_priority_score: filters.value.max_priority_score }
+          : {}),
+        ...(filters.value.responsible_member_id
+          ? { responsible_member_id: filters.value.responsible_member_id }
+          : {}),
+      };
+
+      const resp =
+        await $apiClient.api.listTenantLeadsApiV1TenantsTenantIdLeadsGet(
+          workspaceId,
+          params,
+        );
+      rawLeads.value = resp.data.result;
+      totalCount.value = resp.data.meta?.total ?? resp.data.result.length;
+      hasMore.value = resp.data.result.length >= LIMIT;
+    },
+  );
+
+  const fetchMore = async () => {
     if (!hasMore.value || isLoadingMore.value || !currentWorkspaceId.value)
       return false;
 
     isLoadingMore.value = true;
     error.value = null;
     try {
+      const params: Record<string, any> = {
+        offset: rawLeads.value.length,
+        limit: LIMIT,
+        ...(filters.value.stage ? { stage: filters.value.stage } : {}),
+        ...(filters.value.sort_by ? { sort_by: filters.value.sort_by } : {}),
+        ...(filters.value.sort_dir ? { sort_dir: filters.value.sort_dir } : {}),
+      };
+
       const resp =
-          await $apiClient.api.listTenantLeadsApiV1TenantsTenantIdLeadsGet(
-              currentWorkspaceId.value,
-              { offset: rawLeads.value.length, limit: LIMIT },
-          );
+        await $apiClient.api.listTenantLeadsApiV1TenantsTenantIdLeadsGet(
+          currentWorkspaceId.value,
+          params,
+        );
       rawLeads.value.push(...resp.data.result);
       hasMore.value = resp.data.result.length >= LIMIT;
       return true;
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Неизвестная ошибка";
-      error.value = msg;
-      notification.error("Ошибка", "Не удалось загрузить ещё лиды");
+      if (e instanceof Error) {
+        error.value = e.message;
+        notification.error("Ошибка", "Не удалось загрузить ещё лиды");
+      } else {
+        notification.error("Ошибка", "Не удалось загрузить ещё лиды");
+      }
       return false;
     } finally {
       isLoadingMore.value = false;
     }
   };
 
-  const postponeLead = async (
-      leadId: string,
-      workspaceId: string,
-  ): Promise<boolean> => {
-    const snoozed_until = new Date(Date.now() + 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 19);
+  // ─── Detail actions ───────────────────────────────────────────────────────
+  const fetchLeadDetail = async (leadId: string, workspaceId: string) => {
+    isLoadingDetail.value = true;
     try {
-      await $apiClient.api.snoozeLeadApiV1LeadsTenantLeadIdSnoozePost(
+      const resp =
+        await $apiClient.api.getTenantLeadDetailApiV1LeadsTenantLeadIdGet(
           leadId,
           { tenant_id: workspaceId },
-          { snoozed_until },
+        );
+      selectedLeadDetail.value = resp.data.result;
+    } catch (e) {
+      notification.error("Ошибка", "Не удалось загрузить детали лида");
+    } finally {
+      isLoadingDetail.value = false;
+    }
+  };
+
+  // ─── Lead actions ─────────────────────────────────────────────────────────
+  const moveLead = async (
+    leadId: string,
+    workspaceId: string,
+    toStage: TenantLeadStage,
+    comment?: string,
+  ) => {
+    try {
+      await $apiClient.api.moveLeadApiV1LeadsTenantLeadIdMovePost(
+        leadId,
+        { tenant_id: workspaceId },
+        { to_stage: toStage, ...(comment ? { comment } : {}) },
+      );
+      const raw = rawLeads.value.find((l) => l.id === leadId);
+      if (raw) raw.stage_code = toStage;
+      if (selectedLeadDetail.value?.id === leadId)
+        selectedLeadDetail.value.stage_code = toStage;
+      notification.success("Успешно", `Лид перемещён: ${STAGE_LABELS[toStage]}`);
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось переместить лид");
+      return false;
+    }
+  };
+
+  const postponeLead = async (leadId: string, workspaceId: string) => {
+    const snoozed_until = new Date(Date.now() + 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 19);
+    try {
+      await $apiClient.api.snoozeLeadApiV1LeadsTenantLeadIdSnoozePost(
+        leadId,
+        { tenant_id: workspaceId },
+        { snoozed_until },
       );
       const lead = rawLeads.value.find((l) => l.id === leadId);
       if (lead) lead.stage_code = TenantLeadStage.Snoozed;
       notification.success("Успешно", "Лид отложен");
       return true;
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Неизвестная ошибка";
-      error.value = msg;
+    } catch {
       notification.error("Ошибка", "Не удалось отложить лид");
       return false;
     }
   };
 
-  const takeLead = async (
-      leadId: string,
-      workspaceId: string,
-  ): Promise<boolean> => {
+  const snoozeLead = async (
+    leadId: string,
+    workspaceId: string,
+    snoozedUntil: string,
+  ) => {
+    try {
+      await $apiClient.api.snoozeLeadApiV1LeadsTenantLeadIdSnoozePost(
+        leadId,
+        { tenant_id: workspaceId },
+        { snoozed_until: snoozedUntil },
+      );
+      const lead = rawLeads.value.find((l) => l.id === leadId);
+      if (lead) {
+        lead.stage_code = TenantLeadStage.Snoozed;
+        lead.snoozed_until = snoozedUntil;
+      }
+      notification.success("Успешно", "Лид отложен");
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось отложить лид");
+      return false;
+    }
+  };
+
+  const hideLead = async (leadId: string, workspaceId: string) => {
+    try {
+      await $apiClient.api.hideLeadApiV1LeadsTenantLeadIdHidePost(leadId, {
+        tenant_id: workspaceId,
+      });
+      const lead = rawLeads.value.find((l) => l.id === leadId);
+      if (lead) lead.stage_code = TenantLeadStage.Hidden;
+      notification.success("Успешно", "Лид скрыт");
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось скрыть лид");
+      return false;
+    }
+  };
+
+  const assignLead = async (
+    leadId: string,
+    workspaceId: string,
+    memberId: string,
+  ) => {
+    try {
+      await $apiClient.api.assignLeadApiV1LeadsTenantLeadIdAssignPost(
+        leadId,
+        { tenant_id: workspaceId },
+        { member_id: memberId },
+      );
+      notification.success("Успешно", "Лид назначен");
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось назначить лид");
+      return false;
+    }
+  };
+
+  const deleteLead = async (leadId: string, workspaceId: string) => {
+    try {
+      await $apiClient.api.deleteLeadApiV1LeadsTenantLeadIdDelete(leadId, {
+        tenant_id: workspaceId,
+      });
+      rawLeads.value = rawLeads.value.filter((l) => l.id !== leadId);
+      if (selectedLeadDetail.value?.id === leadId)
+        selectedLeadDetail.value = null;
+      notification.success("Успешно", "Лид удалён");
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось удалить лид");
+      return false;
+    }
+  };
+
+  const takeLead = async (leadId: string, workspaceId: string) => {
     try {
       await $apiClient.api.moveLeadApiV1LeadsTenantLeadIdMovePost(
-          leadId,
-          { tenant_id: workspaceId },
-          { to_stage: TenantLeadStage.InProgress },
+        leadId,
+        { tenant_id: workspaceId },
+        { to_stage: TenantLeadStage.InProgress },
       );
       const raw = rawLeads.value.find((l) => l.id === leadId);
       if (raw) raw.stage_code = TenantLeadStage.InProgress;
       notification.success("Успешно", "Лид взят в работу");
       return true;
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Неизвестная ошибка";
-      error.value = msg;
+    } catch {
       notification.error("Ошибка", "Не удалось взять лид в работу");
       return false;
     }
+  };
+
+  // ─── Bulk actions ─────────────────────────────────────────────────────────
+  const bulkMove = async (
+    workspaceId: string,
+    leadIds: string[],
+    toStage: TenantLeadStage,
+  ) => {
+    try {
+      await $apiClient.api.bulkMoveApiV1LeadsBulkMovePost(
+        { tenant_id: workspaceId },
+        { tenant_lead_ids: leadIds, to_stage: toStage },
+      );
+      leadIds.forEach((id) => {
+        const lead = rawLeads.value.find((l) => l.id === id);
+        if (lead) lead.stage_code = toStage;
+      });
+      selectedIds.value.clear();
+      notification.success(
+        "Успешно",
+        `${leadIds.length} лидов перемещено: ${STAGE_LABELS[toStage]}`,
+      );
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось переместить лиды");
+      return false;
+    }
+  };
+
+  const bulkAssign = async (
+    workspaceId: string,
+    leadIds: string[],
+    memberId: string | null,
+  ) => {
+    try {
+      await $apiClient.api.bulkAssignApiV1LeadsBulkAssignPost(
+        { tenant_id: workspaceId },
+        { tenant_lead_ids: leadIds, member_id: memberId },
+      );
+      selectedIds.value.clear();
+      notification.success("Успешно", `${leadIds.length} лидов назначено`);
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось назначить лиды");
+      return false;
+    }
+  };
+
+  // ─── Members ──────────────────────────────────────────────────────────────
+  const fetchMembers = async (workspaceId: string) => {
+    try {
+      const resp =
+        await $apiClient.api.listMembersApiV1TenantsTenantIdMembersGet(
+          workspaceId,
+        );
+      members.value = resp.data.result;
+    } catch {
+      // non-critical, silently fail
+    }
+  };
+
+  // ─── Notes ────────────────────────────────────────────────────────────────
+  const fetchNotes = async (leadId: string, workspaceId: string) => {
+    isLoadingNotes.value = true;
+    try {
+      const resp =
+        await $apiClient.api.listNotesApiV1LeadsTenantLeadIdNotesGet(leadId, {
+          tenant_id: workspaceId,
+        });
+      notes.value = resp.data.result;
+    } catch {
+      notification.error("Ошибка", "Не удалось загрузить заметки");
+    } finally {
+      isLoadingNotes.value = false;
+    }
+  };
+
+  const createNote = async (
+    leadId: string,
+    workspaceId: string,
+    text: string,
+  ) => {
+    try {
+      const resp =
+        await $apiClient.api.createNoteApiV1LeadsTenantLeadIdNotesPost(
+          leadId,
+          { tenant_id: workspaceId },
+          { text },
+        );
+      notes.value.unshift(resp.data.result);
+      notification.success("Успешно", "Заметка добавлена");
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось добавить заметку");
+      return false;
+    }
+  };
+
+  // ─── Tasks ────────────────────────────────────────────────────────────────
+  const fetchTasks = async (leadId: string, workspaceId: string) => {
+    isLoadingTasks.value = true;
+    try {
+      const resp =
+        await $apiClient.api.listTasksApiV1LeadsTenantLeadIdTasksGet(leadId, {
+          tenant_id: workspaceId,
+        });
+      tasks.value = resp.data.result;
+    } catch {
+      notification.error("Ошибка", "Не удалось загрузить задачи");
+    } finally {
+      isLoadingTasks.value = false;
+    }
+  };
+
+  const createTask = async (
+    leadId: string,
+    workspaceId: string,
+    data: { title: string; due_at?: string; description?: string },
+  ) => {
+    try {
+      const resp =
+        await $apiClient.api.createTaskApiV1LeadsTenantLeadIdTasksPost(
+          leadId,
+          { tenant_id: workspaceId },
+          data,
+        );
+      tasks.value.unshift(resp.data.result);
+      notification.success("Успешно", "Задача создана");
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось создать задачу");
+      return false;
+    }
+  };
+
+  const completeTask = async (
+    leadId: string,
+    taskId: string,
+    workspaceId: string,
+  ) => {
+    try {
+      await $apiClient.api.completeTaskApiV1LeadsTenantLeadIdTasksTaskIdCompletePost(
+        leadId,
+        taskId,
+        { tenant_id: workspaceId },
+        {},
+      );
+      const task = tasks.value.find((t: any) => t.id === taskId);
+      if (task) task.completed_at = new Date().toISOString();
+      notification.success("Успешно", "Задача выполнена");
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось выполнить задачу");
+      return false;
+    }
+  };
+
+  // ─── Export & Refresh ─────────────────────────────────────────────────────
+  const exportLeads = async (workspaceId: string) => {
+    try {
+      const resp = await $apiClient.api.exportLeadsApiV1LeadsExportGet({
+        tenant_id: workspaceId,
+        ...(filters.value.stage ? { stage: filters.value.stage } : {}),
+      });
+      // Trigger file download
+      const blob = new Blob([resp.data as any], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      notification.success("Успешно", "Экспорт запущен");
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось экспортировать лиды");
+      return false;
+    }
+  };
+
+  const refreshLeads = async (workspaceId: string) => {
+    try {
+      await $apiClient.api.refreshTenantLeadsApiV1TenantsTenantIdRefreshLeadsPost(
+        workspaceId,
+      );
+      notification.success("Успешно", "Лиды обновляются");
+      return true;
+    } catch {
+      notification.error("Ошибка", "Не удалось обновить лиды");
+      return false;
+    }
+  };
+
+  // ─── Selection helpers ────────────────────────────────────────────────────
+  const toggleSelection = (id: string) => {
+    if (selectedIds.value.has(id)) {
+      selectedIds.value.delete(id);
+    } else {
+      selectedIds.value.add(id);
+    }
+  };
+
+  const selectAll = () => {
+    rawLeads.value.forEach((l) => selectedIds.value.add(l.id));
+  };
+
+  const clearSelection = () => {
+    selectedIds.value.clear();
   };
 
   const clearLeads = () => {
@@ -298,9 +624,11 @@ export const useLeadsStore = defineStore("leads", () => {
     hasMore.value = true;
     currentWorkspaceId.value = null;
     error.value = null;
+    selectedIds.value.clear();
   };
 
   return {
+    // state
     leads,
     rawLeads,
     isLoading,
@@ -308,10 +636,43 @@ export const useLeadsStore = defineStore("leads", () => {
     hasMore,
     error,
     currentWorkspaceId,
+    totalCount,
+    filters,
+    selectedLeadDetail,
+    isLoadingDetail,
+    members,
+    notes,
+    isLoadingNotes,
+    tasks,
+    isLoadingTasks,
+    selectedIds,
+    hasSelection,
+    selectedCount,
+
+    // actions
     fetchLeads,
     fetchMore,
+    fetchLeadDetail,
+    moveLead,
     postponeLead,
+    snoozeLead,
+    hideLead,
+    assignLead,
+    deleteLead,
     takeLead,
+    bulkMove,
+    bulkAssign,
+    fetchMembers,
+    fetchNotes,
+    createNote,
+    fetchTasks,
+    createTask,
+    completeTask,
+    exportLeads,
+    refreshLeads,
+    toggleSelection,
+    selectAll,
+    clearSelection,
     clearLeads,
   };
 });
