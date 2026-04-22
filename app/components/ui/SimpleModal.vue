@@ -14,19 +14,25 @@ const attrs = useAttrs()
 </script>
 
 <template>
-  <Dialog.Root v-model:open="open" @update:open="v => !v && $emit('close')" lazy-mount unmount-on-exit>
-    <Teleport to="body">
-      <Dialog.Backdrop class="simple-modal-backdrop" />
-      <Dialog.Positioner class="simple-modal-positioner">
-        <Dialog.Content class="simple-modal-content" v-bind="attrs">
-          <slot />
-        </Dialog.Content>
-      </Dialog.Positioner>
-    </Teleport>
-  </Dialog.Root>
+  <div class="simple-modal-host" v-bind="attrs">
+    <Dialog.Root v-model:open="open" @update:open="v => !v && $emit('close')" lazy-mount unmount-on-exit>
+      <Teleport to="body">
+        <Dialog.Backdrop class="simple-modal-backdrop" />
+        <Dialog.Positioner class="simple-modal-positioner">
+          <Dialog.Content class="simple-modal-content">
+            <slot />
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Teleport>
+    </Dialog.Root>
+  </div>
 </template>
 
 <style>
+.simple-modal-host {
+  display: contents;
+}
+
 .simple-modal-backdrop {
   position: fixed;
   inset: 0;

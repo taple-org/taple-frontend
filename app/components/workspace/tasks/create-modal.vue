@@ -29,6 +29,7 @@ const taskType = ref<TenantLeadTaskType>(TenantLeadTaskType.FollowUp);
 const dueDate = ref("");
 const assignedToMemberId = ref("");
 const isSearching = ref(false);
+const minDate = new Date().toISOString().slice(0, 10);
 
 const { options: memberOptions, pending: membersPending } = useWorkspaceMemberOptions(
   computed(() => workspaceId),
@@ -153,7 +154,12 @@ function handleSubmit() {
 
         <div class="task-create__group">
           <label class="task-create__label">Срок</label>
-          <ui-form-field v-model="dueDate" type="date" placeholder="Выберите дату" />
+          <ui-form-field
+            v-model="dueDate"
+            type="date"
+            :min="minDate"
+            placeholder="Выберите дату"
+          />
         </div>
 
         <div class="task-create__group">

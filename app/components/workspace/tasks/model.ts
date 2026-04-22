@@ -37,6 +37,13 @@ export type TaskUpdatePayload = Pick<
 
 export type TaskCompletePayload = CompleteTaskRequest;
 
+export type TaskBoardGroup = {
+  id: "urgent" | "upcoming" | "later" | "done";
+  title: string;
+  description: string;
+  buckets: TaskBucket[];
+};
+
 export const TASK_TYPE_LABELS: Record<TenantLeadTaskType, string> = {
   [TenantLeadTaskType.FollowUp]: "Follow-up",
   [TenantLeadTaskType.MakeFirstContact]: "Первый контакт",
@@ -54,16 +61,6 @@ export const TASK_TYPE_OPTIONS = Object.values(TenantLeadTaskType).map((value) =
   value,
   label: TASK_TYPE_LABELS[value],
 }));
-
-export const TASK_FILTER_TYPE_OPTIONS = TASK_TYPE_OPTIONS.filter(({ value }) =>
-  ![
-    TenantLeadTaskType.WinLead,
-    TenantLeadTaskType.LoseLead,
-    TenantLeadTaskType.HideLead,
-  ].includes(value),
-);
-
-export const DEFAULT_TASK_TYPES: TenantLeadTaskType[] = TASK_FILTER_TYPE_OPTIONS.map(({ value }) => value);
 
 export const TASK_ACTION_SECTIONS: TaskBoardActionSection[] = [
   {
@@ -101,6 +98,33 @@ export const DEFAULT_TASK_BUCKETS: TaskBucket[] = [
   TaskBucket.Overdue,
   TaskBucket.Today,
   TaskBucket.Tomorrow,
+];
+
+export const TASK_BOARD_GROUPS: TaskBoardGroup[] = [
+  {
+    id: "urgent",
+    title: "Срочно",
+    description: "Просроченные задачи и задачи на сегодня.",
+    buckets: [TaskBucket.Overdue, TaskBucket.Today],
+  },
+  {
+    id: "upcoming",
+    title: "Ближайшие",
+    description: "Ближайшие задачи на следующие несколько дней.",
+    buckets: [TaskBucket.Tomorrow, TaskBucket.InTwoDays, TaskBucket.NextMonday],
+  },
+  {
+    id: "later",
+    title: "Позже",
+    description: "Можно вернуться позже без срочного дедлайна.",
+    buckets: [TaskBucket.Later],
+  },
+  {
+    id: "done",
+    title: "Завершено",
+    description: "Уже выполненные задачи.",
+    buckets: [TaskBucket.Done],
+  },
 ];
 
 export const TASK_BUCKET_LABELS: Record<TaskBucket, { en: string; ru: string }> = {
@@ -214,24 +238,6 @@ export function filterTaskBoardColumns(columns: TaskBoardColumn[], buckets: Task
 
   const visibleBuckets = new Set(buckets);
   return normalizeTaskBoardColumns(columns).filter((column) => visibleBuckets.has(column.bucket));
-}
-
-export function filterTaskBoardColumnsByTypes(
-  columns: TaskBoardColumn[],
-  taskTypes: TenantLeadTaskType[],
-) {
-  if (!taskTypes.length) return [];
-
-  const visibleTaskTypes = new Set(taskTypes);
-  return columns.map((column) => {
-    const tasks = column.tasks.filter((task) => visibleTaskTypes.has(task.task_type));
-
-    return {
-      ...column,
-      count: tasks.length,
-      tasks,
-    };
-  }).filter((column) => column.tasks.length > 0);
 }
 
 function buildDateAtHour(daysToAdd: number, hour: number) {
