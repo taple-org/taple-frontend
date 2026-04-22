@@ -8,15 +8,15 @@
     <form class="form-grid" @submit.prevent="handleSubmit">
       <ui-form-field
         type="text"
-        v-model="r$.$value.firstName"
-        :error="r$.firstName.$errors[0]"
+        v-model="r$.$value.first_name"
+        :error="r$.first_name.$errors[0]"
         label="Имя"
         placeholder="Введите имя"
       />
       <ui-form-field
         type="text"
-        v-model="r$.$value.lastName"
-        :error="r$.lastName.$errors[0]"
+        v-model="r$.$value.last_name"
+        :error="r$.last_name.$errors[0]"
         label="Фамилия"
         placeholder="Введите фамилию"
       />
@@ -49,20 +49,25 @@
 
 <script setup lang="ts">
 import { useProfileForm } from "~/composables/settings/useProfileForm";
+import { useAuthStore } from "~/stores/auth.store";
 
-const { r$ } = useProfileForm()
+const authStore = useAuthStore();
+const { r$, state } = useProfileForm(computed(() => authStore.user));
 
 const isLoading = ref(false)
 const successMessage = ref('')
 
 async function handleSubmit() {
   const result = await r$.$validate()
-  if (!result.$valid) return
+  if (!result.valid) return
 
   isLoading.value = true
   successMessage.value = ''
   try {
-    // TODO: await $fetch('/api/user/profile', { method: 'PUT', body: { ... } })
+    Object.assign(authStore.user ?? {}, {
+      first_name: state.first_name,
+      last_name: state.last_name,
+    })
     await new Promise(r => setTimeout(r, 600))
     successMessage.value = 'Профиль обновлён'
     setTimeout(() => { successMessage.value = '' }, 3000)

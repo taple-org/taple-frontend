@@ -6,7 +6,7 @@
 
 <script lang="ts" setup>
 const { variant = 'primary'} = defineProps<{
-    variant?: 'primary' | 'warning' | 'error' | 'success',
+    variant?: 'primary' | 'warning' | 'error' | 'success' | 'neutral',
 }>();
 </script>
 
@@ -32,5 +32,8 @@ const { variant = 'primary'} = defineProps<{
 }
 .success{
     color: var(--color-success, #3AC0A0);
+}
+.neutral{
+    color: var(--color-neutral-dl, #71727A);
 }
 </style>

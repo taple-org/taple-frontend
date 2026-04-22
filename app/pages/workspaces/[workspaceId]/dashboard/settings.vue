@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type {
+  ChangeMemberRoleRequest,
   TenantRead,
   TenantMemberRead,
   TenantUserRole,
   InviteMemberRequest,
 } from "~/api/generated/api";
-import { ContentType } from "~/api/generated/api";
 import { useNotification } from "~/composables/useNotification";
 import { useAuthStore } from "~/stores/auth.store";
 
@@ -90,6 +90,11 @@ interface Member {
   email: string;
   role: MemberRole;
 }
+
+type RoleOption = {
+  value: TenantUserRole;
+  label: string;
+};
 
 const members = ref<Member[]>([]);
 const isLoadingMembers = ref(true);
@@ -182,6 +187,18 @@ function mapApiRole(role: TenantUserRole): MemberRole {
   }
 }
 
+function mapLocalRole(role: MemberRole): TenantUserRole {
+  switch (role) {
+    case "Owner":
+      return "owner";
+    case "Admin":
+      return "admin";
+    case "Member":
+    default:
+      return "member";
+  }
+}
+
 // Fetch members
 async function fetchMembers() {
   try {
@@ -260,17 +277,18 @@ async function removeMember(userId: string, role: MemberRole) {
 }
 
 async function updateMemberRole(userId: string, newRole: TenantUserRole) {
-  if (!canChangeRole(mapApiRole(newRole), mapApiRole(newRole))) return;
+  const targetMember = members.value.find((member) => member.userId === userId);
+  if (!targetMember) return;
+
+  if (!canChangeRole(targetMember.role, mapApiRole(newRole))) return;
 
   try {
-    await $apiClient.request({
-      path: `/api/v1/tenants/${workspaceId.value}/members/${userId}/role`,
-      method: "PATCH",
-      body: { role_code: newRole },
-      secure: true,
-      type: ContentType.Json,
-      format: "json",
-    });
+    const payload: ChangeMemberRoleRequest = { role_code: newRole };
+    await $apiClient.api.changeMemberRoleApiV1TenantsTenantIdMembersUserIdRolePatch(
+      workspaceId.value,
+      userId,
+      payload,
+    );
     notification.success("Успех", "Роль участника обновлена");
     await fetchMembers();
   } catch (error) {
@@ -298,13 +316,13 @@ async function leaveWorkspace() {
 
 // Get available roles for changing a member's role (Owner not assignable)
 function getRoleOptionsForMember(currentRole: MemberRole) {
-  const options: { value: MemberRole; label: string }[] = [];
+  const options: RoleOption[] = [];
 
   // Only Member and Admin can be assigned via dropdown (Owner cannot be assigned)
   for (const role of ["Member", "Admin"] as MemberRole[]) {
     if (canChangeRole(currentRole, role)) {
       options.push({
-        value: role,
+        value: mapLocalRole(role),
         label: roleLabel[role],
       });
     }
@@ -314,7 +332,7 @@ function getRoleOptionsForMember(currentRole: MemberRole) {
 }
 
 function initials(m: Member) {
-  return ((m.firstName[0] ?? "") + (m.lastName[0] ?? "")).toUpperCase();
+  return ((m.firstName[0] ?? "") + (m.lastName[0] ?? "")).toUpperCase() || (m.email[0] ?? "?").toUpperCase();
 }
 
 const roleLabel: Record<MemberRole, string> = {

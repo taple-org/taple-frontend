@@ -4225,7 +4225,7 @@
           "Tenant Leads Pipeline"
         ],
         "summary": "List Merchants",
-        "description": "Merchant dashboard: list all merchants for the tenant.\n\nOptionally filter by monitoring_status (e.g. ?status=attention).",
+        "description": "Merchant dashboard: list all merchants for the tenant.\n\nSupports the same filters as the pipeline board: status, search, stage, member, category.",
         "operationId": "list_merchants_api_v1_leads_merchants_get",
         "security": [
           {
@@ -4260,6 +4260,82 @@
               "title": "Status"
             },
             "description": "Filter by monitoring status"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by lead name",
+              "title": "Search"
+            },
+            "description": "Search by lead name"
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TenantLeadStage"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by lead stage",
+              "title": "Stage"
+            },
+            "description": "Filter by lead stage"
+          },
+          {
+            "name": "responsible_member_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by responsible member",
+              "title": "Responsible Member Id"
+            },
+            "description": "Filter by responsible member"
+          },
+          {
+            "name": "category_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by business category code",
+              "title": "Category Code"
+            },
+            "description": "Filter by business category code"
           }
         ],
         "responses": {

@@ -1,29 +1,81 @@
 <script lang="ts" setup>
-import type { StageColumn, TenantLeadStage } from '~/api/generated/api';
-const emit = defineEmits<{
-  move: []
-}>()
-const { columns } = defineProps<{
-  columns: StageColumn[];
-}>()
-const { $apiClient } = useNuxtApp()
-const workspaceId = inject('workspaceId') as string
+import type { PipelineCardItem, StageColumn, TenantLeadStage } from "~/api/generated/api";
+import type { PipelineBoardActionId } from "./model";
 
-const handleMove = async (cardId: string, from: TenantLeadStage, to: TenantLeadStage) => {
-  await $apiClient.api.moveLeadApiV1LeadsTenantLeadIdMovePost(cardId, { tenant_id: workspaceId }, { to_stage: to })
-  emit('move')
+const emit = defineEmits<{
+  changed: [];
+}>();
+
+const { columns, workspaceId } = defineProps<{
+  columns: StageColumn[];
+  workspaceId: string;
+}>();
+
+const { $apiClient } = useNuxtApp();
+const notification = useNotification();
+
+const activeCard = ref<PipelineCardItem | null>(null);
+const isPending = ref(false);
+
+async function handleMove(toStage: TenantLeadStage) {
+  if (!activeCard.value || isPending.value || activeCard.value.stage_code === toStage) {
+    clearDrag();
+    return;
+  }
+
+  isPending.value = true;
+  try {
+    await $apiClient.api.moveLeadApiV1LeadsTenantLeadIdMovePost(
+      activeCard.value.tenant_lead_id,
+      { tenant_id: workspaceId },
+      { to_stage: toStage },
+    );
+    emit("changed");
+  } catch {
+    notification.error("Ошибка", "Не удалось переместить лид");
+  } finally {
+    isPending.value = false;
+    clearDrag();
+  }
 }
 
+function startDrag(card: PipelineCardItem) {
+  activeCard.value = card;
+}
+
+function clearDrag() {
+  activeCard.value = null;
+}
+
+function handleAction(actionId: PipelineBoardActionId) {
+  return handleMove(actionId);
+}
 </script>
 <template>
-  <section class="board">
-    <workspace-pipeline-column v-for="column in columns" :key="column.stage_code" :column @move="handleMove"/>
-  </section>
+  <div>
+    <section class="board">
+      <workspace-pipeline-column
+        v-for="column in columns"
+        :key="column.stage_code"
+        :column="column"
+        :active-lead-id="activeCard?.tenant_lead_id"
+        @drag-start="startDrag"
+        @drag-end="clearDrag"
+        @move="handleMove"
+      />
+    </section>
+
+    <workspace-pipeline-action-bar
+      :open="!!activeCard"
+      :pending="isPending"
+      @action="handleAction"
+    />
+  </div>
 </template>
 <style lang="css" scoped>
-.board{
+.board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
 }
 </style>

@@ -44,17 +44,18 @@ function handleValueChange(details: { value: string[] }) {
   >
     <Select.Control class="select__control">
       <Select.Trigger class="select__trigger">
-        <Select.ValueText class="select__value" :placeholder="placeholder ?? 'Выберите...'">
+        <span class="select__value" :data-placeholder-shown="!displayText || undefined">
           <span v-if="displayText" class="select__tags">
             <span
-                v-for="val in modelValue"
-                :key="val"
-                class="select__tag"
+              v-for="val in modelValue"
+              :key="val"
+              class="select__tag"
             >
               {{ options.find((o) => o.value === val)?.label }}
             </span>
           </span>
-        </Select.ValueText>
+          <span v-else>{{ placeholder ?? 'Выберите...' }}</span>
+        </span>
         <Select.Indicator class="select__indicator">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />

@@ -9,6 +9,7 @@ import {
 import {
   buildActionPayload,
   buildMovePayloadForBucket,
+  normalizeTaskBoardColumns,
   type TaskBoardActionId,
   type TaskCompletePayload,
   type TaskUpdatePayload,
@@ -79,22 +80,22 @@ async function handleMove(bucket: TaskBucket) {
 async function handleAction(actionId: TaskBoardActionId) {
   if (!activeTask.value || isPending.value) return;
 
-  if (actionId === "delete") {
-    notification.info("Скоро", "Удаление еще не поддержано бэкендом");
-    clearDrag();
-    return;
-  }
-
   const task = activeTask.value;
   const payload = buildActionPayload(actionId);
-  if (!payload) {
+  if (actionId !== "delete" && !payload) {
     clearDrag();
     return;
   }
 
   isPending.value = true;
   try {
-    if (actionId === "done") {
+    if (actionId === "delete") {
+      await $apiClient.api.deleteTaskApiV1LeadsTenantLeadIdTasksTaskIdDelete(
+        task.tenant_lead_id,
+        task.id,
+        { tenant_id: workspaceId },
+      );
+    } else if (actionId === "done") {
       await $apiClient.api.completeTaskApiV1LeadsTenantLeadIdTasksTaskIdCompletePost(
         task.tenant_lead_id,
         task.id,
@@ -112,7 +113,7 @@ async function handleAction(actionId: TaskBoardActionId) {
 
     emit("changed");
   } catch {
-    notification.error("Ошибка", "Не удалось выполнить действие над задачей");
+    notification.error("Ошибка", actionId === "delete" ? "Не удалось удалить задачу" : "Не удалось выполнить действие над задачей");
   } finally {
     isPending.value = false;
     clearDrag();
@@ -166,13 +167,15 @@ function startDrag(task: TaskBoardItem) {
 function clearDrag() {
   activeTask.value = null;
 }
+
+const normalizedColumns = computed(() => normalizeTaskBoardColumns(columns));
 </script>
 
 <template>
   <section class="tasks-board">
     <div class="tasks-board__lane">
       <workspace-tasks-column
-        v-for="column in columns"
+        v-for="column in normalizedColumns"
         :key="column.bucket"
         :column="column"
         :active-task-id="activeTask?.id"
@@ -193,6 +196,7 @@ function clearDrag() {
     <workspace-tasks-detail-modal
       :open="!!selectedTask"
       :task="selectedTask"
+      :workspace-id="workspaceId"
       :pending="isPending"
       @close="selectedTask = null"
       @save="handleSave"
@@ -210,10 +214,8 @@ function clearDrag() {
 
 .tasks-board__lane {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(280px, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  align-items: stretch;
   gap: 14px;
-  overflow-x: auto;
-  padding-bottom: 8px;
 }
 </style>

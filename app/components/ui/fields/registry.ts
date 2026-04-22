@@ -3,6 +3,7 @@ import CheckBoxField from './CheckboxField.vue'
 import PasswordField from './PasswordField.vue'
 import SelectField   from './SelectField.vue'
 import MultiSelectField from './MultiSelectField.vue'
+import DatePickerField from './DatePickerField.vue'
 
 import type { FieldWrapperProps } from '../FormField.vue'
 
@@ -18,6 +19,7 @@ export const fieldRegistry: Record<string, FieldConfig> = {
   password: { component: PasswordField },
   checkbox: { component: CheckBoxField, passthrough: ['label'] },
   select:   { component: SelectField },
+  date:     { component: DatePickerField },
   'multi-select': {
     component: MultiSelectField,
     passthrough: [],

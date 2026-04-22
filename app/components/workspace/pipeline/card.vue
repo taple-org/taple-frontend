@@ -1,94 +1,167 @@
 <script lang="ts" setup>
-import type { PipelineCardItem, TaskBadge } from '~/api/generated/api';
+import type { PipelineCardItem } from '~/api/generated/api';
+import {
+  formatPipelineDate,
+  getPipelineCardTone,
+  getResponsibleLabel,
+  getTaskBadgeItems,
+} from "./model";
 
-const { card } = defineProps<{
-    card: PipelineCardItem
-}>()
-const data = computed(() => new Date(card.created_at).toLocaleDateString('ru-RU'))
-const tags = ['Торговый экваринг', 'Какой-то тег']
+const emit = defineEmits<{
+  dragStart: [card: PipelineCardItem];
+  dragEnd: [];
+}>();
+
+const { card, dragging } = defineProps<{
+  card: PipelineCardItem;
+  dragging?: boolean;
+}>();
+
+const createdAt = computed(() => formatPipelineDate(card.created_at));
+const responsible = computed(() => getResponsibleLabel(card.responsible_member));
+const taskBadges = computed(() => getTaskBadgeItems(card.task_badge));
+const tone = computed(() => getPipelineCardTone(card));
+
+function handleDragStart(event: DragEvent) {
+  event.dataTransfer?.setData("text/plain", card.tenant_lead_id);
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+  }
+  emit("dragStart", card);
+}
 
 </script>
 <template>
-    <article class="card pipeline-card">
-        <div class="card__left">
-            <h4 class="title">{{ card.lead_name }}</h4>
-            <span class="category">{{ card.business_category_name_ru }}</span>
-            <ul class="tags">
-                <li v-for="tag in tags" :key="tag">
-                    <ui-badge class="tag" size="sm">{{ tag }}</ui-badge>
-                </li>
-            </ul>
-        </div>
-        <div class="card__right">
-            <div class="data">{{ data }}</div>
-            <div v-if="card.task_badge">{{ card.task_badge }}</div>
-            <workspace-pipeline-card-task-badge variant="warning">нет задач</workspace-pipeline-card-task-badge>
+  <article
+    class="card pipeline-card"
+    :class="[`card--${tone}`, { 'card--dragging': dragging }]"
+    draggable="true"
+    @dragstart="handleDragStart"
+    @dragend="emit('dragEnd')"
+  >
+    <div class="card__head">
+      <div class="card__title-wrap">
+        <h4 class="title">{{ card.lead_name }}</h4>
+        <span class="category">{{ card.business_category_name_ru }}</span>
+      </div>
+      <span v-if="createdAt" class="date">{{ createdAt }}</span>
+    </div>
 
-        </div>
-    </article>
+    <p v-if="card.address_short" class="address">{{ card.address_short }}</p>
+
+    <div class="tags">
+      <ui-badge size="sm">{{ card.business_category_name_ru }}</ui-badge>
+      <ui-badge v-if="card.branch_count" size="sm">{{ card.branch_count }} филиалов</ui-badge>
+    </div>
+
+    <div class="task-tags">
+      <workspace-pipeline-card-task-badge
+        v-for="badge in taskBadges"
+        :key="badge.label"
+        :variant="badge.tone"
+      >
+        {{ badge.label }}
+      </workspace-pipeline-card-task-badge>
+    </div>
+
+    <div class="card__footer">
+      <span class="responsible">{{ responsible }}</span>
+    </div>
+  </article>
 </template>
 
 <style scoped>
 .card {
-    display: flex;
-    padding: 8px;
-    align-items: stretch;
-    gap: 5px;
-    border-radius: 16px;
-    background: var(--color-neutral-ll, #F8F9FE);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  background: var(--color-neutral-ll, #F8F9FE);
+  cursor: grab;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(31, 32, 36, 0.08);
+}
+
+.card:active {
+  cursor: grabbing;
+}
+
+.card--dragging {
+  opacity: 0.45;
+}
+
+.card--danger {
+  border-color: color-mix(in srgb, var(--color-error) 28%, transparent);
+}
+
+.card--warning {
+  border-color: color-mix(in srgb, var(--color-warning) 28%, transparent);
+}
+
+.card--success {
+  border-color: color-mix(in srgb, var(--color-success) 28%, transparent);
+}
+
+.card__head,
+.card__footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card__title-wrap {
+  min-width: 0;
 }
 
 .title {
-    color: var(--color-neutral-dd, #1F2024);
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
-    margin-bottom: 4px;
+  color: var(--color-neutral-dd, #1F2024);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0 0 4px;
 }
 
 .category {
-    color: var(--color-neutral-dl, #71727A);
-    font-size: 10px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 16px;
-    letter-spacing: 0.1px;
-    padding-bottom: 4px;
+  color: var(--color-neutral-dl, #71727A);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
-.data {
-    color: var(--color-neutral-dl, #71727A);
-    text-align: right;
-    font-size: 8px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    padding-bottom: auto;
+.date,
+.address,
+.responsible {
+  color: var(--color-neutral-dl, #71727A);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
-.task-badge {
-    text-align: right;
-    font-size: 8px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
+.date {
+  white-space: nowrap;
 }
 
-.card__right,
-.card__left {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    justify-content: space-between;
+.address {
+  margin: 0;
 }
 
-.tags {
-    display: flex;
-    gap: 5px;
+.tags,
+.task-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.tag {
-    font-weight: 400;
+.responsible {
+  font-weight: 600;
 }
 </style>

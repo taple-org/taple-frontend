@@ -3,7 +3,7 @@ import { TaskBucket, type TaskBoardColumn, type TaskBoardItem } from "~/api/gene
 
 const emit = defineEmits<{
   open: [task: TaskBoardItem];
-  dragStart: [task: TaskBoardItem, event: DragEvent];
+  dragStart: [task: TaskBoardItem];
   dragEnd: [];
   move: [bucket: TaskBucket];
 }>();
@@ -20,6 +20,10 @@ function handleDrop() {
   if (!isDropEnabled.value || !activeTaskId) return;
   emit("move", column.bucket);
   isOver.value = false;
+}
+
+function handleCardDragStart(task: TaskBoardItem) {
+  emit("dragStart", task);
 }
 </script>
 
@@ -45,7 +49,7 @@ function handleDrop() {
         :task="task"
         :dragging="task.id === activeTaskId"
         @open="emit('open', $event)"
-        @drag-start="emit('dragStart', task, $event)"
+        @drag-start="handleCardDragStart"
         @drag-end="emit('dragEnd')"
       />
 
@@ -60,7 +64,6 @@ function handleDrop() {
 .task-column {
   display: flex;
   flex-direction: column;
-  min-width: 280px;
   min-height: 520px;
 }
 

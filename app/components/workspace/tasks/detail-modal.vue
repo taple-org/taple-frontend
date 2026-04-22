@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { TaskBoardItem } from "~/api/generated/api";
+import { useWorkspaceMemberOptions } from "~/composables/workspace/useWorkspaceMemberOptions";
 import {
-  fromDateAndTime,
+  fromDateOnly,
   TASK_TYPE_OPTIONS,
   toDatePart,
-  toTimePart,
   type TaskCompletePayload,
   type TaskUpdatePayload,
 } from "./model";
@@ -15,9 +15,10 @@ const emit = defineEmits<{
   complete: [payload: TaskCompletePayload];
 }>();
 
-const { open, task, pending } = defineProps<{
+const { open, task, pending, workspaceId } = defineProps<{
   open: boolean;
   task: TaskBoardItem | null;
+  workspaceId: string;
   pending?: boolean;
 }>();
 
@@ -25,8 +26,12 @@ const title = ref("");
 const description = ref("");
 const result = ref("");
 const dueDate = ref("");
-const dueTime = ref("10:00");
+const assignedToMemberId = ref("");
 const taskType = ref(TASK_TYPE_OPTIONS[0]!.value);
+
+const { options: memberOptions, pending: membersPending } = useWorkspaceMemberOptions(
+  computed(() => workspaceId),
+);
 
 watch(
   () => task,
@@ -35,7 +40,7 @@ watch(
     description.value = value?.description ?? "";
     result.value = value?.result ?? "";
     dueDate.value = toDatePart(value?.due_at);
-    dueTime.value = toTimePart(value?.due_at) || "10:00";
+    assignedToMemberId.value = value?.assigned_to_member_id ?? "";
     taskType.value = value?.task_type ?? TASK_TYPE_OPTIONS[0]!.value;
   },
   { immediate: true },
@@ -46,8 +51,9 @@ function handleSave() {
     title: title.value.trim() || null,
     description: description.value.trim() || null,
     task_type: taskType.value,
-    due_at: fromDateAndTime(dueDate.value, dueTime.value),
+    due_at: fromDateOnly(dueDate.value),
     result: result.value.trim() || null,
+    assigned_to_member_id: assignedToMemberId.value || null,
   });
 }
 
@@ -87,10 +93,18 @@ function handleComplete() {
 
         <div class="task-detail__group">
           <label class="task-detail__label">Срок</label>
-          <div class="task-detail__date-row">
-            <ui-date-picker v-model="dueDate" placeholder="Выберите дату" />
-            <input v-model="dueTime" class="task-detail__input task-detail__input--time" type="time" />
-          </div>
+          <ui-form-field v-model="dueDate" type="date" placeholder="Выберите дату" />
+        </div>
+
+        <div class="task-detail__group">
+          <label class="task-detail__label">Ответственный</label>
+          <ui-form-field
+            v-model="assignedToMemberId"
+            type="select"
+            :options="memberOptions"
+            :disabled="membersPending"
+            placeholder="Выберите участника"
+          />
         </div>
       </div>
 
@@ -100,7 +114,7 @@ function handleComplete() {
       </div>
 
       <div class="task-detail__group">
-        <label class="task-detail__label">Add result</label>
+        <label class="task-detail__label">Результат</label>
         <textarea
           v-model="result"
           class="task-detail__textarea"
@@ -114,7 +128,7 @@ function handleComplete() {
           Сохранить
         </ui-button>
         <ui-button :disabled="pending" @click="handleComplete">
-          Complete todo
+          Завершить задачу
         </ui-button>
       </div>
     </div>
@@ -170,12 +184,6 @@ function handleComplete() {
   font-weight: 700;
 }
 
-.task-detail__date-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 132px;
-  gap: 10px;
-}
-
 .task-detail__input,
 .task-detail__textarea {
   width: 100%;
@@ -205,10 +213,6 @@ function handleComplete() {
   }
 
   .task-detail__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .task-detail__date-row {
     grid-template-columns: 1fr;
   }
 
