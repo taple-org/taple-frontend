@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { TaskBucket, type TaskBoardResponse } from "~/api/generated/api";
-import type { TaskCreatePayload } from "~/components/workspace/tasks/model";
+import {
+  DEFAULT_TASK_TYPES,
+  DEFAULT_TASK_BUCKETS,
+  filterTaskBoardColumns,
+  filterTaskBoardColumnsByTypes,
+  type TaskCreatePayload,
+} from "~/components/workspace/tasks/model";
+import type { TaskBucket, TaskBoardResponse, TenantLeadTaskType } from "~/api/generated/api";
 
 definePageMeta({
   layout: "dashboard",
@@ -20,6 +26,8 @@ const notification = useNotification();
 
 const isCreateOpen = ref(false);
 const isCreatePending = ref(false);
+const visibleBuckets = ref<TaskBucket[]>([...DEFAULT_TASK_BUCKETS]);
+const visibleTaskTypes = ref<TenantLeadTaskType[]>([...DEFAULT_TASK_TYPES]);
 
 const {
   data: taskBoard,
@@ -43,14 +51,13 @@ watch(error, (err) => {
   }
 }, { immediate: true });
 
-const visibleBuckets = [TaskBucket.Overdue, TaskBucket.Today, TaskBucket.Tomorrow];
-
-const columns = computed(() =>
-  (taskBoard.value?.columns ?? []).filter((column) =>
-    visibleBuckets.includes(column.bucket),
-  ),
+const columns = computed(() => {
+  const bucketFilteredColumns = filterTaskBoardColumns(taskBoard.value?.columns ?? [], visibleBuckets.value);
+  return filterTaskBoardColumnsByTypes(bucketFilteredColumns, visibleTaskTypes.value);
+});
+const totalCount = computed(() =>
+  columns.value.reduce((sum, column) => sum + column.tasks.length, 0),
 );
-const totalCount = computed(() => taskBoard.value?.total_count ?? 0);
 
 async function handleCreate(payload: TaskCreatePayload) {
   isCreatePending.value = true;
@@ -84,13 +91,19 @@ async function handleCreate(payload: TaskCreatePayload) {
       </div>
     </section>
 
-    <div v-if="pending" class="tasks-page__state">Загружаем task board...</div>
-    <workspace-tasks-board
-      v-else
-      :columns="columns"
-      :workspace-id="workspaceId"
-      @changed="refresh"
+    <workspace-tasks-filters
+      v-model:buckets="visibleBuckets"
+      v-model:task-types="visibleTaskTypes"
     />
+    <div v-if="pending" class="tasks-page__state">Загружаем task board...</div>
+    <client-only v-else>
+      <workspace-tasks-board
+          :columns="columns"
+          :workspace-id="workspaceId"
+          @changed="refresh"
+      />
+    </client-only>
+
 
     <workspace-tasks-create-modal
       :open="isCreateOpen"

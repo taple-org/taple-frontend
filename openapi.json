@@ -3734,6 +3734,166 @@
               "default": "new",
               "title": "Stage"
             }
+          },
+          {
+            "name": "city_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by city",
+              "title": "City Id"
+            },
+            "description": "Filter by city"
+          },
+          {
+            "name": "district_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by district",
+              "title": "District Id"
+            },
+            "description": "Filter by district"
+          },
+          {
+            "name": "business_category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by business category",
+              "title": "Business Category Id"
+            },
+            "description": "Filter by business category"
+          },
+          {
+            "name": "min_fit_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum fit score",
+              "title": "Min Fit Score"
+            },
+            "description": "Minimum fit score"
+          },
+          {
+            "name": "max_fit_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maximum fit score",
+              "title": "Max Fit Score"
+            },
+            "description": "Maximum fit score"
+          },
+          {
+            "name": "min_priority_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum priority score",
+              "title": "Min Priority Score"
+            },
+            "description": "Minimum priority score"
+          },
+          {
+            "name": "max_priority_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maximum priority score",
+              "title": "Max Priority Score"
+            },
+            "description": "Maximum priority score"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "priority_score",
+                "fit_score",
+                "freshness_score",
+                "contactability_score",
+                "created_at"
+              ],
+              "default": "priority_score",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_dir",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "title": "Sort Dir"
+            }
           }
         ],
         "responses": {
@@ -4065,7 +4225,7 @@
           "Tenant Leads Pipeline"
         ],
         "summary": "List Merchants",
-        "description": "Merchant dashboard: list all merchants for the tenant.\n\nOptionally filter by monitoring_status (e.g. ?status=attention).",
+        "description": "Merchant dashboard: list all merchants for the tenant.\n\nSupports the same filters as the pipeline board: status, search, stage, member, category.",
         "operationId": "list_merchants_api_v1_leads_merchants_get",
         "security": [
           {
@@ -4100,6 +4260,82 @@
               "title": "Status"
             },
             "description": "Filter by monitoring status"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by lead name",
+              "title": "Search"
+            },
+            "description": "Search by lead name"
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TenantLeadStage"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by lead stage",
+              "title": "Stage"
+            },
+            "description": "Filter by lead stage"
+          },
+          {
+            "name": "responsible_member_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by responsible member",
+              "title": "Responsible Member Id"
+            },
+            "description": "Filter by responsible member"
+          },
+          {
+            "name": "category_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by business category code",
+              "title": "Category Code"
+            },
+            "description": "Filter by business category code"
           }
         ],
         "responses": {
@@ -4310,6 +4546,223 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/search": {
+      "get": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Search Leads",
+        "description": "Lightweight lead search for the task-creation modal autocomplete.\n\nReturns up to `limit` leads matching the query by name.",
+        "operationId": "search_leads_api_v1_leads_search_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Search query (lead name)",
+              "title": "Q"
+            },
+            "description": "Search query (lead name)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_list_LeadSearchItem__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/tasks": {
+      "post": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Create Global Task",
+        "description": "Create a task from the global board modal.\n\nThe lead is selected via the search autocomplete; `tenant_lead_id` is passed\nin the request body instead of the URL path.",
+        "operationId": "create_global_task_api_v1_leads_tasks_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGlobalTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TaskRead_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Get Task Board",
+        "description": "Global task board (AmoCRM to-do view).\n\nReturns all tasks for the tenant grouped into time-bucket columns:\noverdue / today / tomorrow / in_two_days / next_monday / later / done.",
+        "operationId": "get_task_board_api_v1_leads_tasks_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "responsible_member_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by lead's responsible member",
+              "title": "Responsible Member Id"
+            },
+            "description": "Filter by lead's responsible member"
+          },
+          {
+            "name": "assigned_to_member_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by task assignee",
+              "title": "Assigned To Member Id"
+            },
+            "description": "Filter by task assignee"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TaskBoardResponse_"
+                }
               }
             }
           },
@@ -4698,223 +5151,6 @@
         }
       }
     },
-    "/api/v1/leads/search": {
-      "get": {
-        "tags": [
-          "Tenant Leads Pipeline"
-        ],
-        "summary": "Search Leads",
-        "description": "Lightweight lead search for the task-creation modal autocomplete.\n\nReturns up to `limit` leads matching the query by name.",
-        "operationId": "search_leads_api_v1_leads_search_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "tenant_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Tenant Id"
-            }
-          },
-          {
-            "name": "q",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "description": "Search query (lead name)",
-              "title": "Q"
-            },
-            "description": "Search query (lead name)"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 20,
-              "title": "Limit"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Response_list_LeadSearchItem__"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/leads/tasks": {
-      "post": {
-        "tags": [
-          "Tenant Leads Pipeline"
-        ],
-        "summary": "Create Global Task",
-        "description": "Create a task from the global board modal.\n\nThe lead is selected via the search autocomplete; `tenant_lead_id` is passed\nin the request body instead of the URL path.",
-        "operationId": "create_global_task_api_v1_leads_tasks_post",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "tenant_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Tenant Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateGlobalTaskRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Response_TaskRead_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Tenant Leads Pipeline"
-        ],
-        "summary": "Get Task Board",
-        "description": "Global task board (AmoCRM to-do view).\n\nReturns all tasks for the tenant grouped into time-bucket columns:\noverdue / today / tomorrow / in_two_days / next_monday / later / done.",
-        "operationId": "get_task_board_api_v1_leads_tasks_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "tenant_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Tenant Id"
-            }
-          },
-          {
-            "name": "responsible_member_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by lead's responsible member",
-              "title": "Responsible Member Id"
-            },
-            "description": "Filter by lead's responsible member"
-          },
-          {
-            "name": "assigned_to_member_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by task assignee",
-              "title": "Assigned To Member Id"
-            },
-            "description": "Filter by task assignee"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Response_TaskBoardResponse_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/leads/{tenant_lead_id}/tasks": {
       "post": {
         "tags": [
@@ -5106,6 +5342,66 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Delete Task",
+        "description": "Delete a task from a tenant lead.\n\nPermanently removes the task. Cannot be undone.",
+        "operationId": "delete_task_api_v1_leads__tenant_lead_id__tasks__task_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Lead Id"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",

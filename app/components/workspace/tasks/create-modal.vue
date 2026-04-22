@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { TenantLeadTaskType, type LeadSearchItem } from "~/api/generated/api";
+import { useWorkspaceMemberOptions } from "~/composables/workspace/useWorkspaceMemberOptions";
 import {
-  fromDateAndTime,
+  fromDateOnly,
   TASK_TYPE_OPTIONS,
   type TaskCreatePayload,
 } from "./model";
@@ -26,8 +27,12 @@ const title = ref("");
 const description = ref("");
 const taskType = ref<TenantLeadTaskType>(TenantLeadTaskType.FollowUp);
 const dueDate = ref("");
-const dueTime = ref("10:00");
+const assignedToMemberId = ref("");
 const isSearching = ref(false);
+
+const { options: memberOptions, pending: membersPending } = useWorkspaceMemberOptions(
+  computed(() => workspaceId),
+);
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -43,7 +48,7 @@ watch(
     description.value = "";
     taskType.value = TenantLeadTaskType.FollowUp;
     dueDate.value = "";
-    dueTime.value = "10:00";
+    assignedToMemberId.value = "";
   },
 );
 
@@ -81,7 +86,8 @@ function handleSubmit() {
     title: title.value.trim(),
     description: description.value.trim() || null,
     task_type: taskType.value,
-    due_at: fromDateAndTime(dueDate.value, dueTime.value),
+    due_at: fromDateOnly(dueDate.value),
+    assigned_to_member_id: assignedToMemberId.value || null,
   });
 }
 </script>
@@ -147,10 +153,18 @@ function handleSubmit() {
 
         <div class="task-create__group">
           <label class="task-create__label">Срок</label>
-          <div class="task-create__date-row">
-            <ui-date-picker v-model="dueDate" placeholder="Выберите дату" />
-            <input v-model="dueTime" class="task-create__input task-create__input--time" type="time" />
-          </div>
+          <ui-form-field v-model="dueDate" type="date" placeholder="Выберите дату" />
+        </div>
+
+        <div class="task-create__group">
+          <label class="task-create__label">Ответственный</label>
+          <ui-form-field
+            v-model="assignedToMemberId"
+            type="select"
+            :options="memberOptions"
+            :disabled="membersPending"
+            placeholder="Выберите участника"
+          />
         </div>
       </div>
 
@@ -277,13 +291,6 @@ function handleSubmit() {
   font-size: 11px;
 }
 
-.task-create__date-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 132px;
-  gap: 10px;
-}
-
-.task-create__input,
 .task-create__textarea {
   width: 100%;
   display: block;
@@ -315,10 +322,6 @@ function handleSubmit() {
   }
 
   .task-create__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .task-create__date-row {
     grid-template-columns: 1fr;
   }
 

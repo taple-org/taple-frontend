@@ -10,7 +10,7 @@ defineProps<{
 defineEmits<{ close: [] }>()
 
 const open = defineModel<boolean>('open')
-
+const attrs = useAttrs()
 </script>
 
 <template>
@@ -18,7 +18,7 @@ const open = defineModel<boolean>('open')
     <Teleport to="body">
       <Dialog.Backdrop class="simple-modal-backdrop" />
       <Dialog.Positioner class="simple-modal-positioner">
-        <Dialog.Content class="simple-modal-content">
+        <Dialog.Content class="simple-modal-content" v-bind="attrs">
           <slot />
         </Dialog.Content>
       </Dialog.Positioner>

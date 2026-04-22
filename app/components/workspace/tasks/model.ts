@@ -5,6 +5,7 @@ import {
   type CompleteTaskRequest,
   type CreateGlobalTaskRequest,
   type RescheduleTaskRequest,
+  type TaskBoardColumn,
   type TaskBoardItem,
   type UpdateTaskRequest,
 } from "~/api/generated/api";
@@ -27,11 +28,11 @@ export type TaskBoardActionSection = {
   }>;
 };
 
-export type TaskCreatePayload = Omit<CreateGlobalTaskRequest, "assigned_to_member_id">;
+export type TaskCreatePayload = CreateGlobalTaskRequest;
 
 export type TaskUpdatePayload = Pick<
   UpdateTaskRequest,
-  "title" | "description" | "task_type" | "due_at" | "result"
+  "title" | "description" | "task_type" | "due_at" | "result" | "assigned_to_member_id"
 >;
 
 export type TaskCompletePayload = CompleteTaskRequest;
@@ -54,6 +55,16 @@ export const TASK_TYPE_OPTIONS = Object.values(TenantLeadTaskType).map((value) =
   label: TASK_TYPE_LABELS[value],
 }));
 
+export const TASK_FILTER_TYPE_OPTIONS = TASK_TYPE_OPTIONS.filter(({ value }) =>
+  ![
+    TenantLeadTaskType.WinLead,
+    TenantLeadTaskType.LoseLead,
+    TenantLeadTaskType.HideLead,
+  ].includes(value),
+);
+
+export const DEFAULT_TASK_TYPES: TenantLeadTaskType[] = TASK_FILTER_TYPE_OPTIONS.map(({ value }) => value);
+
 export const TASK_ACTION_SECTIONS: TaskBoardActionSection[] = [
   {
     id: "status",
@@ -61,12 +72,12 @@ export const TASK_ACTION_SECTIONS: TaskBoardActionSection[] = [
     description: "Быстрые действия над задачей",
     actions: [
       { id: "delete", label: "Удалить", tone: "danger" },
-      { id: "done", label: "Done", tone: "success" },
+      { id: "done", label: "Завершить", tone: "success" },
     ],
   },
   {
     id: "reschedule",
-    title: "Reschedule",
+    title: "Перенос",
     description: "Быстрый перенос срока",
     actions: [
       { id: "reschedule_tomorrow", label: "На завтра", tone: "default" },
@@ -76,37 +87,60 @@ export const TASK_ACTION_SECTIONS: TaskBoardActionSection[] = [
   },
 ];
 
+export const TASK_BUCKET_ORDER: TaskBucket[] = [
+  TaskBucket.Overdue,
+  TaskBucket.Today,
+  TaskBucket.Tomorrow,
+  TaskBucket.InTwoDays,
+  TaskBucket.NextMonday,
+  TaskBucket.Later,
+  TaskBucket.Done,
+];
+
+export const DEFAULT_TASK_BUCKETS: TaskBucket[] = [
+  TaskBucket.Overdue,
+  TaskBucket.Today,
+  TaskBucket.Tomorrow,
+];
+
+export const TASK_BUCKET_LABELS: Record<TaskBucket, { en: string; ru: string }> = {
+  [TaskBucket.Overdue]: { en: "Overdue", ru: "Просрочено" },
+  [TaskBucket.Today]: { en: "Today", ru: "Сегодня" },
+  [TaskBucket.Tomorrow]: { en: "Tomorrow", ru: "Завтра" },
+  [TaskBucket.InTwoDays]: { en: "In Two Days", ru: "Послезавтра" },
+  [TaskBucket.NextMonday]: { en: "Next Monday", ru: "Следующий понедельник" },
+  [TaskBucket.Later]: { en: "Later", ru: "Позже" },
+  [TaskBucket.Done]: { en: "Done", ru: "Выполнено" },
+};
+
+export const TASK_BUCKET_OPTIONS = TASK_BUCKET_ORDER.map((bucket) => ({
+  value: bucket,
+  label: TASK_BUCKET_LABELS[bucket].ru,
+}));
+
 export function formatTaskDueAt(value?: string | null) {
   if (!value) return "Без дедлайна";
 
   return new Date(value).toLocaleString("ru-RU", {
     day: "2-digit",
     month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 }
 
 export function toDatePart(value?: string | null) {
   if (!value) return "";
-  return new Date(value).toISOString().slice(0, 10);
+
+  const date = new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
-export function toTimePart(value?: string | null) {
-  if (!value) return "";
-
-  return new Date(value).toLocaleTimeString("sv-SE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
-
-export function fromDateAndTime(datePart: string, timePart: string) {
+export function fromDateOnly(datePart: string) {
   if (!datePart) return null;
 
-  const normalizedTime = timePart || "10:00";
-  return new Date(`${datePart}T${normalizedTime}:00`).toISOString();
+  return new Date(`${datePart}T12:00:00`).toISOString();
 }
 
 export function getTaskTypeLabel(taskType: TenantLeadTaskType) {
@@ -156,6 +190,48 @@ export function buildActionPayload(actionId: TaskBoardActionId): RescheduleTaskR
     default:
       return null;
   }
+}
+
+export function normalizeTaskBoardColumns(columns: TaskBoardColumn[]) {
+  const mapped = new Map(columns.map((column) => [column.bucket, column]));
+
+  return TASK_BUCKET_ORDER.map((bucket) => {
+    const existing = mapped.get(bucket);
+    if (existing) return existing;
+
+    return {
+      bucket,
+      label_en: TASK_BUCKET_LABELS[bucket].en,
+      label_ru: TASK_BUCKET_LABELS[bucket].ru,
+      count: 0,
+      tasks: [],
+    };
+  });
+}
+
+export function filterTaskBoardColumns(columns: TaskBoardColumn[], buckets: TaskBucket[]) {
+  if (!buckets.length) return [];
+
+  const visibleBuckets = new Set(buckets);
+  return normalizeTaskBoardColumns(columns).filter((column) => visibleBuckets.has(column.bucket));
+}
+
+export function filterTaskBoardColumnsByTypes(
+  columns: TaskBoardColumn[],
+  taskTypes: TenantLeadTaskType[],
+) {
+  if (!taskTypes.length) return [];
+
+  const visibleTaskTypes = new Set(taskTypes);
+  return columns.map((column) => {
+    const tasks = column.tasks.filter((task) => visibleTaskTypes.has(task.task_type));
+
+    return {
+      ...column,
+      count: tasks.length,
+      tasks,
+    };
+  }).filter((column) => column.tasks.length > 0);
 }
 
 function buildDateAtHour(daysToAdd: number, hour: number) {

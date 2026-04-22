@@ -7,6 +7,7 @@ type TextProps = { type: 'text' | 'email'; modelValue: string; iconLeft?: string
 type PasswordProps = { type: 'password'; modelValue: string; iconLeft?: string; iconRight?: string }
 type CheckboxProps = { type: 'checkbox'; modelValue: boolean; }
 type SelectProps = { type: 'select'; modelValue: string; options?: SelectOption[]; }
+type DateProps = { type: 'date'; modelValue: string; }
 type MultiSelectProps = { type: 'multi-select'; modelValue: string[]; options: SelectOption[]; }
 
 export type FieldWrapperProps = {
@@ -18,10 +19,10 @@ export type FieldWrapperProps = {
   placeholder?: string
 }
 
-type FieldProps = (TextProps | PasswordProps | CheckboxProps | SelectProps | MultiSelectProps) & FieldWrapperProps
+type FieldProps = (TextProps | PasswordProps | CheckboxProps | SelectProps | DateProps | MultiSelectProps) & FieldWrapperProps
 
 const props = defineProps<FieldProps>()
-const emit = defineEmits<{ 'update:modelValue': [value: string | number | boolean] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: string | number | boolean | string[]] }>()
 
 const config = computed(() => fieldRegistry[props.type]!)
 

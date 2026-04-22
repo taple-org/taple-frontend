@@ -4,7 +4,7 @@ import { formatTaskDueAt, getTaskTone, getTaskTypeLabel } from "./model";
 
 const emit = defineEmits<{
   open: [task: TaskBoardItem];
-  dragStart: [task: TaskBoardItem, event: DragEvent];
+  dragStart: [task: TaskBoardItem];
   dragEnd: [];
 }>();
 
@@ -20,8 +20,10 @@ const assignee = computed(
 
 function handleDragStart(event: DragEvent) {
   event.dataTransfer?.setData("text/plain", task.id);
-  event.dataTransfer!.effectAllowed = "move";
-  emit("dragStart", task, event);
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+  }
+  emit("dragStart", task);
 }
 </script>
 

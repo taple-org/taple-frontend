@@ -21,6 +21,9 @@ const collection = computed(() =>
 )
 
 const selected = computed(() => (modelValue ? [modelValue] : []))
+const selectedLabel = computed(() =>
+  options.find((option) => option.value === modelValue)?.label ?? "",
+)
 
 function handleValueChange(details: { value: string[] }) {
   emit('update:modelValue', details.value[0] ?? '')
@@ -38,7 +41,9 @@ function handleValueChange(details: { value: string[] }) {
   >
     <Select.Control class="select__control">
       <Select.Trigger class="select__trigger">
-        <Select.ValueText class="select__value" :placeholder="placeholder ?? 'Выберите...'" />
+        <span class="select__value" :data-placeholder-shown="!selectedLabel || undefined">
+          {{ selectedLabel || placeholder || 'Выберите...' }}
+        </span>
         <Select.Indicator class="select__indicator">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"

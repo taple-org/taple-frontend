@@ -1,14 +1,15 @@
-<script lang="ts" setup>
-import type { PipelineCardItem, StageColumn, TenantLeadStage } from "~/api/generated/api";
+<script setup lang="ts">
+import type { MerchantListItem, TenantMerchantMonitoringStatus } from "~/api/generated/api";
+import type { MonitoringColumn } from "./model";
 
 const emit = defineEmits<{
-  dragStart: [card: PipelineCardItem];
+  dragStart: [card: MerchantListItem];
   dragEnd: [];
-  move: [stage: TenantLeadStage];
+  move: [status: TenantMerchantMonitoringStatus];
 }>();
 
 const { column, activeLeadId } = defineProps<{
-  column: StageColumn;
+  column: MonitoringColumn;
   activeLeadId?: string | null;
 }>();
 
@@ -16,12 +17,8 @@ const isOver = ref(false);
 
 function handleDrop() {
   if (!activeLeadId) return;
-  emit("move", column.stage_code);
+  emit("move", column.status);
   isOver.value = false;
-}
-
-function handleCardDragStart(card: PipelineCardItem) {
-  emit("dragStart", card);
 }
 </script>
 
@@ -29,10 +26,11 @@ function handleCardDragStart(card: PipelineCardItem) {
   <article class="column">
     <header class="header">
       <div class="content">
-        <h3 class="column__title">{{ column.stage_name_ru }}</h3>
-        <span class="column__lead-count">{{ column.total_count }}</span>
+        <h3 class="column__title">{{ column.label }}</h3>
+        <span class="column__count">{{ column.count }} компаний</span>
       </div>
     </header>
+
     <div
       class="cards"
       :class="{ 'cards--over': isOver && !!activeLeadId }"
@@ -40,12 +38,12 @@ function handleCardDragStart(card: PipelineCardItem) {
       @dragleave="isOver = false"
       @drop.prevent="handleDrop"
     >
-      <workspace-pipeline-card
+      <workspace-monitoring-card
         v-for="card in column.cards"
-        :key="card.tenant_lead_id"
+        :key="card.id"
         :card="card"
         :dragging="card.tenant_lead_id === activeLeadId"
-        @drag-start="handleCardDragStart"
+        @drag-start="emit('dragStart', $event)"
         @drag-end="emit('dragEnd')"
       />
 
@@ -56,7 +54,7 @@ function handleCardDragStart(card: PipelineCardItem) {
   </article>
 </template>
 
-<style lang="css" scoped>
+<style scoped>
 .column {
   display: flex;
   flex-direction: column;
@@ -64,36 +62,29 @@ function handleCardDragStart(card: PipelineCardItem) {
 }
 
 .header {
-  display: flex;
   margin-bottom: 8px;
   padding: 12px 14px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 5px;
   border-radius: 18px;
-  background: var(--color-neutral-ll, #F8F9FE);
+  background: var(--color-neutral-ll);
   box-shadow: inset 0 0 0 1px rgba(31, 32, 36, 0.04);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  align-self: stretch;
+  gap: 4px;
 }
 
 .column__title {
-  color: var(--color-neutral-dd, #1F2024);
+  margin: 0;
+  color: var(--color-neutral-dd);
   font-size: 15px;
   font-weight: 700;
-  margin: 0 0 4px;
 }
 
-.column__lead-count {
-  color: var(--color-neutral-dl, #71727A);
+.column__count {
+  color: var(--color-neutral-dl);
   font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.12px;
 }
 
 .cards {
@@ -101,18 +92,16 @@ function handleCardDragStart(card: PipelineCardItem) {
   flex: 1;
   flex-direction: column;
   gap: 8px;
+  padding: 6px;
   border-radius: 18px;
   border: 1px solid transparent;
-  padding: 6px;
   background: rgba(248, 249, 254, 0.48);
-  transition:
-    border-color 180ms ease,
-    background-color 180ms ease;
+  transition: border-color 180ms ease, background-color 180ms ease;
 }
 
 .cards--over {
-  border-color: var(--color-primary, #00C3D0);
-  background: color-mix(in srgb, var(--color-primary, #00C3D0) 8%, white);
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, white);
 }
 
 .cards__empty {
