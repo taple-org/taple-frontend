@@ -15,17 +15,14 @@ const emit = defineEmits<{
   reset: [];
 }>();
 
-const localFilters = ref<LeadFilters>({ ...props.modelValue });
 const localSearch = ref(props.searchQuery);
 
-watch(
-  () => props.modelValue,
-  (val) => {
-    localFilters.value = { ...val };
-  },
-  { deep: true },
-);
+// Local filter state - only synced to parent on Apply
+const localStage = ref(props.modelValue.stage ?? "");
+const localSortBy = ref(props.modelValue.sort_by ?? "");
+const localSortDir = ref(props.modelValue.sort_dir ?? "desc");
 
+// Sync from parent when props change (e.g., on reset)
 watch(
   () => props.searchQuery,
   (val) => {
@@ -33,19 +30,27 @@ watch(
   },
 );
 
-const hasActiveFilters = computed(() =>
-  Object.values(localFilters.value).some((v) => v != null && v !== ""),
+watch(
+  () => props.modelValue,
+  (val) => {
+    localStage.value = val.stage ?? "";
+    localSortBy.value = val.sort_by ?? "";
+    localSortDir.value = val.sort_dir ?? "desc";
+  },
+  { deep: true },
 );
 
-const stageOptions = [
-  { value: "", label: "Все этапы" },
-  ...STAGE_OPTIONS,
-];
+const hasActiveFilters = computed(
+  () =>
+    localStage.value !== "" ||
+    localSortBy.value !== "" ||
+    localSortDir.value !== "desc" ||
+    localSearch.value !== "",
+);
 
-const sortByOptions = [
-  { value: "", label: "По умолчанию" },
-  ...SORT_OPTIONS,
-];
+const stageOptions = [{ value: "", label: "Все этапы" }, ...STAGE_OPTIONS];
+
+const sortByOptions = [{ value: "", label: "По умолчанию" }, ...SORT_OPTIONS];
 
 const sortDirOptions = [
   { value: "desc", label: "По убыванию" },
@@ -53,13 +58,16 @@ const sortDirOptions = [
 ];
 
 const handleApply = () => {
-  emit("update:modelValue", { ...localFilters.value });
+  emit("update:modelValue", {
+    stage: localStage.value ? (localStage.value as TenantLeadStage) : null,
+    sort_by: localSortBy.value || undefined,
+    sort_dir: localSortDir.value as "asc" | "desc",
+  });
   emit("update:searchQuery", localSearch.value);
   emit("apply");
 };
 
 const handleReset = () => {
-  localFilters.value = {};
   localSearch.value = "";
   emit("update:modelValue", {});
   emit("update:searchQuery", "");
@@ -87,38 +95,33 @@ const onKeydown = (e: KeyboardEvent) => {
 
       <ui-button variant="primary" @click="handleApply">Найти</ui-button>
 
-      <ui-button v-if="hasActiveFilters || localSearch" variant="outline" @click="handleReset">
+      <ui-button
+        v-if="hasActiveFilters || localSearch"
+        variant="outline"
+        @click="handleReset"
+      >
         Сбросить
       </ui-button>
     </div>
 
     <div class="leads-filter-bar__selectors">
-      <select
-        v-model="localFilters.stage"
-        class="leads-filter-bar__select"
-      >
-        <option v-for="opt in stageOptions" :key="opt.value" :value="opt.value || null">
-          {{ opt.label }}
-        </option>
-      </select>
+      <ui-fields-select-field
+        v-model="localStage"
+        :options="stageOptions"
+        placeholder="Этап"
+      />
 
-      <select
-        v-model="localFilters.sort_by"
-        class="leads-filter-bar__select"
-      >
-        <option v-for="opt in sortByOptions" :key="opt.value" :value="opt.value || undefined">
-          {{ opt.label }}
-        </option>
-      </select>
+      <ui-fields-select-field
+        v-model="localSortBy"
+        :options="sortByOptions"
+        placeholder="Сортировка"
+      />
 
-      <select
-        v-model="localFilters.sort_dir"
-        class="leads-filter-bar__select"
-      >
-        <option v-for="opt in sortDirOptions" :key="opt.value" :value="opt.value">
-          {{ opt.label }}
-        </option>
-      </select>
+      <ui-fields-select-field
+        v-model="localSortDir"
+        :options="sortDirOptions"
+        placeholder="Направление"
+      />
     </div>
   </div>
 </template>
@@ -172,28 +175,12 @@ const onKeydown = (e: KeyboardEvent) => {
   flex-wrap: wrap;
 }
 
-.leads-filter-bar__select {
-  flex: 1 1 150px;
+.leads-filter-bar__selectors :deep(.select__trigger) {
   height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--color-neutral-ld);
   border-radius: 12px;
-  background: var(--color-neutral-ll);
-  color: var(--color-neutral-dd);
-  font-family: var(--font-base), sans-serif;
   font-size: 12px;
   font-weight: 500;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2371727A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 30px;
-}
-
-.leads-filter-bar__select:focus {
-  border-color: var(--color-primary);
 }
 
 @media (max-width: 700px) {

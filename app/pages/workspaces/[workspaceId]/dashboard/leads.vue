@@ -48,6 +48,7 @@ const handleCloseDetail = () => {
 
 // ── Apply/Reset filters ────────────────────────────────────────────────────
 const applyFilters = async () => {
+  leadsStore.searchQuery = searchQuery.value;
   await leadsStore.fetchLeads(workspaceId, { ...filters.value });
 };
 
@@ -58,6 +59,7 @@ const resetFilters = async () => {
     sort_dir: "desc",
   };
   searchQuery.value = "";
+  leadsStore.searchQuery = "";
   await leadsStore.fetchLeads(workspaceId, { ...filters.value });
 };
 
@@ -153,7 +155,7 @@ provide("workspaceId", workspaceId);
         <div class="leads-page__topbar-left">
           <h1 class="leads-page__heading">Лиды</h1>
           <span v-if="!leadsStore.isLoading" class="leads-page__count">
-            {{ leadsStore.totalCount }}
+            {{ leadsStore.filteredRawLeads.length }}
           </span>
         </div>
 
@@ -191,7 +193,7 @@ provide("workspaceId", workspaceId);
       <div class="leads-page__main">
         <div class="leads-page__table-wrap">
           <DashboardLeadsLeadsTable
-            :leads="leadsStore.rawLeads"
+            :leads="leadsStore.filteredRawLeads"
             :selected-ids="leadsStore.selectedIds"
             :is-loading="leadsStore.isLoading"
             :has-more="leadsStore.hasMore"

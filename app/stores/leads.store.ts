@@ -154,8 +154,45 @@ export const useLeadsStore = defineStore("leads", () => {
   // ─── Bulk selection ───────────────────────────────────────────────────────
   const selectedIds = ref<Set<string>>(new Set());
 
+  // ─── Search ───────────────────────────────────────────────────────────────
+  const searchQuery = ref<string>("");
+
   // ─── Computed ─────────────────────────────────────────────────────────────
   const leads = computed<Lead[]>(() => rawLeads.value.map(mapToLead));
+
+  const filteredRawLeads = computed<TenantLeadListItem[]>(() => {
+    const query = searchQuery.value.trim().toLowerCase();
+    if (!query) return rawLeads.value;
+
+    return rawLeads.value.filter((lead) => {
+      const phones =
+        lead.contacts
+          ?.filter((c) => c.type === "phone")
+          .map((c) => c.value)
+          .join(" ") ?? "";
+      const emails =
+        lead.contacts
+          ?.filter((c) => c.type === "email")
+          .map((c) => c.value)
+          .join(" ") ?? "";
+
+      const searchableText = [
+        lead.lead_name,
+        lead.lead_business_category_name_ru,
+        lead.address_full,
+        lead.address_city_name_ru,
+        lead.address_district_name_ru,
+        phones,
+        emails,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(query);
+    });
+  });
+
   const hasSelection = computed(() => selectedIds.value.size > 0);
   const selectedCount = computed(() => selectedIds.value.size);
 
@@ -655,8 +692,13 @@ export const useLeadsStore = defineStore("leads", () => {
     selectedIds,
     hasSelection,
     selectedCount,
+    searchQuery,
 
     // actions
+    // Getters
+    filteredRawLeads,
+
+    // Actions
     fetchLeads,
     fetchMore,
     fetchLeadDetail,
