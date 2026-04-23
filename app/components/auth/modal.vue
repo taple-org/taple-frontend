@@ -17,38 +17,38 @@ function onNavigate(step: AuthModalStepType, action: string) {
 
 <template>
   <ui-modal v-model:open="isOpen" v-bind="config[current]">
-    <Transition :name="`slide-${direction}`" mode="out-in">
+    <Transition :name="`auth-modal-slide-${direction}`" mode="out-in">
       <component :is="config[current].component" :key="current"
         @navigate="(action: ActionsOf<typeof current>) => onNavigate(current, action)" />
     </Transition>
   </ui-modal>
 </template>
 
-<style scoped>
-.slide-forward-enter-from {
+<style>
+.auth-modal-slide-forward-enter-from {
   transform: translateX(40px);
   opacity: 0;
 }
 
-.slide-forward-leave-to {
+.auth-modal-slide-forward-leave-to {
   transform: translateX(-40px);
   opacity: 0;
 }
 
-.slide-back-enter-from {
+.auth-modal-slide-back-enter-from {
   transform: translateX(-40px);
   opacity: 0;
 }
 
-.slide-back-leave-to {
+.auth-modal-slide-back-leave-to {
   transform: translateX(40px);
   opacity: 0;
 }
 
-.slide-forward-enter-active,
-.slide-forward-leave-active,
-.slide-back-enter-active,
-.slide-back-leave-active {
+.auth-modal-slide-forward-enter-active,
+.auth-modal-slide-forward-leave-active,
+.auth-modal-slide-back-enter-active,
+.auth-modal-slide-back-leave-active {
   transition: all 0.24s ease;
 }
 </style>

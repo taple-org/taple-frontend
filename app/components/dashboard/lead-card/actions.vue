@@ -10,12 +10,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="lead-card__actions">
+  <div class="lead-card__actions" >
     <button
       class="lead-card__action lead-card__action--postpone"
       type="button"
       :disabled="loading"
-      @click="emit('postpone')"
+      @click.stop="emit('postpone')"
     >
       Отложить
     </button>
@@ -26,7 +26,7 @@ const emit = defineEmits<{
       class="lead-card__action lead-card__action--take"
       type="button"
       :disabled="loading"
-      @click="emit('take')"
+      @click.stop="emit('take')"
     >
       Взять в работу
     </button>

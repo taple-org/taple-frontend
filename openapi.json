@@ -298,6 +298,58 @@
         ]
       }
     },
+    "/api/v1/auth/account/deactivate": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Deactivate Account",
+        "operationId": "deactivate_account_api_v1_auth_account_deactivate_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_dict_"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/account": {
+      "delete": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Delete Account",
+        "operationId": "delete_account_api_v1_auth_account_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_dict_"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/auth/forgot-password": {
       "post": {
         "tags": [
@@ -3395,6 +3447,74 @@
         }
       }
     },
+    "/api/v1/tenants/{tenant_id}/members/{user_id}/role": {
+      "patch": {
+        "tags": [
+          "Tenants"
+        ],
+        "summary": "Change Member Role",
+        "operationId": "change_member_role_api_v1_tenants__tenant_id__members__user_id__role_patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeMemberRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_dict_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/tenants/{tenant_id}/members/{user_id}": {
       "delete": {
         "tags": [
@@ -3604,6 +3724,176 @@
               "default": 20,
               "title": "Limit"
             }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "new",
+              "title": "Stage"
+            }
+          },
+          {
+            "name": "city_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by city",
+              "title": "City Id"
+            },
+            "description": "Filter by city"
+          },
+          {
+            "name": "district_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by district",
+              "title": "District Id"
+            },
+            "description": "Filter by district"
+          },
+          {
+            "name": "business_category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by business category",
+              "title": "Business Category Id"
+            },
+            "description": "Filter by business category"
+          },
+          {
+            "name": "min_fit_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum fit score",
+              "title": "Min Fit Score"
+            },
+            "description": "Minimum fit score"
+          },
+          {
+            "name": "max_fit_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maximum fit score",
+              "title": "Max Fit Score"
+            },
+            "description": "Maximum fit score"
+          },
+          {
+            "name": "min_priority_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum priority score",
+              "title": "Min Priority Score"
+            },
+            "description": "Minimum priority score"
+          },
+          {
+            "name": "max_priority_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maximum priority score",
+              "title": "Max Priority Score"
+            },
+            "description": "Maximum priority score"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "priority_score",
+                "fit_score",
+                "freshness_score",
+                "contactability_score",
+                "created_at"
+              ],
+              "default": "priority_score",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_dir",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "title": "Sort Dir"
+            }
           }
         ],
         "responses": {
@@ -3613,6 +3903,112 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Response_list_TenantLeadListItem__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/stats": {
+      "get": {
+        "tags": [
+          "Tenants"
+        ],
+        "summary": "Get Tenant Stats",
+        "operationId": "get_tenant_stats_api_v1_tenants__tenant_id__stats_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TenantStatsResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/leads/{tenant_lead_id}/activity": {
+      "get": {
+        "tags": [
+          "Tenants"
+        ],
+        "summary": "Get Lead Activity",
+        "operationId": "get_lead_activity_api_v1_tenants__tenant_id__leads__tenant_lead_id__activity_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "tenant_lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Lead Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_list_Annotated_Union_StageChangeActivity__NoteAddedActivity__TaskCreatedActivity__MemberAssignedActivity___FieldInfo_annotation_NoneType__required_True__discriminator__type_____"
                 }
               }
             }
@@ -3823,6 +4219,605 @@
         }
       }
     },
+    "/api/v1/leads/merchants": {
+      "get": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "List Merchants",
+        "description": "Merchant dashboard: list all merchants for the tenant.\n\nSupports the same filters as the pipeline board: status, search, stage, member, category.",
+        "operationId": "list_merchants_api_v1_leads_merchants_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TenantMerchantMonitoringStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by monitoring status",
+              "title": "Status"
+            },
+            "description": "Filter by monitoring status"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by lead name",
+              "title": "Search"
+            },
+            "description": "Search by lead name"
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TenantLeadStage"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by lead stage",
+              "title": "Stage"
+            },
+            "description": "Filter by lead stage"
+          },
+          {
+            "name": "responsible_member_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by responsible member",
+              "title": "Responsible Member Id"
+            },
+            "description": "Filter by responsible member"
+          },
+          {
+            "name": "category_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by business category code",
+              "title": "Category Code"
+            },
+            "description": "Filter by business category code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_list_MerchantListItem__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/bulk/move": {
+      "post": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Bulk Move",
+        "description": "Move multiple leads to a stage at once.\n\nSkips leads already in the target stage (reported in errors).",
+        "operationId": "bulk_move_api_v1_leads_bulk_move_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkMoveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_BulkOperationResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/bulk/assign": {
+      "post": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Bulk Assign",
+        "description": "Assign multiple leads to a member (or set null to unassign).",
+        "operationId": "bulk_assign_api_v1_leads_bulk_assign_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkAssignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_BulkOperationResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/export": {
+      "get": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Export Leads",
+        "description": "Export leads to CSV.\n\nReturns a streaming CSV response with lead name, stage, contacts, scores, etc.",
+        "operationId": "export_leads_api_v1_leads_export_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TenantLeadStage"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Stage"
+            }
+          },
+          {
+            "name": "member_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by responsible member",
+              "title": "Member Id"
+            },
+            "description": "Filter by responsible member"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/search": {
+      "get": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Search Leads",
+        "description": "Lightweight lead search for the task-creation modal autocomplete.\n\nReturns up to `limit` leads matching the query by name.",
+        "operationId": "search_leads_api_v1_leads_search_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Search query (lead name)",
+              "title": "Q"
+            },
+            "description": "Search query (lead name)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_list_LeadSearchItem__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/tasks": {
+      "post": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Create Global Task",
+        "description": "Create a task from the global board modal.\n\nThe lead is selected via the search autocomplete; `tenant_lead_id` is passed\nin the request body instead of the URL path.",
+        "operationId": "create_global_task_api_v1_leads_tasks_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGlobalTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TaskRead_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Get Task Board",
+        "description": "Global task board (AmoCRM to-do view).\n\nReturns tasks grouped into time-bucket columns.\nFilter by buckets (overdue/today/tomorrow/in_two_days/next_monday/later/done),\nsearch by title/description, or filter by assignee/responsible member.",
+        "operationId": "get_task_board_api_v1_leads_tasks_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "responsible_member_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by lead's responsible member",
+              "title": "Responsible Member Id"
+            },
+            "description": "Filter by lead's responsible member"
+          },
+          {
+            "name": "assigned_to_member_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by task assignee",
+              "title": "Assigned To Member Id"
+            },
+            "description": "Filter by task assignee"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by task title or description",
+              "title": "Search"
+            },
+            "description": "Search by task title or description"
+          },
+          {
+            "name": "buckets",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskBucket"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Show only these time buckets (default: all)",
+              "title": "Buckets"
+            },
+            "description": "Show only these time buckets (default: all)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TaskBoardResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/leads/{tenant_lead_id}": {
       "get": {
         "tags": [
@@ -3868,6 +4863,56 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Delete Lead",
+        "description": "Delete a lead from the pipeline.\n\nCascades to tasks, notes, events. Does not delete the Lead itself.",
+        "operationId": "delete_lead_api_v1_leads__tenant_lead_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Lead Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -4348,6 +5393,417 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Delete Task",
+        "description": "Delete a task from a tenant lead.\n\nPermanently removes the task. Cannot be undone.",
+        "operationId": "delete_task_api_v1_leads__tenant_lead_id__tasks__task_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Lead Id"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/{tenant_lead_id}/tasks/{task_id}/complete": {
+      "post": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Complete Task",
+        "description": "Complete a task.\n\nOptionally records a result/comment (\"Add result\" in AmoCRM).\nSets status=COMPLETED and completed_at=now.",
+        "operationId": "complete_task_api_v1_leads__tenant_lead_id__tasks__task_id__complete_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Lead Id"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TaskRead_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/{tenant_lead_id}/tasks/{task_id}/reschedule": {
+      "post": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Reschedule Task",
+        "description": "Reschedule a task using quick presets or an explicit date.\n\nPresets: tomorrow | in_7_days | in_30_days (matches AmoCRM quick-schedule buttons).\nCompleting a rescheduled task also reopens it (status → OPEN).",
+        "operationId": "reschedule_task_api_v1_leads__tenant_lead_id__tasks__task_id__reschedule_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Lead Id"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TaskRead_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leads/{tenant_lead_id}/merchant": {
+      "post": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Activate Merchant",
+        "description": "Activate monitoring for a lead (typically after WON).\n\nCreates or reactivates a TenantMerchant with monitoring_due_at.",
+        "operationId": "activate_merchant_api_v1_leads__tenant_lead_id__merchant_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Lead Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateMerchantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_MerchantRead_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Get Merchant",
+        "description": "Get merchant monitoring data for a lead.",
+        "operationId": "get_merchant_api_v1_leads__tenant_lead_id__merchant_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Lead Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_MerchantRead_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Tenant Leads Pipeline"
+        ],
+        "summary": "Update Merchant",
+        "description": "Update merchant monitoring status or comment.",
+        "operationId": "update_merchant_api_v1_leads__tenant_lead_id__merchant_patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Lead Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_MerchantRead_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/leads/{tenant_lead_id}/snooze": {
@@ -4689,6 +6145,47 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Response_Union_LegalProfileResponse__NoneType__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contact": {
+      "post": {
+        "tags": [
+          "Contact"
+        ],
+        "summary": "Submit Contact Form",
+        "operationId": "submit_contact_form_api_v1_contact_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactFormRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_dict_"
                 }
               }
             }
@@ -6026,6 +7523,52 @@
         ],
         "title": "AcceptInvitationRequest"
       },
+      "ActivateMerchantRequest": {
+        "properties": {
+          "monitoring_comment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Comment"
+          },
+          "monitoring_days": {
+            "type": "integer",
+            "maximum": 365,
+            "minimum": 1,
+            "title": "Monitoring Days",
+            "description": "Days until monitoring review",
+            "default": 30
+          }
+        },
+        "type": "object",
+        "title": "ActivateMerchantRequest",
+        "description": "Activate monitoring for a won lead"
+      },
+      "ActivityActorRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "full_name"
+        ],
+        "title": "ActivityActorRead"
+      },
       "AssignLeadRequest": {
         "properties": {
           "member_id": {
@@ -6066,6 +7609,36 @@
         "title": "AssignLeadResponse",
         "description": "Response after assigning lead"
       },
+      "AvgTimeInStage": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "label_ru": {
+            "type": "string",
+            "title": "Label Ru"
+          },
+          "avg_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "label_ru"
+        ],
+        "title": "AvgTimeInStage",
+        "description": "Average days a lead spends in a given stage"
+      },
       "BatchEnrichRequest": {
         "properties": {
           "lead_ids": {
@@ -6099,6 +7672,102 @@
           "task_id"
         ],
         "title": "BatchEnrichResponse"
+      },
+      "BulkAssignRequest": {
+        "properties": {
+          "tenant_lead_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Tenant Lead Ids"
+          },
+          "member_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Member Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tenant_lead_ids"
+        ],
+        "title": "BulkAssignRequest",
+        "description": "Assign multiple leads to a member (or unassign)"
+      },
+      "BulkMoveRequest": {
+        "properties": {
+          "tenant_lead_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Tenant Lead Ids"
+          },
+          "to_stage": {
+            "$ref": "#/components/schemas/TenantLeadStage"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tenant_lead_ids",
+          "to_stage"
+        ],
+        "title": "BulkMoveRequest",
+        "description": "Move multiple leads to a stage at once"
+      },
+      "BulkOperationResult": {
+        "properties": {
+          "success_count": {
+            "type": "integer",
+            "title": "Success Count"
+          },
+          "failed_count": {
+            "type": "integer",
+            "title": "Failed Count"
+          },
+          "errors": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Errors",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "success_count",
+          "failed_count"
+        ],
+        "title": "BulkOperationResult",
+        "description": "Result of a bulk operation"
       },
       "BusinessCategoryCreate": {
         "properties": {
@@ -6202,6 +7871,18 @@
         },
         "type": "object",
         "title": "BusinessCategoryUpdate"
+      },
+      "ChangeMemberRoleRequest": {
+        "properties": {
+          "role_code": {
+            "$ref": "#/components/schemas/TenantUserRole"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role_code"
+        ],
+        "title": "ChangeMemberRoleRequest"
       },
       "ChangePasswordRequest": {
         "properties": {
@@ -6605,6 +8286,25 @@
         "type": "object",
         "title": "CityUpdate"
       },
+      "CompleteTaskRequest": {
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          }
+        },
+        "type": "object",
+        "title": "CompleteTaskRequest",
+        "description": "Request to complete a task, optionally recording a result"
+      },
       "CongestionDays": {
         "properties": {
           "Mon": {
@@ -6758,6 +8458,30 @@
         },
         "type": "object",
         "title": "CongestionRead"
+      },
+      "ContactFormRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "message"
+        ],
+        "title": "ContactFormRequest"
       },
       "CountryCreate": {
         "properties": {
@@ -7003,6 +8727,68 @@
         "type": "object",
         "title": "CountryUpdate"
       },
+      "CreateGlobalTaskRequest": {
+        "properties": {
+          "tenant_lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tenant Lead Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "task_type": {
+            "$ref": "#/components/schemas/TenantLeadTaskType"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "assigned_to_member_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To Member Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tenant_lead_id",
+          "title",
+          "task_type"
+        ],
+        "title": "CreateGlobalTaskRequest",
+        "description": "Create a task from the global board modal (tenant_lead_id in body)"
+      },
       "CreateNoteRequest": {
         "properties": {
           "note": {
@@ -7053,6 +8839,18 @@
               }
             ],
             "title": "Due At"
+          },
+          "assigned_to_member_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To Member Id"
           }
         },
         "type": "object",
@@ -8535,6 +10333,46 @@
         ],
         "title": "LeadContactType"
       },
+      "LeadSearchItem": {
+        "properties": {
+          "tenant_lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tenant Lead Id"
+          },
+          "lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Lead Id"
+          },
+          "lead_name": {
+            "type": "string",
+            "title": "Lead Name"
+          },
+          "stage_code": {
+            "$ref": "#/components/schemas/TenantLeadStage"
+          },
+          "responsible_member": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TenantMemberBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "tenant_lead_id",
+          "lead_id",
+          "lead_name",
+          "stage_code"
+        ],
+        "title": "LeadSearchItem",
+        "description": "Lightweight lead result for task-creation autocomplete"
+      },
       "LeadSignalsDetail": {
         "properties": {
           "rating": {
@@ -8979,6 +10817,304 @@
         ],
         "title": "LoginRequest"
       },
+      "MemberAssignedActivity": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "member_assigned",
+            "title": "Type"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivityActorRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "assigned_member_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned Member Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "occurred_at"
+        ],
+        "title": "MemberAssignedActivity"
+      },
+      "MemberLeadsStats": {
+        "properties": {
+          "member_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Member Id"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "leads_count": {
+            "type": "integer",
+            "title": "Leads Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "member_id",
+          "full_name",
+          "leads_count"
+        ],
+        "title": "MemberLeadsStats"
+      },
+      "MemberPerformanceStats": {
+        "properties": {
+          "member_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Member Id"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "tasks_completed": {
+            "type": "integer",
+            "title": "Tasks Completed",
+            "default": 0
+          },
+          "notes_added": {
+            "type": "integer",
+            "title": "Notes Added",
+            "default": 0
+          },
+          "stage_changes": {
+            "type": "integer",
+            "title": "Stage Changes",
+            "default": 0
+          },
+          "leads_won": {
+            "type": "integer",
+            "title": "Leads Won",
+            "default": 0
+          },
+          "leads_lost": {
+            "type": "integer",
+            "title": "Leads Lost",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "member_id",
+          "full_name"
+        ],
+        "title": "MemberPerformanceStats",
+        "description": "Per-member efficiency metrics"
+      },
+      "MerchantListItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "tenant_lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tenant Lead Id"
+          },
+          "lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Lead Id"
+          },
+          "lead_name": {
+            "type": "string",
+            "title": "Lead Name"
+          },
+          "monitoring_status": {
+            "$ref": "#/components/schemas/TenantMerchantMonitoringStatus"
+          },
+          "monitoring_started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Started At"
+          },
+          "monitoring_due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Due At"
+          },
+          "monitoring_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Comment"
+          },
+          "responsible_member": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TenantMemberBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_lead_id",
+          "lead_id",
+          "lead_name",
+          "monitoring_status",
+          "created_at"
+        ],
+        "title": "MerchantListItem",
+        "description": "Merchant in the dashboard list"
+      },
+      "MerchantRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "tenant_lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tenant Lead Id"
+          },
+          "monitoring_status": {
+            "$ref": "#/components/schemas/TenantMerchantMonitoringStatus"
+          },
+          "monitoring_started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Started At"
+          },
+          "monitoring_due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Due At"
+          },
+          "monitoring_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Comment"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_lead_id",
+          "monitoring_status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "MerchantRead",
+        "description": "Merchant monitoring read"
+      },
+      "MerchantUpdateRequest": {
+        "properties": {
+          "monitoring_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TenantMerchantMonitoringStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "monitoring_comment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitoring Comment"
+          }
+        },
+        "type": "object",
+        "title": "MerchantUpdateRequest",
+        "description": "Update merchant monitoring status / comment"
+      },
       "Meta": {
         "properties": {
           "code": {
@@ -9076,6 +11212,47 @@
         ],
         "title": "MoveLeadResponse",
         "description": "Response after moving lead"
+      },
+      "NoteAddedActivity": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "note_added",
+            "title": "Type"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivityActorRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "note_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "occurred_at"
+        ],
+        "title": "NoteAddedActivity"
       },
       "NoteRead": {
         "properties": {
@@ -9230,6 +11407,29 @@
           "total_pages"
         ],
         "title": "Pagination"
+      },
+      "PeriodActivity": {
+        "properties": {
+          "new_leads": {
+            "type": "integer",
+            "title": "New Leads"
+          },
+          "notes_added": {
+            "type": "integer",
+            "title": "Notes Added"
+          },
+          "stage_changes": {
+            "type": "integer",
+            "title": "Stage Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "new_leads",
+          "notes_added",
+          "stage_changes"
+        ],
+        "title": "PeriodActivity"
       },
       "PipelineCardItem": {
         "properties": {
@@ -9810,6 +12010,45 @@
         ],
         "title": "RegenerateOTPResult"
       },
+      "ReschedulePreset": {
+        "type": "string",
+        "enum": [
+          "tomorrow",
+          "in_7_days",
+          "in_30_days"
+        ],
+        "title": "ReschedulePreset",
+        "description": "Quick-reschedule presets matching AmoCRM shortcuts"
+      },
+      "RescheduleTaskRequest": {
+        "properties": {
+          "preset": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReschedulePreset"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          }
+        },
+        "type": "object",
+        "title": "RescheduleTaskRequest",
+        "description": "Quick-reschedule a task by preset or explicit datetime"
+      },
       "ResetPasswordRequest": {
         "properties": {
           "reset_token": {
@@ -9880,6 +12119,22 @@
           "result"
         ],
         "title": "Response[BatchEnrichResponse]"
+      },
+      "Response_BulkOperationResult_": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "result": {
+            "$ref": "#/components/schemas/BulkOperationResult"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "result"
+        ],
+        "title": "Response[BulkOperationResult]"
       },
       "Response_BusinessCategoryRead_": {
         "properties": {
@@ -10089,6 +12344,22 @@
         ],
         "title": "Response[InviteMemberResult]"
       },
+      "Response_MerchantRead_": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "result": {
+            "$ref": "#/components/schemas/MerchantRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "result"
+        ],
+        "title": "Response[MerchantRead]"
+      },
       "Response_MoveLeadResponse_": {
         "properties": {
           "meta": {
@@ -10297,6 +12568,22 @@
         ],
         "title": "Response[SourceRubricBusinessCategoryMappingRead]"
       },
+      "Response_TaskBoardResponse_": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "result": {
+            "$ref": "#/components/schemas/TaskBoardResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "result"
+        ],
+        "title": "Response[TaskBoardResponse]"
+      },
       "Response_TaskRead_": {
         "properties": {
           "meta": {
@@ -10360,6 +12647,22 @@
           "result"
         ],
         "title": "Response[TenantRead]"
+      },
+      "Response_TenantStatsResponse_": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "result": {
+            "$ref": "#/components/schemas/TenantStatsResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "result"
+        ],
+        "title": "Response[TenantStatsResponse]"
       },
       "Response_TokenResult_": {
         "properties": {
@@ -10466,6 +12769,48 @@
         ],
         "title": "Response[dict]"
       },
+      "Response_list_Annotated_Union_StageChangeActivity__NoteAddedActivity__TaskCreatedActivity__MemberAssignedActivity___FieldInfo_annotation_NoneType__required_True__discriminator__type_____": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "result": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/StageChangeActivity"
+                },
+                {
+                  "$ref": "#/components/schemas/NoteAddedActivity"
+                },
+                {
+                  "$ref": "#/components/schemas/TaskCreatedActivity"
+                },
+                {
+                  "$ref": "#/components/schemas/MemberAssignedActivity"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "member_assigned": "#/components/schemas/MemberAssignedActivity",
+                  "note_added": "#/components/schemas/NoteAddedActivity",
+                  "stage_change": "#/components/schemas/StageChangeActivity",
+                  "task_created": "#/components/schemas/TaskCreatedActivity"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Result"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "result"
+        ],
+        "title": "Response[list[Annotated[Union[StageChangeActivity, NoteAddedActivity, TaskCreatedActivity, MemberAssignedActivity], FieldInfo(annotation=NoneType, required=True, discriminator='type')]]]"
+      },
       "Response_list_BusinessCategoryRead__": {
         "properties": {
           "meta": {
@@ -10545,6 +12890,46 @@
           "result"
         ],
         "title": "Response[list[DistrictReadWithCity]]"
+      },
+      "Response_list_LeadSearchItem__": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "result": {
+            "items": {
+              "$ref": "#/components/schemas/LeadSearchItem"
+            },
+            "type": "array",
+            "title": "Result"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "result"
+        ],
+        "title": "Response[list[LeadSearchItem]]"
+      },
+      "Response_list_MerchantListItem__": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "result": {
+            "items": {
+              "$ref": "#/components/schemas/MerchantListItem"
+            },
+            "type": "array",
+            "title": "Result"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "result"
+        ],
+        "title": "Response[list[MerchantListItem]]"
       },
       "Response_list_NoteRead__": {
         "properties": {
@@ -10967,6 +13352,46 @@
         "type": "object",
         "title": "SourceRubricBusinessCategoryMappingUpdate"
       },
+      "StageChangeActivity": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "stage_change",
+            "title": "Type"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivityActorRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "from_stage": {
+            "type": "string",
+            "title": "From Stage"
+          },
+          "to_stage": {
+            "type": "string",
+            "title": "To Stage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "occurred_at",
+          "from_stage",
+          "to_stage"
+        ],
+        "title": "StageChangeActivity"
+      },
       "StageColumn": {
         "properties": {
           "stage_code": {
@@ -11003,6 +13428,64 @@
         "title": "StageColumn",
         "description": "Stage column for kanban board"
       },
+      "StageConversionItem": {
+        "properties": {
+          "from_stage": {
+            "type": "string",
+            "title": "From Stage"
+          },
+          "to_stage": {
+            "type": "string",
+            "title": "To Stage"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_stage",
+          "to_stage",
+          "count"
+        ],
+        "title": "StageConversionItem",
+        "description": "Conversion count and rate between two stages"
+      },
+      "StageFunnelItem": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "label_ru": {
+            "type": "string",
+            "title": "Label Ru"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "label_ru",
+          "count"
+        ],
+        "title": "StageFunnelItem"
+      },
       "TaskBadge": {
         "properties": {
           "total": {
@@ -11029,6 +13512,303 @@
         "type": "object",
         "title": "TaskBadge",
         "description": "Task badge for kanban card"
+      },
+      "TaskBoardColumn": {
+        "properties": {
+          "bucket": {
+            "$ref": "#/components/schemas/TaskBucket"
+          },
+          "label_en": {
+            "type": "string",
+            "title": "Label En"
+          },
+          "label_ru": {
+            "type": "string",
+            "title": "Label Ru"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskBoardItem"
+            },
+            "type": "array",
+            "title": "Tasks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bucket",
+          "label_en",
+          "label_ru",
+          "count",
+          "tasks"
+        ],
+        "title": "TaskBoardColumn",
+        "description": "One time-bucket column on the task board"
+      },
+      "TaskBoardItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "tenant_lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tenant Lead Id"
+          },
+          "created_by_member_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By Member Id"
+          },
+          "created_by_email": {
+            "type": "string",
+            "title": "Created By Email"
+          },
+          "created_by_full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By Full Name"
+          },
+          "assigned_to_member_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To Member Id"
+          },
+          "assigned_to_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To Email"
+          },
+          "assigned_to_full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To Full Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "task_type": {
+            "$ref": "#/components/schemas/TenantLeadTaskType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TenantLeadTaskStatus"
+          },
+          "is_system_task": {
+            "type": "boolean",
+            "title": "Is System Task"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "lead_name": {
+            "type": "string",
+            "title": "Lead Name"
+          },
+          "lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Lead Id"
+          },
+          "bucket": {
+            "$ref": "#/components/schemas/TaskBucket"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_lead_id",
+          "created_by_member_id",
+          "created_by_email",
+          "title",
+          "task_type",
+          "status",
+          "is_system_task",
+          "created_at",
+          "updated_at",
+          "lead_name",
+          "lead_id",
+          "bucket"
+        ],
+        "title": "TaskBoardItem",
+        "description": "Task enriched with lead context for the global task board"
+      },
+      "TaskBoardResponse": {
+        "properties": {
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/TaskBoardColumn"
+            },
+            "type": "array",
+            "title": "Columns"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "columns",
+          "total_count"
+        ],
+        "title": "TaskBoardResponse",
+        "description": "Full task board (AmoCRM-style to-do view)"
+      },
+      "TaskBucket": {
+        "type": "string",
+        "enum": [
+          "overdue",
+          "today",
+          "tomorrow",
+          "in_two_days",
+          "next_monday",
+          "later",
+          "done"
+        ],
+        "title": "TaskBucket",
+        "description": "Time-based bucket for task board columns"
+      },
+      "TaskCreatedActivity": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "task_created",
+            "title": "Type"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivityActorRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "task_title": {
+            "type": "string",
+            "title": "Task Title"
+          },
+          "task_type": {
+            "type": "string",
+            "title": "Task Type"
+          },
+          "task_status": {
+            "type": "string",
+            "title": "Task Status"
+          },
+          "task_due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Due At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "occurred_at",
+          "task_title",
+          "task_type",
+          "task_status"
+        ],
+        "title": "TaskCreatedActivity"
       },
       "TaskRead": {
         "properties": {
@@ -11062,6 +13842,40 @@
             ],
             "title": "Created By Full Name"
           },
+          "assigned_to_member_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To Member Id"
+          },
+          "assigned_to_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To Email"
+          },
+          "assigned_to_full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To Full Name"
+          },
           "title": {
             "type": "string",
             "title": "Title"
@@ -11076,6 +13890,17 @@
               }
             ],
             "title": "Description"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
           },
           "task_type": {
             "$ref": "#/components/schemas/TenantLeadTaskType"
@@ -11137,6 +13962,29 @@
         ],
         "title": "TaskRead",
         "description": "Task read schema"
+      },
+      "TasksStats": {
+        "properties": {
+          "open": {
+            "type": "integer",
+            "title": "Open"
+          },
+          "completed": {
+            "type": "integer",
+            "title": "Completed"
+          },
+          "overdue": {
+            "type": "integer",
+            "title": "Overdue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "open",
+          "completed",
+          "overdue"
+        ],
+        "title": "TasksStats"
       },
       "TenantCreate": {
         "properties": {
@@ -11479,6 +14327,36 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "activity_history": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/StageChangeActivity"
+                },
+                {
+                  "$ref": "#/components/schemas/NoteAddedActivity"
+                },
+                {
+                  "$ref": "#/components/schemas/TaskCreatedActivity"
+                },
+                {
+                  "$ref": "#/components/schemas/MemberAssignedActivity"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "member_assigned": "#/components/schemas/MemberAssignedActivity",
+                  "note_added": "#/components/schemas/NoteAddedActivity",
+                  "stage_change": "#/components/schemas/StageChangeActivity",
+                  "task_created": "#/components/schemas/TaskCreatedActivity"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Activity History",
+            "default": []
           }
         },
         "type": "object",
@@ -11712,6 +14590,36 @@
                 "type": "null"
               }
             ]
+          },
+          "activity_history": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/StageChangeActivity"
+                },
+                {
+                  "$ref": "#/components/schemas/NoteAddedActivity"
+                },
+                {
+                  "$ref": "#/components/schemas/TaskCreatedActivity"
+                },
+                {
+                  "$ref": "#/components/schemas/MemberAssignedActivity"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "member_assigned": "#/components/schemas/MemberAssignedActivity",
+                  "note_added": "#/components/schemas/NoteAddedActivity",
+                  "stage_change": "#/components/schemas/StageChangeActivity",
+                  "task_created": "#/components/schemas/TaskCreatedActivity"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Activity History",
+            "default": []
           }
         },
         "type": "object",
@@ -11757,6 +14665,7 @@
       "TenantLeadTaskType": {
         "type": "string",
         "enum": [
+          "follow_up",
           "make_first_contact",
           "visit_branch",
           "make_negotiation",
@@ -11804,11 +14713,23 @@
               }
             ],
             "title": "Hidden Until"
+          },
+          "responsible_member_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responsible Member Id"
           }
         },
         "type": "object",
         "title": "TenantLeadUpdate",
-        "description": "Update tenant lead status (stage, snooze, hide, take)"
+        "description": "Update tenant lead status (stage, snooze, hide, take, assign)"
       },
       "TenantMemberBrief": {
         "properties": {
@@ -11910,6 +14831,19 @@
         ],
         "title": "TenantMemberRead"
       },
+      "TenantMerchantMonitoringStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "monitoring",
+          "attention",
+          "success",
+          "recall",
+          "closed",
+          "other"
+        ],
+        "title": "TenantMerchantMonitoringStatus"
+      },
       "TenantRead": {
         "properties": {
           "id": {
@@ -11982,6 +14916,95 @@
           "initial_refresh_status"
         ],
         "title": "TenantRead"
+      },
+      "TenantStatsResponse": {
+        "properties": {
+          "total_leads": {
+            "type": "integer",
+            "title": "Total Leads"
+          },
+          "funnel": {
+            "items": {
+              "$ref": "#/components/schemas/StageFunnelItem"
+            },
+            "type": "array",
+            "title": "Funnel"
+          },
+          "avg_fit_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Fit Score"
+          },
+          "avg_priority_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Priority Score"
+          },
+          "tasks": {
+            "$ref": "#/components/schemas/TasksStats"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/MemberLeadsStats"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "last_7_days": {
+            "$ref": "#/components/schemas/PeriodActivity"
+          },
+          "last_30_days": {
+            "$ref": "#/components/schemas/PeriodActivity"
+          },
+          "conversions": {
+            "items": {
+              "$ref": "#/components/schemas/StageConversionItem"
+            },
+            "type": "array",
+            "title": "Conversions",
+            "default": []
+          },
+          "avg_time_in_stage": {
+            "items": {
+              "$ref": "#/components/schemas/AvgTimeInStage"
+            },
+            "type": "array",
+            "title": "Avg Time In Stage",
+            "default": []
+          },
+          "member_performance": {
+            "items": {
+              "$ref": "#/components/schemas/MemberPerformanceStats"
+            },
+            "type": "array",
+            "title": "Member Performance",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_leads",
+          "funnel",
+          "avg_fit_score",
+          "avg_priority_score",
+          "tasks",
+          "members",
+          "last_7_days",
+          "last_30_days"
+        ],
+        "title": "TenantStatsResponse"
       },
       "TenantStatus": {
         "type": "string",
@@ -12219,6 +15242,16 @@
             ],
             "title": "Description"
           },
+          "task_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TenantLeadTaskType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "status": {
             "anyOf": [
               {
@@ -12228,6 +15261,18 @@
                 "type": "null"
               }
             ]
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
           },
           "due_at": {
             "anyOf": [
@@ -12240,6 +15285,18 @@
               }
             ],
             "title": "Due At"
+          },
+          "assigned_to_member_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To Member Id"
           }
         },
         "type": "object",

@@ -21,6 +21,9 @@ const collection = computed(() =>
 )
 
 const selected = computed(() => (modelValue ? [modelValue] : []))
+const selectedLabel = computed(() =>
+  options.find((option) => option.value === modelValue)?.label ?? "",
+)
 
 function handleValueChange(details: { value: string[] }) {
   emit('update:modelValue', details.value[0] ?? '')
@@ -28,10 +31,19 @@ function handleValueChange(details: { value: string[] }) {
 </script>
 
 <template>
-  <Select.Root :collection="collection" :value="selected" :disabled="disabled" @value-change="handleValueChange">
+  <Select.Root
+    :collection="collection"
+    :value="selected"
+    :disabled="disabled"
+    lazy-mount
+    unmount-on-exit
+    @value-change="handleValueChange"
+  >
     <Select.Control class="select__control">
       <Select.Trigger class="select__trigger">
-        <Select.ValueText class="select__value" :placeholder="placeholder ?? 'Выберите...'" />
+        <span class="select__value" :data-placeholder-shown="!selectedLabel || undefined">
+          {{ selectedLabel || placeholder || 'Выберите...' }}
+        </span>
         <Select.Indicator class="select__indicator">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
@@ -41,15 +53,17 @@ function handleValueChange(details: { value: string[] }) {
       </Select.Trigger>
     </Select.Control>
 
-    <Select.Positioner>
-      <Select.Content class="select__content">
-          <Select.Item v-for="option in options" :key="option.value" :item="option" class="select__item">
-            <Select.ItemText class="select__item-text">
-              {{ option.label }}
-            </Select.ItemText>
-          </Select.Item>
-      </Select.Content>
-    </Select.Positioner>
+    <Teleport to="body">
+      <Select.Positioner class="select__positioner">
+        <Select.Content class="select__content">
+            <Select.Item v-for="option in options" :key="option.value" :item="option" class="select__item">
+              <Select.ItemText class="select__item-text">
+                {{ option.label }}
+              </Select.ItemText>
+            </Select.Item>
+        </Select.Content>
+      </Select.Positioner>
+    </Teleport>
   </Select.Root>
 </template>
 
@@ -127,8 +141,15 @@ function handleValueChange(details: { value: string[] }) {
   border-radius: var(--radius-md);
   box-shadow: 0 4px 16px color-mix(in srgb, var(--color-neutral-dd) 10%, transparent);
   min-width: 140px;
-  z-index: 50;
+  max-width: min(320px, calc(100vw - 24px));
+  max-height: min(280px, calc(100vh - 24px));
+  overflow-y: auto;
+  z-index: 220;
   outline: none;
+}
+
+.select__positioner {
+  z-index: 220;
 }
 
 .select__content[data-state='open'] {
@@ -165,7 +186,7 @@ function handleValueChange(details: { value: string[] }) {
 
 .select__item {
   display: flex;
-  text-align: center;
+  text-align: left;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
@@ -180,7 +201,10 @@ function handleValueChange(details: { value: string[] }) {
 
   outline: none;
   transition: background-color var(--transition-base);
+}
 
+.select__item-text {
+  overflow-wrap: anywhere;
 }
 
 .select__item[data-highlighted] {

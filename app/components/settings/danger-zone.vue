@@ -1,43 +1,60 @@
 <script setup lang="ts">
-const requiredText = 'удалить аккаунт'
+import { useNotification } from "~/composables/useNotification";
+import { useAuthStore } from "~/stores/auth.store";
 
-const showDeleteModal = ref(false)
-const showDeactivateModal = ref(false)
-const confirmText = ref('')
-const confirmError = ref('')
-const isDeleting = ref(false)
-const isDeactivating = ref(false)
+const requiredText = "удалить аккаунт";
+
+const { $apiClient } = useNuxtApp();
+const notification = useNotification();
+const authStore = useAuthStore();
+
+const showDeleteModal = ref(false);
+const showDeactivateModal = ref(false);
+const confirmText = ref("");
+const confirmError = ref("");
+const isDeleting = ref(false);
+const isDeactivating = ref(false);
 
 function openDeleteModal() {
-  confirmText.value = ''
-  confirmError.value = ''
-  showDeleteModal.value = true
+  confirmText.value = "";
+  confirmError.value = "";
+  showDeleteModal.value = true;
 }
 
 async function confirmDelete() {
-  confirmError.value = ''
+  confirmError.value = "";
   if (confirmText.value !== requiredText) {
-    confirmError.value = 'Текст не совпадает'
-    return
+    confirmError.value = "Текст не совпадает";
+    return;
   }
-  isDeleting.value = true
+  isDeleting.value = true;
   try {
-    // TODO: await $fetch('/api/user/account', { method: 'DELETE' })
-    await new Promise(r => setTimeout(r, 800))
-    await navigateTo('/')
+    await $apiClient.api.deleteAccountApiV1AuthAccountDelete();
+    notification.success("Успех", "Аккаунт удален");
+    showDeleteModal.value = false;
+    authStore.logout();
+    await navigateTo("/auth/login");
+  } catch (error) {
+    console.error("Failed to delete account:", error);
+    notification.error("Ошибка", "Не удалось удалить аккаунт");
   } finally {
-    isDeleting.value = false
+    isDeleting.value = false;
   }
 }
 
 async function confirmDeactivate() {
-  isDeactivating.value = true
+  isDeactivating.value = true;
   try {
-    // TODO: await $fetch('/api/user/account/deactivate', { method: 'POST' })
-    await new Promise(r => setTimeout(r, 600))
-    showDeactivateModal.value = false
+    await $apiClient.api.deactivateAccountApiV1AuthAccountDeactivatePost();
+    notification.success("Успех", "Аккаунт деактивирован");
+    showDeactivateModal.value = false;
+    authStore.logout();
+    await navigateTo("/auth/login");
+  } catch (error) {
+    console.error("Failed to deactivate account:", error);
+    notification.error("Ошибка", "Не удалось деактивировать аккаунт");
   } finally {
-    isDeactivating.value = false
+    isDeactivating.value = false;
   }
 }
 </script>
@@ -52,7 +69,10 @@ async function confirmDeactivate() {
     <div class="danger-item">
       <div class="danger-info">
         <div class="danger-name">Деактивировать аккаунт</div>
-        <div class="danger-desc">Аккаунт будет временно скрыт. Вы сможете восстановить его в течение 30 дней</div>
+        <div class="danger-desc">
+          Аккаунт будет временно скрыт. Вы сможете восстановить его в течение 30
+          дней
+        </div>
       </div>
       <ui-button variant="outline" @click="showDeactivateModal = true">
         Деактивировать
@@ -64,7 +84,9 @@ async function confirmDeactivate() {
     <div class="danger-item">
       <div class="danger-info">
         <div class="danger-name">Удалить аккаунт</div>
-        <div class="danger-desc">Все данные — профиль, история, контент — будут удалены безвозвратно</div>
+        <div class="danger-desc">
+          Все данные — профиль, история, контент — будут удалены безвозвратно
+        </div>
       </div>
       <ui-button variant="error" @click="openDeleteModal">
         Удалить аккаунт
@@ -78,9 +100,15 @@ async function confirmDeactivate() {
     description="Аккаунт будет скрыт. Вы сможете восстановить его в течение 30 дней после входа."
   >
     <template #footer>
-      <ui-button variant="outline" @click="showDeactivateModal = false">Отмена</ui-button>
-      <ui-button variant="error" :disabled="isDeactivating" @click="confirmDeactivate">
-        {{ isDeactivating ? 'Деактивация...' : 'Да, деактивировать' }}
+      <ui-button variant="outline" @click="showDeactivateModal = false"
+        >Отмена</ui-button
+      >
+      <ui-button
+        variant="error"
+        :disabled="isDeactivating"
+        @click="confirmDeactivate"
+      >
+        {{ isDeactivating ? "Деактивация..." : "Да, деактивировать" }}
       </ui-button>
     </template>
   </ui-modal>
@@ -106,13 +134,15 @@ async function confirmDeactivate() {
     </div>
 
     <template #footer>
-      <ui-button variant="outline" @click="showDeleteModal = false">Отмена</ui-button>
+      <ui-button variant="outline" @click="showDeleteModal = false"
+        >Отмена</ui-button
+      >
       <ui-button
         variant="error"
         :disabled="isDeleting || confirmText !== requiredText"
         @click="confirmDelete"
       >
-        {{ isDeleting ? 'Удаление...' : 'Да, удалить аккаунт' }}
+        {{ isDeleting ? "Удаление..." : "Да, удалить аккаунт" }}
       </ui-button>
     </template>
   </ui-modal>
@@ -127,7 +157,7 @@ async function confirmDeactivate() {
 }
 
 .danger-card {
-  border-color: #FFD5D8;
+  border-color: #ffd5d8;
 }
 
 .card-header {

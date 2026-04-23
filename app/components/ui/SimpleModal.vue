@@ -10,17 +10,17 @@ defineProps<{
 defineEmits<{ close: [] }>()
 
 const open = defineModel<boolean>('open')
-
+const attrs = useAttrs()
 </script>
 
 <template>
-  <div>
+  <div class="simple-modal-host" v-bind="attrs">
     <Dialog.Root v-model:open="open" @update:open="v => !v && $emit('close')" lazy-mount unmount-on-exit>
       <Teleport to="body">
-        <Dialog.Backdrop class="dialog-backdrop" />
-        <Dialog.Positioner class="dialog-positioner">
-          <Dialog.Content class="dialog-content">
-              <slot />
+        <Dialog.Backdrop class="simple-modal-backdrop" />
+        <Dialog.Positioner class="simple-modal-positioner">
+          <Dialog.Content class="simple-modal-content">
+            <slot />
           </Dialog.Content>
         </Dialog.Positioner>
       </Teleport>
@@ -28,24 +28,21 @@ const open = defineModel<boolean>('open')
   </div>
 </template>
 
-<style scoped>
-.dialog-backdrop {
+<style>
+.simple-modal-host {
+  display: contents;
+}
+
+.simple-modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 100;
   background-color: rgba(0, 0, 0, 0.5);
-
 }
+.simple-modal-backdrop[data-state="open"]  { animation: simple-modal-backdrop-in 150ms ease forwards; }
+.simple-modal-backdrop[data-state="closed"] { animation: simple-modal-backdrop-out 120ms ease forwards; }
 
-.dialog-backdrop[data-state='open'] {
-  animation: dialog-backdrop-in 150ms ease forwards;
-}
-
-.dialog-backdrop[data-state='closed'] {
-  animation: dialog-backdrop-out 120ms ease forwards;
-}
-
-.dialog-positioner {
+.simple-modal-positioner {
   position: fixed;
   inset: 0;
   display: flex;
@@ -56,7 +53,7 @@ const open = defineModel<boolean>('open')
   pointer-events: none;
 }
 
-.dialog-content {
+.simple-modal-content {
   position: relative;
   background-color: var(--color-secondary);
   border-radius: 20px;
@@ -69,75 +66,11 @@ const open = defineModel<boolean>('open')
   pointer-events: all;
   contain: layout style;
 }
+.simple-modal-content[data-state="open"]  { animation: simple-modal-content-in 150ms ease forwards; }
+.simple-modal-content[data-state="closed"] { animation: simple-modal-content-out 120ms ease forwards; }
 
-.dialog-content[data-state='open'] {
-  animation: dialog-content-in 150ms ease forwards;
-}
-
-.dialog-content[data-state='closed'] {
-  animation: dialog-content-out 120ms ease forwards;
-}
-
-.dialog-header {
-  position: relative;
-  padding: 30px 30px 0;
-}
-
-.dialog-header__text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: center;
-}
-
-.dialog-header__title {
-  font-family: var(--font-base);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--color-black);
-  line-height: 1.3;
-  margin: 0;
-}
-
-.dialog-header__description {
-  font-size: 11px;
-  font-weight: 300;
-  color: var(--color-black);
-  line-height: 1.5;
-  margin: 0;
-}
-
-.dialog-body {
-  padding: 0 30px 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.dialog-footer {
-  padding: 0 24px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-@keyframes dialog-backdrop-in {
-  from { will-change: opacity; opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes dialog-backdrop-out {
-  from { will-change: opacity; opacity: 1; }
-  to   { opacity: 0; }
-}
-
-@keyframes dialog-content-in {
-  from { will-change: transform, opacity; opacity: 0; transform: translate3d(0, 8px, 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
-}
-
-@keyframes dialog-content-out {
-  from { will-change: transform, opacity; opacity: 1; transform: translate3d(0, 0, 0); }
-  to   { opacity: 0; transform: translate3d(0, 8px, 0); }
-}
+@keyframes simple-modal-backdrop-in  { from { will-change: opacity; opacity: 0; } to { opacity: 1; } }
+@keyframes simple-modal-backdrop-out { from { will-change: opacity; opacity: 1; } to { opacity: 0; } }
+@keyframes simple-modal-content-in   { from { will-change: transform, opacity; opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+@keyframes simple-modal-content-out  { from { will-change: transform, opacity; opacity: 1; transform: translate3d(0, 0, 0); } to { opacity: 0; transform: translate3d(0, 8px, 0); } }
 </style>
