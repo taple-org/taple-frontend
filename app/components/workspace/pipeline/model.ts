@@ -41,9 +41,9 @@ export const PIPELINE_STAGE_LABELS: Record<TenantLeadStage, string> = {
   [TenantLeadStage.New]: "Новые",
   [TenantLeadStage.Snoozed]: "Отложено",
   [TenantLeadStage.InProgress]: "В работе",
-  [TenantLeadStage.FirstContact]: "Первый контакт",
+  [TenantLeadStage.FirstContact]: "Первичный Контакт",
   [TenantLeadStage.Negotiation]: "Переговоры",
-  [TenantLeadStage.Contract]: "Контракт",
+  [TenantLeadStage.Contract]: "Заключение Договора",
   [TenantLeadStage.Monitoring]: "Мониторинг",
   [TenantLeadStage.Won]: "Успешно",
   [TenantLeadStage.Lost]: "Потеряно",
@@ -56,7 +56,6 @@ export const PIPELINE_STAGE_OPTIONS = PIPELINE_STAGE_ORDER.map((stage) => ({
 }));
 
 export const PIPELINE_VISIBLE_STAGE_ORDER: TenantLeadStage[] = [
-  TenantLeadStage.New,
   TenantLeadStage.InProgress,
   TenantLeadStage.FirstContact,
   TenantLeadStage.Negotiation,

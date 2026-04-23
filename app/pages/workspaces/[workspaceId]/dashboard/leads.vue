@@ -117,9 +117,14 @@ const handleCompleteTask = async (taskId: string) => {
   await leadsStore.completeTask(selectedLeadId.value, taskId, workspaceId);
 };
 
-const handleTakeToWorkFromDetail = async () => {
-  if (!selectedLeadId.value) return;
-  await leadsStore.takeLead(selectedLeadId.value, workspaceId);
+const handleTakeToWorkFromDetail = async (done?: (success: boolean) => void) => {
+  if (!selectedLeadId.value) {
+    done?.(false);
+    return;
+  }
+  const success = await leadsStore.takeLead(selectedLeadId.value, workspaceId);
+  done?.(success);
+  if (!success) return;
   // Refresh lead detail to show updated stage
   await leadsStore.fetchLeadDetail(selectedLeadId.value, workspaceId);
 };

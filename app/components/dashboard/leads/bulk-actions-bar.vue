@@ -84,8 +84,7 @@ const handleAssign = () => {
           <select v-model="selectedMemberId" class="bulk-bar__select">
             <option value="">Без ответственного</option>
             <option v-for="m in members" :key="m.id" :value="m.id">
-              {{ m.first_name ?? m.email ?? m.id }}
-              {{ m.last_name ?? "" }}
+              {{ m.user_full_name ?? m.user_email }}
             </option>
           </select>
           <button class="bulk-bar__confirm-btn" @click="handleAssign">
