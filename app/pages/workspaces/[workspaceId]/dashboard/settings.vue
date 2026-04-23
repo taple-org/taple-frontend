@@ -1,18 +1,35 @@
 <script setup lang="ts">
 import type {
+  ChangeMemberRoleRequest,
   TenantRead,
   TenantMemberRead,
   TenantUserRole,
+  InviteMemberRequest,
 } from "~/api/generated/api";
+import { useNotification } from "~/composables/useNotification";
+import { useAuthStore } from "~/stores/auth.store";
 
 definePageMeta({
-  title: "Настройки рабочего пространства",
   layout: "dashboard",
+  middleware: "auth",
 });
 
+useSeoMeta({
+  title: "Настройки рабочего пространства — Taple",
+  description: "Управление участниками, ролями и параметрами рабочего пространства в Taple.",
+  robots: "noindex, nofollow",
+})
+
 const route = useRoute();
+const router = useRouter();
 const workspaceId = computed(() => route.params.workspaceId as string);
 const { $apiClient } = useNuxtApp();
+const notification = useNotification();
+const authStore = useAuthStore();
+
+// Current user role in this workspace
+const myRole = ref<TenantUserRole | null>(null);
+const myUserId = computed(() => authStore.user?.id ?? null);
 
 // ── Workspace Profile ───────────────────────────────────────────
 const workspace = ref<TenantRead | null>(null);
@@ -30,6 +47,7 @@ async function fetchWorkspace() {
     );
     workspace.value = response.data.result;
     workspaceName.value = workspace.value?.name ?? "";
+    myRole.value = workspace.value?.my_role ?? null;
   } catch (error) {
     console.error("Failed to fetch workspace:", error);
   } finally {
@@ -66,14 +84,94 @@ type MemberRole = "Owner" | "Admin" | "Member";
 
 interface Member {
   id: string;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;
   role: MemberRole;
 }
 
+type RoleOption = {
+  value: TenantUserRole;
+  label: string;
+};
+
 const members = ref<Member[]>([]);
 const isLoadingMembers = ref(true);
+
+// ── Role Permissions ────────────────────────────────────────────
+const roleHierarchy: Record<MemberRole, number> = {
+  Owner: 3,
+  Admin: 2,
+  Member: 1,
+};
+
+function canManageMember(targetRole: MemberRole): boolean {
+  if (!myRole.value) return false;
+  const myLocalRole = mapApiRole(myRole.value);
+  const myLevel = roleHierarchy[myLocalRole];
+  const targetLevel = roleHierarchy[targetRole];
+
+  // Owner can manage everyone
+  if (myLocalRole === "Owner") return true;
+  // Admin can only manage Members (not other Admins or Owners)
+  if (myLocalRole === "Admin") return targetLevel < myLevel;
+  // Member can't manage anyone
+  return false;
+}
+
+function canChangeRole(targetRole: MemberRole, newRole: MemberRole): boolean {
+  if (!myRole.value) return false;
+  const myLocalRole = mapApiRole(myRole.value);
+
+  // Owner can change any role to Member or Admin (but NOT to Owner)
+  if (myLocalRole === "Owner") {
+    return newRole !== "Owner";
+  }
+  // Admin can only change Members to Member or Admin (but NOT to Owner)
+  if (myLocalRole === "Admin") {
+    return targetRole === "Member" && newRole !== "Owner";
+  }
+  // Member can't change any roles
+  return false;
+}
+
+function canInvite(): boolean {
+  if (!myRole.value) return false;
+  const myLocalRole = mapApiRole(myRole.value);
+  // Owner and Admin can invite
+  return myLocalRole === "Owner" || myLocalRole === "Admin";
+}
+
+function canLeaveWorkspace(): boolean {
+  if (!myRole.value) return false;
+  const myLocalRole = mapApiRole(myRole.value);
+  // Everyone except Owner can leave
+  return myLocalRole !== "Owner";
+}
+
+function isCurrentUser(memberUserId: string): boolean {
+  return memberUserId === myUserId.value;
+}
+
+function isOwner(): boolean {
+  if (!myRole.value) return false;
+  return mapApiRole(myRole.value) === "Owner";
+}
+
+function isAdmin(): boolean {
+  if (!myRole.value) return false;
+  return mapApiRole(myRole.value) === "Admin";
+}
+
+function isMember(): boolean {
+  if (!myRole.value) return false;
+  return mapApiRole(myRole.value) === "Member";
+}
+
+function canManageSettings(): boolean {
+  return isOwner() || isAdmin();
+}
 
 // Map API role to local role type
 function mapApiRole(role: TenantUserRole): MemberRole {
@@ -89,6 +187,18 @@ function mapApiRole(role: TenantUserRole): MemberRole {
   }
 }
 
+function mapLocalRole(role: MemberRole): TenantUserRole {
+  switch (role) {
+    case "Owner":
+      return "owner";
+    case "Admin":
+      return "admin";
+    case "Member":
+    default:
+      return "member";
+  }
+}
+
 // Fetch members
 async function fetchMembers() {
   try {
@@ -99,6 +209,7 @@ async function fetchMembers() {
       );
     members.value = response.data.result.map((m: TenantMemberRead) => ({
       id: m.id,
+      userId: m.user_id,
       firstName: m.first_name ?? "",
       lastName: m.last_name ?? "",
       email: m.email ?? "",
@@ -106,6 +217,7 @@ async function fetchMembers() {
     }));
   } catch (error) {
     console.error("Failed to fetch members:", error);
+    notification.error("Ошибка", "Не удалось загрузить список участников");
   } finally {
     isLoadingMembers.value = false;
   }
@@ -119,24 +231,108 @@ const inviteEmail = ref("");
 const isInviting = ref(false);
 
 async function inviteMember() {
-  if (!inviteEmail.value.trim()) return;
+  if (!inviteEmail.value.trim() || !canInvite()) return;
   isInviting.value = true;
   try {
-    // TODO: await $apiClient.inviteToTenant({ workspaceId: workspaceId.value, email: inviteEmail.value })
-    await new Promise((r) => setTimeout(r, 500));
+    const request: InviteMemberRequest = {
+      email: inviteEmail.value.trim(),
+      role_code: "member",
+    };
+    await $apiClient.api.inviteMemberApiV1TenantsTenantIdMembersInvitePost(
+      workspaceId.value,
+      request,
+    );
+    notification.success("Успех", "Приглашение отправлено");
     inviteEmail.value = "";
+    // Refresh members list
+    await fetchMembers();
+  } catch (error) {
+    console.error("Failed to invite member:", error);
+    notification.error("Ошибка", "Не удалось отправить приглашение");
   } finally {
     isInviting.value = false;
   }
 }
 
-async function removeMember(id: string) {
-  members.value = members.value.filter((m) => m.id !== id);
-  // TODO: await $apiClient.removeTenantMember(workspaceId.value, id)
+async function removeMember(userId: string, role: MemberRole) {
+  if (!canManageMember(role)) return;
+
+  // Don't allow removing yourself through this function
+  if (isCurrentUser(userId)) {
+    notification.error("Ошибка", "Используйте кнопку 'Покинуть пространство'");
+    return;
+  }
+
+  try {
+    await $apiClient.api.removeMemberApiV1TenantsTenantIdMembersUserIdDelete(
+      workspaceId.value,
+      userId,
+    );
+    members.value = members.value.filter((m) => m.userId !== userId);
+    notification.success("Успех", "Участник удален");
+  } catch (error) {
+    console.error("Failed to remove member:", error);
+    notification.error("Ошибка", "Не удалось удалить участника");
+  }
+}
+
+async function updateMemberRole(userId: string, newRole: TenantUserRole) {
+  const targetMember = members.value.find((member) => member.userId === userId);
+  if (!targetMember) return;
+
+  if (!canChangeRole(targetMember.role, mapApiRole(newRole))) return;
+
+  try {
+    const payload: ChangeMemberRoleRequest = { role_code: newRole };
+    await $apiClient.api.changeMemberRoleApiV1TenantsTenantIdMembersUserIdRolePatch(
+      workspaceId.value,
+      userId,
+      payload,
+    );
+    notification.success("Успех", "Роль участника обновлена");
+    await fetchMembers();
+  } catch (error) {
+    console.error("Failed to update member role:", error);
+    notification.error("Ошибка", "Не удалось обновить роль участника");
+    await fetchMembers();
+  }
+}
+
+async function leaveWorkspace() {
+  if (!canLeaveWorkspace()) return;
+
+  try {
+    await $apiClient.api.leaveTenantApiV1TenantsTenantIdLeavePost(
+      workspaceId.value,
+    );
+    notification.success("Успех", "Вы покинули рабочее пространство");
+    // Redirect to workspaces list
+    await router.push("/");
+  } catch (error) {
+    console.error("Failed to leave workspace:", error);
+    notification.error("Ошибка", "Не удалось покинуть рабочее пространство");
+  }
+}
+
+// Get available roles for changing a member's role (Owner not assignable)
+function getRoleOptionsForMember(currentRole: MemberRole) {
+  const options: RoleOption[] = [];
+
+  // Only Member and Admin can be assigned via dropdown (Owner cannot be assigned)
+  for (const role of ["Member", "Admin"] as MemberRole[]) {
+    if (canChangeRole(currentRole, role)) {
+      options.push({
+        value: mapLocalRole(role),
+        label: roleLabel[role],
+      });
+    }
+  }
+
+  return options;
 }
 
 function initials(m: Member) {
-  return ((m.firstName[0] ?? "") + (m.lastName[0] ?? "")).toUpperCase();
+  return ((m.firstName[0] ?? "") + (m.lastName[0] ?? "")).toUpperCase() || (m.email[0] ?? "?").toUpperCase();
 }
 
 const roleLabel: Record<MemberRole, string> = {
@@ -193,8 +389,8 @@ async function saveTags() {
         </p>
       </div>
 
-      <!-- Workspace Profile -->
-      <div class="settings-card">
+      <!-- Workspace Profile (Owner and Admin only) -->
+      <div v-if="canManageSettings()" class="settings-card">
         <div class="card-header">
           <h2 class="card-title">Профиль пространства</h2>
           <p class="card-desc">Название отображается в шапке и ссылках</p>
@@ -230,20 +426,22 @@ async function saveTags() {
           <p class="card-desc">Управляйте доступом к рабочему пространству</p>
         </div>
 
-        <div class="invite-row">
-          <ui-form-field
-            type="email"
-            v-model="inviteEmail"
-            placeholder="email@company.com"
-            label="Email для приглашения"
-            class="invite-input"
-          />
-          <ui-button
-            :disabled="isInviting || !inviteEmail"
-            @click="inviteMember"
-          >
-            {{ isInviting ? "Отправка..." : "Пригласить" }}
-          </ui-button>
+        <div v-if="canInvite()" class="invite-section">
+          <div class="invite-row">
+            <ui-form-field
+              type="email"
+              v-model="inviteEmail"
+              placeholder="email@company.com"
+              label="Email для приглашения"
+              class="invite-input"
+            />
+            <ui-button
+              :disabled="isInviting || !inviteEmail"
+              @click="inviteMember"
+            >
+              {{ isInviting ? "Отправка..." : "Пригласить" }}
+            </ui-button>
+          </div>
         </div>
 
         <div class="member-list">
@@ -258,19 +456,63 @@ async function saveTags() {
             <div class="member-info">
               <div class="member-name">
                 {{ member.firstName }} {{ member.lastName }}
+                <span v-if="isCurrentUser(member.userId)" class="member-you"
+                  >(Вы)</span
+                >
               </div>
               <div class="member-email">{{ member.email }}</div>
             </div>
+
+            <!-- Role tag (always visible) -->
             <span
               class="role-badge"
               :class="`role-badge--${member.role.toLowerCase()}`"
             >
               {{ roleLabel[member.role] }}
             </span>
+
+            <!-- Role dropdown for Owner/Admin (to change others' roles) -->
+            <ui-form-field
+              v-if="
+                canManageSettings() &&
+                !isCurrentUser(member.userId) &&
+                getRoleOptionsForMember(member.role).length > 0
+              "
+              type="select"
+              v-model="member.role"
+              :options="
+                getRoleOptionsForMember(member.role).map((r) => ({
+                  value: r.value.toLowerCase(),
+                  label: r.label,
+                }))
+              "
+              class="role-select"
+              @update:model-value="
+                (newRole: string) =>
+                  updateMemberRole(member.userId, newRole as TenantUserRole)
+              "
+            />
+
+            <!-- Leave button for current user (if not owner) -->
+            <ui-button
+              v-if="isCurrentUser(member.userId) && canLeaveWorkspace()"
+              variant="outline"
+              size="sm"
+              class="btn-leave"
+              @click="leaveWorkspace"
+            >
+              Покинуть
+            </ui-button>
+
+            <!-- Remove button (Owner/Admin only) -->
             <button
-              v-if="member.role !== 'Owner'"
+              v-if="
+                canManageSettings() &&
+                canManageMember(member.role) &&
+                !isCurrentUser(member.userId)
+              "
               class="btn-remove"
-              @click="removeMember(member.id)"
+              @click="removeMember(member.userId, member.role)"
               title="Удалить участника"
             >
               <Icon name="my-icon:close" class="btn-remove__icon" />
@@ -279,8 +521,8 @@ async function saveTags() {
         </div>
       </div>
 
-      <!-- Lead Tags -->
-      <div class="settings-card">
+      <!-- Lead Tags (Owner and Admin only) -->
+      <div v-if="canManageSettings()" class="settings-card">
         <div class="card-header">
           <h2 class="card-title">Теги лидов</h2>
           <p class="card-desc">
@@ -381,11 +623,14 @@ async function saveTags() {
 }
 
 /* ── Invite row ──────────────────────────── */
+.invite-section {
+  margin-bottom: 20px;
+}
+
 .invite-row {
   display: flex;
   gap: 12px;
   align-items: flex-end;
-  margin-bottom: 20px;
 }
 
 .invite-input {
@@ -442,6 +687,17 @@ async function saveTags() {
   margin-top: 1px;
 }
 
+.member-you {
+  font-size: 11px;
+  color: var(--color-primary);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.role-select {
+  width: 140px;
+}
+
 .role-badge {
   font-size: 11px;
   font-weight: 600;
@@ -482,6 +738,10 @@ async function saveTags() {
 .btn-remove:hover {
   background: var(--color-error-l);
   color: var(--color-error);
+}
+
+.btn-leave {
+  margin-right: 4px;
 }
 
 .btn-remove__icon {

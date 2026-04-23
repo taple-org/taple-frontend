@@ -1,24 +1,39 @@
+import type { AuthUser } from "~/types/api.types";
 import { required, minLength } from "@regle/rules";
 
 export interface IProfileFormState {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   language: string;
 }
 
-export const useProfileForm = () => {
+function normalizeProfile(user?: AuthUser | null): IProfileFormState {
+  return {
+    first_name: user?.first_name ?? "",
+    last_name: user?.last_name ?? "",
+    language: "ru",
+  };
+}
+
+export const useProfileForm = (user?: Ref<AuthUser | null>) => {
   const state = reactive<IProfileFormState>({
-    firstName: '',
-    lastName: '',
-    language: 'ru',
+    ...normalizeProfile(user?.value),
   });
 
+  watch(
+    user ?? ref(null),
+    (value) => {
+      Object.assign(state, normalizeProfile(value));
+    },
+    { immediate: true },
+  );
+
   const { r$ } = useRegle(state, {
-    firstName: {
+    first_name: {
       required: withMessage(required, "Обязательное поле"),
       minLength: withMessage(minLength(2), "Минимум 2 символа"),
     },
-    lastName: {
+    last_name: {
       required: withMessage(required, "Обязательное поле"),
       minLength: withMessage(minLength(2), "Минимум 2 символа"),
     },

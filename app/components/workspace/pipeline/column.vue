@@ -1,61 +1,28 @@
 <script lang="ts" setup>
-import type { StageColumn, TenantLeadStage, PipelineCardItem } from '~/api/generated/api'
-import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
-import { dropOrSwap, animations } from '@formkit/drag-and-drop'
-import {usePipelineDrag} from "~/composables/workspace/usePipelineDrag";
+import type { PipelineCardItem, StageColumn, TenantLeadStage } from "~/api/generated/api";
 
 const emit = defineEmits<{
-  move: [cardId: string, fromStage: TenantLeadStage, toStage: TenantLeadStage]
-}>()
-const { column } = defineProps<{ column: StageColumn }>()
+  dragStart: [card: PipelineCardItem];
+  dragEnd: [];
+  move: [stage: TenantLeadStage];
+}>();
 
-const { activeDrag, startDrag, clearDrag } = usePipelineDrag()
-const isOver = ref(false)
+const { column, activeLeadId } = defineProps<{
+  column: StageColumn;
+  activeLeadId?: string | null;
+}>();
 
-const [columnRef, cards] = useDragAndDrop<PipelineCardItem>(column.cards, {
-  group: 'pipeline',
-  sortable: true,
-  plugins: [dropOrSwap(), animations()],
-  draggable: (el) => el.classList.contains('pipeline-card'),
+const isOver = ref(false);
 
-  onDragstart(dragState) {
-    const card = dragState.draggedNodes[0]?.data.value as PipelineCardItem
-    if (card) startDrag(card.tenant_lead_id, column.stage_code)
-  },
-
-  onTransfer() {
-    isOver.value = false
-  },
-})
-
-const knownIds = ref(new Set(column.cards.map(c => c.tenant_lead_id)))
-
-watch(cards, (newCards) => {
-  if (!activeDrag.value) return
-
-  const { cardId, fromStage } = activeDrag.value
-
-  const arrived = newCards.find(c => c.tenant_lead_id === cardId)
-  if (arrived && !knownIds.value.has(cardId) && fromStage !== column.stage_code) {
-    emit('move', cardId, fromStage, column.stage_code)
-    clearDrag()
-  }
-
-  knownIds.value = new Set(newCards.map(c => c.tenant_lead_id))
-})
-
-watch(() => column.cards, (newCards) => {
-  cards.value = [...newCards]
-  knownIds.value = new Set(newCards.map(c => c.tenant_lead_id))
-}, { deep: true })
-
-const handleDragLeave = (e: DragEvent) => {
-  if (!(e.target as HTMLElement).isSameNode(columnRef.value!)) return
-  isOver.value = false
+function handleDrop() {
+  if (!activeLeadId) return;
+  emit("move", column.stage_code);
+  isOver.value = false;
 }
-onMounted(() => document.addEventListener('dragend', () => { isOver.value = false }))
-onUnmounted(() => document.removeEventListener('dragend', () => { isOver.value = false }))
 
+function handleCardDragStart(card: PipelineCardItem) {
+  emit("dragStart", card);
+}
 </script>
 
 <template>
@@ -65,96 +32,96 @@ onUnmounted(() => document.removeEventListener('dragend', () => { isOver.value =
         <h3 class="column__title">{{ column.stage_name_ru }}</h3>
         <span class="column__lead-count">{{ column.total_count }}</span>
       </div>
-      <ui-separator :thickness="5" color="#00C3D0" class="separator" />
     </header>
     <div
-        ref="columnRef"
-        class="cards"
-        :class="{ 'cards--over': isOver }"
-        :data-stage="column.stage_code"
-        @dragenter="isOver = true"
-        @dragleave="handleDragLeave"
-        @dragover.prevent
-        @drop="isOver = false"
+      class="cards"
+      :class="{ 'cards--over': isOver && !!activeLeadId }"
+      @dragover.prevent="isOver = !!activeLeadId"
+      @dragleave="isOver = false"
+      @drop.prevent="handleDrop"
     >
       <workspace-pipeline-card
-          v-for="card in cards"
-          :key="card.tenant_lead_id"
-          :card
+        v-for="card in column.cards"
+        :key="card.tenant_lead_id"
+        :card="card"
+        :dragging="card.tenant_lead_id === activeLeadId"
+        @drag-start="handleCardDragStart"
+        @drag-end="emit('dragEnd')"
       />
+
+      <div v-if="!column.cards.length" class="cards__empty">
+        Здесь пока пусто
+      </div>
     </div>
   </article>
 </template>
 
 <style lang="css" scoped>
-.column { height: 100%; }
+.column {
+  display: flex;
+  flex-direction: column;
+  min-height: 520px;
+}
 
 .header {
   display: flex;
-  margin-bottom: 5px;
-  padding: 8px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 5px;
-  border-radius: 16px;
+  border-radius: 18px;
   background: var(--color-neutral-ll, #F8F9FE);
+  box-shadow: inset 0 0 0 1px rgba(31, 32, 36, 0.04);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   align-self: stretch;
 }
 
 .column__title {
   color: var(--color-neutral-dd, #1F2024);
-  text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
+  margin: 0 0 4px;
 }
 
 .column__lead-count {
   color: var(--color-neutral-dl, #71727A);
-  text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
   letter-spacing: 0.12px;
 }
 
-.separator { border-radius: 12px; }
-
 .cards {
-  height: 100%;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 5px;
-  border-radius: 14px;
-  border: 2px solid transparent;
-  padding: 4px;
+  gap: 8px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  padding: 6px;
+  background: rgba(248, 249, 254, 0.48);
   transition:
-      border-color 0.25s ease,
-      background 0.25s ease,
-      box-shadow 0.25s ease;
+    border-color 180ms ease,
+    background-color 180ms ease;
 }
-
 
 .cards--over {
   border-color: var(--color-primary, #00C3D0);
-  background: color-mix(in srgb, var(--color-primary, #00C3D0) 8%, transparent);
+  background: color-mix(in srgb, var(--color-primary, #00C3D0) 8%, white);
 }
-</style>
 
-<style lang="css">
-.sortable-ghost {
-  opacity: 0.35;
-  border: 2px dashed #00C3D0 !important;
+.cards__empty {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  color: var(--color-neutral-dl);
+  font-size: 12px;
+  border: 1px dashed var(--color-neutral-lm);
   border-radius: 16px;
-  background: color-mix(in srgb, #00C3D0 8%, transparent) !important;
-}
-.sortable-drag {
-  opacity: 0.95;
-  box-shadow: 0 12px 32px rgba(0, 195, 208, 0.3), 0 4px 12px rgba(0,0,0,0.15);
-  transform: rotate(1.5deg) scale(1.02);
 }
 </style>

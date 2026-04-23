@@ -4,7 +4,7 @@ defineProps<{
 }>();
 </script>
 <template>
-    <h1 class="logo">
+    <h1 class="logo" @click="$router.push('/')">
         {{ title }}
     </h1>
 </template>

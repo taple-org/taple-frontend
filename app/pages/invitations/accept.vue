@@ -1,8 +1,13 @@
 <script lang="ts" setup>
 definePageMeta({
-  title: "Приглашение в рабочее пространство",
   layout: "empty",
 });
+
+useSeoMeta({
+  title: "Приглашение в рабочее пространство — Taple",
+  description: "Подтверждение приглашения в рабочее пространство Taple.",
+  robots: "noindex, nofollow",
+})
 
 const route = useRoute();
 const router = useRouter();
@@ -20,13 +25,11 @@ async function acceptInvitation() {
     return;
   }
 
-  // Initialize auth store to check if user is logged in
   await authStore.initSession();
 
   statusMessage.value = "Присоединение к рабочему пространству...";
 
   try {
-    // Get auth token if user is authenticated
     const token =
       authStore.isAuthenticated && import.meta.client
         ? localStorage.getItem("access_token")
@@ -35,14 +38,12 @@ async function acceptInvitation() {
     const apiBase = $config.public.apiBase;
     const backendKey = $config.public.backendKey;
 
-    // Build headers - Authorization is optional
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
       "X-Backend-Key": backendKey,
     };
 
-    // Add Authorization header only if user is authenticated
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }

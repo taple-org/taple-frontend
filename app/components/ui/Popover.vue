@@ -34,6 +34,7 @@ const positioning = computed(() => ({
     <Popover.Trigger as-child>
         <slot name="trigger" />
     </Popover.Trigger>
+    <Teleport to="body">
       <Popover.Positioner class="popover-positioner">
         <Popover.Content class="popover-content">
           <div v-if="title || description || $slots.header" class="popover-header">
@@ -56,6 +57,7 @@ const positioning = computed(() => ({
           </Popover.CloseTrigger>
         </Popover.Content>
       </Popover.Positioner>
+    </Teleport>
   </Popover.Root>
 </template>
 

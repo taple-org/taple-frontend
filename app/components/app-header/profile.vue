@@ -75,9 +75,9 @@ const configs = computed<ProfileListConfig>(() => {
           Выйти
         </ui-button>
       </section>
-      <workspace-make-form-modal />
     </template>
   </ui-popover>
+  <workspace-make-form-modal />
 </template>
 <style>
 .profile__content {

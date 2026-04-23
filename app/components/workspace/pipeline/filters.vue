@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { useWorkspaceMemberOptions } from "~/composables/workspace/useWorkspaceMemberOptions";
+
 const emit = defineEmits<{
   search: [],
   reset: []
@@ -15,19 +17,12 @@ const { data: categories } = useAsyncData(
         .then(cs => cs.data.result)
         .then(r => r.map((category) => ({ value: category.code, label: category.name_ru })))
 )
-const { data: members } = useAsyncData(
-    (nuxtApp) => nuxtApp.$apiClient.api.listMembersApiV1TenantsTenantIdMembersGet(workspaceId)
-        .then(ms => ms.data.result)
-        .then(r => r.map(m => ({ value: m.id, label: m.email! }))),
-    { server: false }
-)
+const { options: membersOptions } = useWorkspaceMemberOptions(workspaceId);
 
 const categoriesOptions = computed(() => categories.value ?? []);
-const membersOptions    = computed(() => members.value    ?? []);
-const product = ref<string>("");
 
 const hasFilters = computed(() =>
-    search.value || category_code.value || responsible_id.value || product.value
+    search.value || category_code.value || responsible_id.value
 );
 
 const onKeydown = (e: KeyboardEvent) => {
@@ -54,12 +49,6 @@ const onKeydown = (e: KeyboardEvent) => {
     </div>
 
     <div class="filter__selectors">
-      <ui-form-field
-          type="select"
-          v-model="product"
-          :options="[{ label: 'Донерка', value: '1234567890' }]"
-          placeholder="Продукт"
-      />
       <ui-form-field
           type="select"
           v-model="category_code"
