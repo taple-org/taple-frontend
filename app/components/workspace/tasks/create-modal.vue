@@ -87,7 +87,7 @@ function handleSubmit() {
     title: title.value.trim(),
     description: description.value.trim() || null,
     task_type: taskType.value,
-    due_at: fromDateOnly(dueDate.value),
+    due_at: fromDateOnly(dueDate.value)?.slice(0,10),
     assigned_to_member_id: assignedToMemberId.value || null,
   });
 }

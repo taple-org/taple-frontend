@@ -32,7 +32,12 @@ export type TaskCreatePayload = CreateGlobalTaskRequest;
 
 export type TaskUpdatePayload = Pick<
   UpdateTaskRequest,
-  "title" | "description" | "task_type" | "due_at" | "result" | "assigned_to_member_id"
+  | "title"
+  | "description"
+  | "task_type"
+  | "due_at"
+  | "result"
+  | "assigned_to_member_id"
 >;
 
 export type TaskCompletePayload = CompleteTaskRequest;
@@ -57,10 +62,12 @@ export const TASK_TYPE_LABELS: Record<TenantLeadTaskType, string> = {
   [TenantLeadTaskType.Other]: "Другое",
 };
 
-export const TASK_TYPE_OPTIONS = Object.values(TenantLeadTaskType).map((value) => ({
-  value,
-  label: TASK_TYPE_LABELS[value],
-}));
+export const TASK_TYPE_OPTIONS = Object.values(TenantLeadTaskType).map(
+  (value) => ({
+    value,
+    label: TASK_TYPE_LABELS[value],
+  }),
+);
 
 export const TASK_ACTION_SECTIONS: TaskBoardActionSection[] = [
   {
@@ -127,7 +134,10 @@ export const TASK_BOARD_GROUPS: TaskBoardGroup[] = [
   },
 ];
 
-export const TASK_BUCKET_LABELS: Record<TaskBucket, { en: string; ru: string }> = {
+export const TASK_BUCKET_LABELS: Record<
+  TaskBucket,
+  { en: string; ru: string }
+> = {
   [TaskBucket.Overdue]: { en: "Overdue", ru: "Просрочено" },
   [TaskBucket.Today]: { en: "Today", ru: "Сегодня" },
   [TaskBucket.Tomorrow]: { en: "Tomorrow", ru: "Завтра" },
@@ -167,6 +177,13 @@ export function fromDateOnly(datePart: string) {
   return new Date(`${datePart}T12:00:00`).toISOString();
 }
 
+export function fromDateAndTime(datePart: string, timePart: string) {
+  if (!datePart) return null;
+
+  const time = timePart || "12:00";
+  return new Date(`${datePart}T${time}:00`).toISOString();
+}
+
 export function getTaskTypeLabel(taskType: TenantLeadTaskType) {
   return TASK_TYPE_LABELS[taskType];
 }
@@ -178,7 +195,9 @@ export function getTaskTone(task: TaskBoardItem) {
   return "default";
 }
 
-export function buildMovePayloadForBucket(bucket: TaskBucket): RescheduleTaskRequest | CompleteTaskRequest | null {
+export function buildMovePayloadForBucket(
+  bucket: TaskBucket,
+): RescheduleTaskRequest | CompleteTaskRequest | null {
   switch (bucket) {
     case TaskBucket.Overdue:
       return null;
@@ -199,7 +218,9 @@ export function buildMovePayloadForBucket(bucket: TaskBucket): RescheduleTaskReq
   }
 }
 
-export function buildActionPayload(actionId: TaskBoardActionId): RescheduleTaskRequest | CompleteTaskRequest | null {
+export function buildActionPayload(
+  actionId: TaskBoardActionId,
+): RescheduleTaskRequest | CompleteTaskRequest | null {
   switch (actionId) {
     case "delete":
       return null;
@@ -233,11 +254,16 @@ export function normalizeTaskBoardColumns(columns: TaskBoardColumn[]) {
   });
 }
 
-export function filterTaskBoardColumns(columns: TaskBoardColumn[], buckets: TaskBucket[]) {
+export function filterTaskBoardColumns(
+  columns: TaskBoardColumn[],
+  buckets: TaskBucket[],
+) {
   if (!buckets.length) return [];
 
   const visibleBuckets = new Set(buckets);
-  return normalizeTaskBoardColumns(columns).filter((column) => visibleBuckets.has(column.bucket));
+  return normalizeTaskBoardColumns(columns).filter((column) =>
+    visibleBuckets.has(column.bucket),
+  );
 }
 
 function buildDateAtHour(daysToAdd: number, hour: number) {
@@ -250,7 +276,7 @@ function buildDateAtHour(daysToAdd: number, hour: number) {
 function buildNextMondayAtHour(hour: number) {
   const date = new Date();
   const day = date.getDay();
-  const daysUntilNextMonday = ((8 - day) % 7) || 7;
+  const daysUntilNextMonday = (8 - day) % 7 || 7;
   date.setDate(date.getDate() + daysUntilNextMonday);
   date.setHours(hour, 0, 0, 0);
   return date;
