@@ -3,12 +3,16 @@ import { DatePicker, parseDate } from "@ark-ui/vue/date-picker";
 
 const modelValue = defineModel<string>({ default: "" });
 
-defineProps<{
+const props = defineProps<{
   placeholder?: string;
   disabled?: boolean;
+  min?: string;
+  max?: string;
 }>();
 
 const value = computed(() => (modelValue.value ? [parseDate(modelValue.value)] : []));
+const minValue = computed(() => (props.min ? parseDate(props.min) : undefined));
+const maxValue = computed(() => (props.max ? parseDate(props.max) : undefined));
 
 function handleValueChange(details: { value: Array<{ toString(): string }> }) {
   modelValue.value = details.value[0]?.toString() ?? "";
@@ -19,7 +23,9 @@ function handleValueChange(details: { value: Array<{ toString(): string }> }) {
   <DatePicker.Root
     selection-mode="single"
     :model-value="value"
-    :disabled="disabled"
+    :disabled="props.disabled"
+    :min="minValue"
+    :max="maxValue"
     :positioning="{ sameWidth: true }"
     lazy-mount
     unmount-on-exit
@@ -27,7 +33,7 @@ function handleValueChange(details: { value: Array<{ toString(): string }> }) {
   >
     <DatePicker.Control class="date-picker__control">
       <DatePicker.Trigger class="date-picker__trigger">
-        <DatePicker.ValueText class="date-picker__value" :placeholder="placeholder ?? 'Выберите дату'" />
+        <DatePicker.ValueText class="date-picker__value" :placeholder="props.placeholder ?? 'Выберите дату'" />
         <span class="date-picker__icon" aria-hidden="true">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4.667 1.333V3M11.333 1.333V3M2 5.333H14M3.333 2.333H12.667C13.403 2.333 14 2.93 14 3.667V12.667C14 13.403 13.403 14 12.667 14H3.333C2.597 14 2 13.403 2 12.667V3.667C2 2.93 2.597 2.333 3.333 2.333Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
@@ -213,6 +219,16 @@ function handleValueChange(details: { value: Array<{ toString(): string }> }) {
   background: var(--color-primary);
   color: var(--color-secondary);
   font-weight: 700;
+}
+
+.date-picker__cell-trigger[data-disabled],
+.date-picker__cell-trigger[data-unavailable] {
+  background: color-mix(in srgb, var(--color-neutral-ll) 72%, transparent);
+  color: var(--color-neutral-ld);
+  cursor: not-allowed;
+  opacity: 0.75;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
 
 .date-picker__cell-trigger[data-outside-view] {

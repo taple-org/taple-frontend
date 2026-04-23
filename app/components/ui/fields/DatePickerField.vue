@@ -3,6 +3,8 @@ defineProps<{
   modelValue: string
   placeholder?: string
   disabled?: boolean
+  min?: string
+  max?: string
 }>()
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
@@ -13,6 +15,8 @@ const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
     :model-value="modelValue"
     :placeholder="placeholder"
     :disabled="disabled"
+    :min="min"
+    :max="max"
     @update:model-value="emit('update:modelValue', $event)"
   />
 </template>

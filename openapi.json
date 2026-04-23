@@ -4698,7 +4698,7 @@
           "Tenant Leads Pipeline"
         ],
         "summary": "Get Task Board",
-        "description": "Global task board (AmoCRM to-do view).\n\nReturns all tasks for the tenant grouped into time-bucket columns:\noverdue / today / tomorrow / in_two_days / next_monday / later / done.",
+        "description": "Global task board (AmoCRM to-do view).\n\nReturns tasks grouped into time-bucket columns.\nFilter by buckets (overdue/today/tomorrow/in_two_days/next_monday/later/done),\nsearch by title/description, or filter by assignee/responsible member.",
         "operationId": "get_task_board_api_v1_leads_tasks_get",
         "security": [
           {
@@ -4753,6 +4753,45 @@
               "title": "Assigned To Member Id"
             },
             "description": "Filter by task assignee"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by task title or description",
+              "title": "Search"
+            },
+            "description": "Search by task title or description"
+          },
+          {
+            "name": "buckets",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskBucket"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Show only these time buckets (default: all)",
+              "title": "Buckets"
+            },
+            "description": "Show only these time buckets (default: all)"
           }
         ],
         "responses": {

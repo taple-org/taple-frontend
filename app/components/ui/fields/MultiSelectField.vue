@@ -23,49 +23,48 @@ const collection = computed(() =>
 
 const displayText = computed(() => {
   if (!props.modelValue?.length) return null
-  return props.options
-      .filter((o) => props.modelValue.includes(o.value))
-      .map((o) => o.label)
-      .join(', ')
-})
+  if (props.modelValue.length === props.options.length) return 'Выбраны все'
 
-function handleValueChange(details: { value: string[] }) {
-  emit('update:modelValue', details.value)
-}
+  const labels = props.options
+    .filter((o) => props.modelValue.includes(o.value))
+    .map((o) => o.label)
+
+  if (labels.length <= 2) return labels.join(', ')
+  return `${labels.slice(0, 2).join(', ')} +${labels.length - 2}`
+})
 </script>
 
 <template>
   <Select.Root
       multiple
       :collection="collection"
-      :value="modelValue ?? []"
+      :model-value="modelValue ?? []"
       :disabled="disabled"
-      @value-change="handleValueChange"
+      @update:model-value="emit('update:modelValue', $event)"
+      lazy-mount
+      unmount-on-exit
   >
     <Select.Control class="select__control">
       <Select.Trigger class="select__trigger">
         <span class="select__value" :data-placeholder-shown="!displayText || undefined">
-          <span v-if="displayText" class="select__tags">
-            <span
-              v-for="val in modelValue"
-              :key="val"
-              class="select__tag"
-            >
-              {{ options.find((o) => o.value === val)?.label }}
-            </span>
-          </span>
-          <span v-else>{{ placeholder ?? 'Выберите...' }}</span>
+          {{ displayText ?? placeholder ?? 'Выберите...' }}
         </span>
-        <Select.Indicator class="select__indicator">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="select__meta">
+          <span v-if="modelValue?.length" class="select__count">
+            {{ modelValue.length }}
+          </span>
+          <Select.Indicator class="select__indicator">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </Select.Indicator>
+            </svg>
+          </Select.Indicator>
+        </div>
       </Select.Trigger>
     </Select.Control>
 
-    <Select.Positioner>
-      <Select.Content class="select__content">
+    <Teleport to="body">
+      <Select.Positioner class="select__positioner">
+        <Select.Content class="select__content">
         <Select.Item
             v-for="option in options"
             :key="option.value"
@@ -85,8 +84,9 @@ function handleValueChange(details: { value: string[] }) {
             {{ option.label }}
           </Select.ItemText>
         </Select.Item>
-      </Select.Content>
-    </Select.Positioner>
+        </Select.Content>
+      </Select.Positioner>
+    </Teleport>
   </Select.Root>
 </template>
 
@@ -102,17 +102,19 @@ function handleValueChange(details: { value: string[] }) {
   min-width: 140px;
   font-family: var(--font-base), sans-serif;
   font-size: 14px;
-  padding: 10px 16px;
+  padding: 8px 14px;
   border: 1px solid var(--color-neutral-lm);
-  border-radius: var(--radius-md);
-  background-color: var(--color-neutral-ll);
-  color: var(--color-neutral-dl);
+  border-radius: 12px;
+  background-color: var(--color-secondary);
+  color: var(--color-neutral-dd);
   cursor: pointer;
   outline: none;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    background-color var(--transition-base);
   min-height: 52px;
-  flex-wrap: wrap;
-  gap: 6px;
+  gap: 10px;
 }
 
 .select__trigger:focus-visible,
@@ -128,38 +130,48 @@ function handleValueChange(details: { value: string[] }) {
 }
 
 .select__trigger[data-disabled] {
-  background-color: var(--color-neutral-lm);
+  background-color: var(--color-neutral-ll);
   color: var(--color-neutral-ld);
   cursor: not-allowed;
 }
 
-.select__value { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; }
-.select__value[data-placeholder-shown] { color: var(--color-neutral-dd); }
-
-.select__tags {
+.select__value {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  color: var(--color-neutral-dd);
+  line-height: 1.35;
 }
 
-.select__tag {
+.select__value[data-placeholder-shown] {
+  color: var(--color-neutral-dl);
+}
+
+.select__meta {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: calc(var(--radius-md) - 4px);
-  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
-  color: var(--color-primary);
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.select__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background-color: var(--color-neutral-ll);
+  color: var(--color-neutral-dm);
   font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
+  font-weight: 700;
 }
 
 .select__indicator {
   display: flex;
   align-items: center;
-  color: var(--color-neutral-dd);
+  color: var(--color-neutral-dl);
   transition: transform var(--transition-base);
-  flex-shrink: 0;
 }
 
 .select__trigger[data-state='open'] .select__indicator { transform: rotate(180deg); }
@@ -167,12 +179,36 @@ function handleValueChange(details: { value: string[] }) {
 .select__content {
   background-color: var(--color-secondary);
   border: 1px solid var(--color-neutral-lm);
-  padding: 12px;
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-neutral-dd) 10%, transparent);
-  min-width: 140px;
-  z-index: 50;
+  padding: 8px;
+  border-radius: 14px;
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--color-neutral-dd) 12%, transparent);
+  min-width: min(320px, calc(100vw - 24px));
+  max-width: min(360px, calc(100vw - 24px));
+  max-height: min(320px, calc(100vh - 24px));
+  overflow-y: auto;
+  z-index: 220;
   outline: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-neutral-ld) transparent;
+}
+
+.select__positioner {
+  z-index: 220;
+}
+
+.select__content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.select__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.select__content::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-neutral-ld) 80%, white);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
 }
 
 .select__content[data-state='open'] { animation: select-open 0.15s ease; }
@@ -192,7 +228,7 @@ function handleValueChange(details: { value: string[] }) {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-radius: calc(var(--radius-md) - 2px);
+  border-radius: 10px;
   cursor: pointer;
   font-family: var(--font-base), sans-serif;
   font-size: 14px;

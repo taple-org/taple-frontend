@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import {
-  DEFAULT_TASK_TYPES,
   DEFAULT_TASK_BUCKETS,
   filterTaskBoardColumns,
-  filterTaskBoardColumnsByTypes,
   type TaskCreatePayload,
 } from "~/components/workspace/tasks/model";
-import type { TaskBucket, TaskBoardResponse, TenantLeadTaskType } from "~/api/generated/api";
+import type { TaskBucket, TaskBoardResponse } from "~/api/generated/api";
 
 definePageMeta({
   layout: "dashboard",
@@ -27,7 +25,9 @@ const notification = useNotification();
 const isCreateOpen = ref(false);
 const isCreatePending = ref(false);
 const visibleBuckets = ref<TaskBucket[]>([...DEFAULT_TASK_BUCKETS]);
-const visibleTaskTypes = ref<TenantLeadTaskType[]>([...DEFAULT_TASK_TYPES]);
+const search = ref("");
+const responsibleMemberId = ref("");
+const assignedToMemberId = ref("");
 
 const {
   data: taskBoard,
@@ -40,9 +40,17 @@ const {
     $apiClient.api
       .getTaskBoardApiV1LeadsTasksGet({
         tenant_id: workspaceId,
+        search: search.value.trim() || null,
+        responsible_member_id: responsibleMemberId.value || undefined,
+        assigned_to_member_id: assignedToMemberId.value || undefined,
+        buckets: visibleBuckets.value.length ? visibleBuckets.value : null,
       })
       .then((response) => response.data.result),
-  { server: false, default: () => ({ columns: [], total_count: 0 }) as TaskBoardResponse },
+  {
+    server: false,
+    default: () => ({ columns: [], total_count: 0 }) as TaskBoardResponse,
+    watch: [search, responsibleMemberId, assignedToMemberId, visibleBuckets],
+  },
 );
 
 watch(error, (err) => {
@@ -51,10 +59,9 @@ watch(error, (err) => {
   }
 }, { immediate: true });
 
-const columns = computed(() => {
-  const bucketFilteredColumns = filterTaskBoardColumns(taskBoard.value?.columns ?? [], visibleBuckets.value);
-  return filterTaskBoardColumnsByTypes(bucketFilteredColumns, visibleTaskTypes.value);
-});
+const columns = computed(() =>
+  filterTaskBoardColumns(taskBoard.value?.columns ?? [], visibleBuckets.value),
+);
 const totalCount = computed(() =>
   columns.value.reduce((sum, column) => sum + column.tasks.length, 0),
 );
@@ -83,7 +90,7 @@ async function handleCreate(payload: TaskCreatePayload) {
       <div class="tasks-page__actions">
         <div class="tasks-page__stat">
           <strong>{{ totalCount }}</strong>
-          <span>всего задач</span>
+          <span>задач в выбранных таблицах</span>
         </div>
         <ui-button icon-left="my-icon:add" @click="isCreateOpen = true">
           Создать задачу
@@ -92,19 +99,20 @@ async function handleCreate(payload: TaskCreatePayload) {
     </section>
 
     <workspace-tasks-filters
+      :workspace-id="workspaceId"
+      v-model:search="search"
       v-model:buckets="visibleBuckets"
-      v-model:task-types="visibleTaskTypes"
+      v-model:responsible-member-id="responsibleMemberId"
+      v-model:assigned-to-member-id="assignedToMemberId"
     />
     <div v-if="pending" class="tasks-page__state">Загружаем task board...</div>
     <client-only v-else>
       <workspace-tasks-board
-          :columns="columns"
-          :workspace-id="workspaceId"
-          @changed="refresh"
+        :columns="columns"
+        :workspace-id="workspaceId"
+        @changed="refresh"
       />
     </client-only>
-
-
     <workspace-tasks-create-modal
       :open="isCreateOpen"
       :workspace-id="workspaceId"
