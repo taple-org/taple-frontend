@@ -4,10 +4,17 @@ import { TenantLeadTaskType } from "~/api/generated/api";
 import type { CreateTaskRequest, TenantLeadDetail } from "~/api/generated/api";
 import { STAGE_LABELS } from "~/stores/leads.store";
 import type { ContentSwitcherItem } from "~/components/ui/ContentSwitcher.vue";
-import {
-  fromDateAndTime,
-  TASK_TYPE_OPTIONS,
-} from "~/components/workspace/tasks/model";
+import type { TaskCreatePayload } from "~/components/workspace/tasks/model";
+
+enum TaskModalStep {
+  Confirm = "confirm",
+  Create = "create",
+}
+
+enum Direction {
+  Forward = "forward",
+  Back = "back",
+}
 
 defineOptions({ inheritAttrs: false });
 
@@ -24,9 +31,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: [];
   createNote: [text: string];
-  createTask: [
-    data: CreateTaskRequest,
-  ];
+  createTask: [data: CreateTaskRequest];
   completeTask: [taskId: string];
   takeToWork: [done?: (success: boolean) => void];
 }>();
@@ -51,11 +56,8 @@ const isAddingNote = ref(false);
 
 // ── Task creation modal state ──────────────────────────────────────────────
 const showTaskModal = ref(false);
-const taskTitle = ref("");
-const taskDescription = ref("");
-const taskType = ref<TenantLeadTaskType>(TenantLeadTaskType.FollowUp);
-const taskDueDate = ref("");
-const taskDueTime = ref("10:00");
+const taskModalStep = ref<TaskModalStep>(TaskModalStep.Create);
+const taskModalDirection = ref<Direction>(Direction.Forward);
 const isCreatingTask = ref(false);
 
 // Reset state whenever the modal opens
@@ -68,11 +70,8 @@ watch(
       isAddingNote.value = false;
       // Reset task modal state
       showTaskModal.value = false;
-      taskTitle.value = "";
-      taskDescription.value = "";
-      taskType.value = TenantLeadTaskType.FollowUp;
-      taskDueDate.value = "";
-      taskDueTime.value = "10:00";
+      taskModalStep.value = TaskModalStep.Create;
+      taskModalDirection.value = Direction.Forward;
       shouldOpenTaskAfterTakeToWork.value = false;
       isTakingToWork.value = false;
     }
@@ -123,11 +122,8 @@ const submitNote = () => {
 };
 
 const openTaskModal = () => {
-  taskTitle.value = "";
-  taskDescription.value = "";
-  taskType.value = TenantLeadTaskType.FollowUp;
-  taskDueDate.value = "";
-  taskDueTime.value = "10:00";
+  taskModalStep.value = TaskModalStep.Create;
+  taskModalDirection.value = Direction.Forward;
   showTaskModal.value = true;
 };
 
@@ -135,17 +131,23 @@ const closeTaskModal = () => {
   showTaskModal.value = false;
 };
 
-const submitTask = () => {
-  if (!taskTitle.value.trim()) return;
+const submitTask = (payload: TaskCreatePayload) => {
   isCreatingTask.value = true;
   emit("createTask", {
-    title: taskTitle.value.trim(),
-    description: taskDescription.value.trim() || undefined,
-    task_type: taskType.value,
-    due_at: fromDateAndTime(taskDueDate.value, taskDueTime.value) || undefined,
+    title: payload.title,
+    description: payload.description || undefined,
+    task_type: payload.task_type,
+    due_at: payload.due_at || undefined,
+    assigned_to_member_id: payload.assigned_to_member_id || undefined,
   });
   closeTaskModal();
   isCreatingTask.value = false;
+};
+
+const goToStep = (step: TaskModalStep) => {
+  taskModalDirection.value =
+    step === TaskModalStep.Create ? Direction.Forward : Direction.Back;
+  taskModalStep.value = step;
 };
 
 const activityColor = (type: string) =>
@@ -175,7 +177,6 @@ const getActivityDescription = (item: any): string => {
 };
 
 // ── Task creation with lead status check ─────────────────────────────────
-const showTakeToWorkModal = ref(false);
 const isTakingToWork = ref(false);
 const shouldOpenTaskAfterTakeToWork = ref(false);
 
@@ -185,25 +186,26 @@ watch(isInProgress, (value) => {
   if (!value || !shouldOpenTaskAfterTakeToWork.value) return;
   shouldOpenTaskAfterTakeToWork.value = false;
   isTakingToWork.value = false;
-  showTakeToWorkModal.value = false;
-  openTaskModal();
+  goToStep(TaskModalStep.Create);
 });
 
 const handleAddTaskClick = () => {
   if (!isInProgress.value) {
-    showTakeToWorkModal.value = true;
+    taskModalStep.value = TaskModalStep.Confirm;
+    taskModalDirection.value = Direction.Forward;
+    showTaskModal.value = true;
     return;
   }
   openTaskModal();
 };
 
-const confirmTakeToWorkAndAddTask = async () => {
+const handleTakeToWorkConfirm = () => {
   isTakingToWork.value = true;
   shouldOpenTaskAfterTakeToWork.value = true;
   emit("takeToWork", (success) => {
     isTakingToWork.value = false;
-    if (!success) {
-      shouldOpenTaskAfterTakeToWork.value = false;
+    if (success) {
+      goToStep(TaskModalStep.Create);
     }
   });
 };
@@ -300,7 +302,9 @@ const scores = computed(() => {
                   Ответственный:
                   <strong>
                     {{
-                      lead.responsible_member?.user_full_name ?? lead.responsible_member?.user_email ?? "-"
+                      lead.responsible_member?.user_full_name ??
+                      lead.responsible_member?.user_email ??
+                      "-"
                     }}
                   </strong>
                 </span>
@@ -468,8 +472,8 @@ const scores = computed(() => {
                         >
                           <span class="ldp-signal-key">24/7</span>
                           <span class="ldp-signal-val">{{
-                              lead.signals?.is_24x7 ? "Да" : "Нет"
-                            }}</span>
+                            lead.signals?.is_24x7 ? "Да" : "Нет"
+                          }}</span>
                         </div>
                       </div>
                     </section>
@@ -664,103 +668,55 @@ const scores = computed(() => {
     </Teleport>
   </Dialog.Root>
 
-  <!-- Take to work confirmation modal -->
-  <ui-simple-modal
-    v-model:open="showTakeToWorkModal"
-    @close="showTakeToWorkModal = false"
-  >
-    <div class="take-to-work-modal">
-      <h3 class="take-to-work-modal__title">Взять лид в работу?</h3>
-      <p class="take-to-work-modal__desc">
-        Чтобы создать задачу, лид должен быть в работе. Взять лида в работу
-        сейчас?
-      </p>
-      <div class="take-to-work-modal__actions">
-        <ui-button variant="outline" @click="showTakeToWorkModal = false"
-          >Отмена</ui-button
-        >
-        <ui-button
-          variant="primary"
-          :disabled="isTakingToWork"
-          @click="confirmTakeToWorkAndAddTask"
-        >
-          {{ isTakingToWork ? "Обработка..." : "Да, взять в работу" }}
-        </ui-button>
-      </div>
-    </div>
-  </ui-simple-modal>
-
-  <!-- Task creation modal -->
+  <!-- Task creation flow modal with slide transitions -->
   <ui-simple-modal v-model:open="showTaskModal" @close="closeTaskModal">
-    <div class="task-create">
-      <header class="task-create__header">
-        <div>
-          <h3 class="task-create__title">Создать задачу</h3>
-          <p class="task-create__description-text">
-            Для лида: <strong>{{ lead?.lead_name }}</strong>
-          </p>
+    <Transition :name="`task-modal-slide-${taskModalDirection}`" mode="out-in">
+      <!-- Confirm step: Take to work -->
+      <div
+        v-if="taskModalStep === TaskModalStep.Confirm"
+        key="confirm"
+        class="take-to-work-modal"
+      >
+        <h3 class="take-to-work-modal__title">Взять лид в работу?</h3>
+        <p class="take-to-work-modal__desc">
+          Чтобы создать задачу, лид должен быть в работе. Взять лида в работу
+          сейчас?
+        </p>
+        <div class="take-to-work-modal__actions">
+          <ui-button variant="outline" @click="closeTaskModal"
+            >Отмена</ui-button
+          >
+          <ui-button
+            variant="primary"
+            :disabled="isTakingToWork"
+            @click="handleTakeToWorkConfirm"
+          >
+            {{ isTakingToWork ? "Обработка..." : "Да, взять в работу" }}
+          </ui-button>
         </div>
-        <button
-          type="button"
-          class="task-create__close"
-          @click="closeTaskModal"
-        >
-          <Icon name="my-icon:close" width="14" height="14" />
-        </button>
-      </header>
+      </div>
 
-      <div class="task-create__group">
-        <label class="task-create__label">Заголовок</label>
-        <ui-form-field
-          v-model="taskTitle"
-          type="text"
-          placeholder="Например, созвониться с клиентом"
+      <!-- Create step: Task form -->
+      <div v-else key="create" class="task-create-wrapper">
+        <WorkspaceTasksCreateModal
+          :open="true"
+          :workspace-id="lead?.tenant_id ?? ''"
+          :pending="isCreatingTask"
+          :pre-selected-lead="
+            lead
+              ? {
+                  tenant_lead_id: lead.id,
+                  lead_id: lead.lead_id,
+                  lead_name: lead.lead_name,
+                  stage_code: lead.stage_code,
+                }
+              : null
+          "
+          @close="closeTaskModal"
+          @submit="submitTask"
         />
       </div>
-
-      <div class="task-create__grid">
-        <div class="task-create__group">
-          <label class="task-create__label">Тип задачи</label>
-          <ui-form-field
-            v-model="taskType"
-            type="select"
-            :options="TASK_TYPE_OPTIONS"
-            placeholder="Тип задачи"
-          />
-        </div>
-
-        <div class="task-create__group">
-          <label class="task-create__label">Срок</label>
-          <div class="task-create__date-row">
-            <ui-date-picker v-model="taskDueDate" placeholder="Выберите дату" />
-            <input
-              v-model="taskDueTime"
-              class="task-create__input task-create__input--time"
-              type="time"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="task-create__group">
-        <label class="task-create__label">Описание</label>
-        <textarea
-          v-model="taskDescription"
-          class="task-create__textarea"
-          placeholder="Контекст задачи, детали разговора, что проверить..."
-        />
-      </div>
-
-      <div class="task-create__footer">
-        <ui-button variant="outline" @click="closeTaskModal">Отмена</ui-button>
-        <ui-button
-          :disabled="!taskTitle.trim() || isCreatingTask"
-          @click="submitTask"
-        >
-          {{ isCreatingTask ? "Создание..." : "Создать задачу" }}
-        </ui-button>
-      </div>
-    </div>
+    </Transition>
   </ui-simple-modal>
 </template>
 

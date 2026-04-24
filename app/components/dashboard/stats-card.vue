@@ -5,20 +5,20 @@ interface Props {
   change?: number;
   changeLabel?: string;
   icon?: string;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: "up" | "down" | "neutral";
 }
 
 const props = withDefaults(defineProps<Props>(), {
   change: undefined,
-  changeLabel: '',
+  changeLabel: "",
   icon: undefined,
-  trend: 'neutral',
+  trend: "neutral",
 });
 
 const trendClass = computed(() => {
-  if (props.trend === 'up') return 'stats-card__change--positive';
-  if (props.trend === 'down') return 'stats-card__change--negative';
-  return 'stats-card__change--neutral';
+  if (props.trend === "up") return "stats-card__change--positive";
+  if (props.trend === "down") return "stats-card__change--negative";
+  return "stats-card__change--neutral";
 });
 </script>
 
@@ -32,14 +32,26 @@ const trendClass = computed(() => {
     </div>
     <div class="stats-card__body">
       <span class="stats-card__value">{{ value }}</span>
-      <div v-if="change !== undefined" class="stats-card__change" :class="trendClass">
-        <Icon 
-          :name="trend === 'up' ? 'my-icon-chevron-up' : trend === 'down' ? 'my-icon-chevron-down' : 'my-icon-minus'" 
-          mode="svg" 
-          :size="14" 
+      <div
+        v-if="change !== undefined"
+        class="stats-card__change"
+        :class="trendClass"
+      >
+        <Icon
+          :name="
+            trend === 'up'
+              ? 'my-icon-outline-trending-up'
+              : trend === 'down'
+                ? 'my-icon-outline-trending-down'
+                : 'my-icon-minus'
+          "
+          mode="svg"
+          :size="14"
         />
         <span>{{ Math.abs(change) }}%</span>
-        <span v-if="changeLabel" class="stats-card__change-label">{{ changeLabel }}</span>
+        <span v-if="changeLabel" class="stats-card__change-label">{{
+          changeLabel
+        }}</span>
       </div>
     </div>
   </div>

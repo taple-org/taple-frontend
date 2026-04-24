@@ -2,8 +2,9 @@
 import type { TenantMemberBrief } from "~/api/generated/api";
 import { TenantLeadStage } from "~/api/generated/api";
 import { STAGE_OPTIONS } from "~/stores/leads.store";
+import type { SelectOption } from "~/components/ui/fields/registry";
 
-defineProps<{
+const props = defineProps<{
   selectedCount: number;
   members: TenantMemberBrief[];
 }>();
@@ -14,22 +15,34 @@ const emit = defineEmits<{
   clearSelection: [];
 }>();
 
-const showMoveSelect = ref(false);
-const showAssignSelect = ref(false);
+const showMovePopover = ref(false);
+const showAssignPopover = ref(false);
 const selectedStage = ref<TenantLeadStage | "">("");
 const selectedMemberId = ref<string>("");
+
+const stageOptions = computed<SelectOption[]>(() =>
+  STAGE_OPTIONS.map((s) => ({ value: s.value, label: s.label })),
+);
+
+const memberOptions = computed<SelectOption[]>(() => [
+  { value: "", label: "Без ответственного" },
+  ...props.members.map((m) => ({
+    value: m.id,
+    label: m.user_full_name ?? m.user_email,
+  })),
+]);
 
 const handleMove = () => {
   if (!selectedStage.value) return;
   emit("bulkMove", selectedStage.value as TenantLeadStage);
   selectedStage.value = "";
-  showMoveSelect.value = false;
+  showMovePopover.value = false;
 };
 
 const handleAssign = () => {
   emit("bulkAssign", selectedMemberId.value || null);
   selectedMemberId.value = "";
-  showAssignSelect.value = false;
+  showAssignPopover.value = false;
 };
 </script>
 
@@ -46,52 +59,42 @@ const handleAssign = () => {
 
     <div class="bulk-bar__actions">
       <!-- Bulk Move -->
-      <div class="bulk-bar__action-group">
-        <button
-          class="bulk-bar__btn"
-          @click="showMoveSelect = !showMoveSelect; showAssignSelect = false"
-        >
-          Переместить
-          <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
-        </button>
-        <div v-if="showMoveSelect" class="bulk-bar__select-popup">
-          <select v-model="selectedStage" class="bulk-bar__select">
-            <option value="">Выберите этап</option>
-            <option v-for="s in STAGE_OPTIONS" :key="s.value" :value="s.value">
-              {{ s.label }}
-            </option>
-          </select>
-          <button
-            class="bulk-bar__confirm-btn"
-            :disabled="!selectedStage"
-            @click="handleMove"
-          >
-            Применить
+      <ui-popover v-model:open="showMovePopover" placement="top-end">
+        <template #trigger>
+          <button class="bulk-bar__btn">
+            Переместить
+            <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
           </button>
+        </template>
+        <div class="bulk-bar__popover-content">
+          <ui-fields-select-field
+            v-model="selectedStage"
+            :options="stageOptions"
+            placeholder="Выберите этап"
+          />
+          <ui-button size="sm" :disabled="!selectedStage" @click="handleMove">
+            Применить
+          </ui-button>
         </div>
-      </div>
+      </ui-popover>
 
       <!-- Bulk Assign -->
-      <div class="bulk-bar__action-group">
-        <button
-          class="bulk-bar__btn"
-          @click="showAssignSelect = !showAssignSelect; showMoveSelect = false"
-        >
-          Назначить
-          <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
-        </button>
-        <div v-if="showAssignSelect" class="bulk-bar__select-popup">
-          <select v-model="selectedMemberId" class="bulk-bar__select">
-            <option value="">Без ответственного</option>
-            <option v-for="m in members" :key="m.id" :value="m.id">
-              {{ m.user_full_name ?? m.user_email }}
-            </option>
-          </select>
-          <button class="bulk-bar__confirm-btn" @click="handleAssign">
-            Применить
+      <ui-popover v-model:open="showAssignPopover" placement="top-end">
+        <template #trigger>
+          <button class="bulk-bar__btn">
+            Назначить
+            <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
           </button>
+        </template>
+        <div class="bulk-bar__popover-content">
+          <ui-fields-select-field
+            v-model="selectedMemberId"
+            :options="memberOptions"
+            placeholder="Выберите ответственного"
+          />
+          <ui-button size="sm" @click="handleAssign"> Применить </ui-button>
         </div>
-      </div>
+      </ui-popover>
     </div>
   </div>
 </template>
@@ -145,10 +148,6 @@ const handleAssign = () => {
   flex-wrap: wrap;
 }
 
-.bulk-bar__action-group {
-  position: relative;
-}
-
 .bulk-bar__btn {
   display: flex;
   align-items: center;
@@ -169,53 +168,11 @@ const handleAssign = () => {
   background: rgba(255, 255, 255, 0.3);
 }
 
-.bulk-bar__select-popup {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
-  background: #fff;
-  border: 1px solid var(--color-neutral-ld);
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+.bulk-bar__popover-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 180px;
-  z-index: 50;
-}
-
-.bulk-bar__select {
-  width: 100%;
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid var(--color-neutral-ld);
-  border-radius: 8px;
-  font-family: var(--font-base), sans-serif;
-  font-size: 12px;
-  color: var(--color-neutral-dd);
-  outline: none;
-}
-
-.bulk-bar__select:focus {
-  border-color: var(--color-primary);
-}
-
-.bulk-bar__confirm-btn {
-  width: 100%;
-  height: 32px;
-  background: var(--color-primary);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.bulk-bar__confirm-btn:disabled {
-  background: var(--color-neutral-ld);
-  color: var(--color-neutral-dl);
-  cursor: not-allowed;
+  gap: 12px;
+  padding: 12px;
+  min-width: 200px;
 }
 </style>

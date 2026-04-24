@@ -60,7 +60,7 @@ const statsCards = computed(() => {
     {
       title: "Открытые задачи",
       value: stats.value.tasks?.open || 0,
-      icon: "my-icon-task",
+      icon: "my-icon-outline-clipboard-list",
       trend: stats.value.tasks?.open > 5 ? ("down" as const) : ("up" as const),
     },
     {
@@ -74,7 +74,7 @@ const statsCards = computed(() => {
       value: stats.value.avg_fit_score
         ? `${Math.round(stats.value.avg_fit_score * 100)}%`
         : "—",
-      icon: "my-icon-star",
+      icon: "my-icon-star-filled",
       trend: "neutral" as const,
     },
   ];
@@ -132,7 +132,7 @@ const activity30Days = computed(() => {
     </div>
 
     <div v-if="error" class="dashboard__error">
-      <Icon name="my-icon-alert" mode="svg" :size="24" />
+      <Icon name="my-icon-outline-exclamation-circle" mode="svg" :size="24" />
       <span>{{ error }}</span>
       <ui-button variant="primary" @click="fetchStats">Повторить</ui-button>
     </div>

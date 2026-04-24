@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { TenantLeadStage } from "~/api/generated/api";
-import type { TenantLeadListItem } from "~/api/generated/api";
+import type {
+  TenantLeadListItem,
+  CreateTaskRequest,
+} from "~/api/generated/api";
 import type { LeadFilters } from "~/stores/leads.store";
 
 import DashboardLeadsLeadFiltersBar from "~/components/dashboard/leads/lead-filters-bar.vue";
@@ -109,7 +112,7 @@ const handleCreateNote = async (text: string) => {
   await leadsStore.createNote(selectedLeadId.value, workspaceId, text);
 };
 
-const handleCreateTask = async (data: { title: string; due_at?: string }) => {
+const handleCreateTask = async (data: CreateTaskRequest) => {
   if (!selectedLeadId.value) return;
   await leadsStore.createTask(selectedLeadId.value, workspaceId, data);
 };
@@ -119,7 +122,9 @@ const handleCompleteTask = async (taskId: string) => {
   await leadsStore.completeTask(selectedLeadId.value, taskId, workspaceId);
 };
 
-const handleTakeToWorkFromDetail = async (done?: (success: boolean) => void) => {
+const handleTakeToWorkFromDetail = async (
+  done?: (success: boolean) => void,
+) => {
   if (!selectedLeadId.value) {
     done?.(false);
     return;
