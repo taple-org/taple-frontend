@@ -1,21 +1,8 @@
 <script setup lang="ts">
-interface CongestionLevel {
-  level: number;
-  days: Record<string, number[]>;
-}
-
-interface Congestion {
-  present: boolean;
-  peak_level: number;
-  avg_level: number;
-  peak_hours_count: number;
-  evening_peak: boolean;
-  weekend_peak: boolean;
-  levels: CongestionLevel[];
-}
+import type { CongestionRead } from "~/api/generated/api";
 
 const props = defineProps<{
-  congestion: Congestion;
+  congestion: CongestionRead;
 }>();
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -25,11 +12,12 @@ const HOUR_LABELS = ["0", "3", "6", "9", "12", "15", "18", "21"];
 // Build grid[dayIdx][hour] = level
 const grid = computed(() => {
   const g: number[][] = DAYS.map(() => new Array(24).fill(0));
-  for (const levelObj of props.congestion.levels) {
+  for (const levelObj of props.congestion.levels ?? []) {
     for (const [day, hours] of Object.entries(levelObj.days)) {
       const dayIdx = DAYS.indexOf(day);
       if (dayIdx === -1) continue;
-      for (const hour of hours as number[]) {
+      for (const hour of hours ?? []) {
+        if (!Number.isInteger(hour) || hour < 0 || hour > 23) continue;
         g[dayIdx][hour] = levelObj.level;
       }
     }
@@ -48,7 +36,7 @@ const getColor = (level: number): string => {
 };
 
 const avgDisplay = computed(() =>
-    Math.round(props.congestion.avg_level * 10) / 10
+  Math.round((props.congestion.avg_level ?? 0) * 10) / 10,
 );
 
 const peakLabel = computed(() => {
@@ -70,7 +58,7 @@ const peakLabel = computed(() => {
         Пик {{ peakLabel }}
       </span>
       <span class="cong__chip cong__chip--hours">
-        {{ congestion.peak_hours_count }} ч. в пике
+        {{ congestion.peak_hours_count ?? 0 }} ч. в пике
       </span>
     </div>
 

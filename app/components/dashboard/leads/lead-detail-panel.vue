@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Dialog } from "@ark-ui/vue/dialog";
 import { TenantLeadTaskType } from "~/api/generated/api";
-import type { TenantLeadDetail } from "~/api/generated/api";
+import type { CreateTaskRequest, TenantLeadDetail } from "~/api/generated/api";
 import { STAGE_LABELS } from "~/stores/leads.store";
 import type { ContentSwitcherItem } from "~/components/ui/ContentSwitcher.vue";
 import {
@@ -25,15 +25,10 @@ const emit = defineEmits<{
   close: [];
   createNote: [text: string];
   createTask: [
-    data: {
-      title: string;
-      description?: string;
-      task_type: string;
-      due_at?: string;
-    },
+    data: CreateTaskRequest,
   ];
   completeTask: [taskId: string];
-  takeToWork: [];
+  takeToWork: [done?: (success: boolean) => void];
 }>();
 
 const open = computed({
@@ -78,6 +73,8 @@ watch(
       taskType.value = TenantLeadTaskType.FollowUp;
       taskDueDate.value = "";
       taskDueTime.value = "10:00";
+      shouldOpenTaskAfterTakeToWork.value = false;
+      isTakingToWork.value = false;
     }
   },
 );
@@ -180,8 +177,17 @@ const getActivityDescription = (item: any): string => {
 // ── Task creation with lead status check ─────────────────────────────────
 const showTakeToWorkModal = ref(false);
 const isTakingToWork = ref(false);
+const shouldOpenTaskAfterTakeToWork = ref(false);
 
 const isInProgress = computed(() => props.lead?.stage_code === "in_progress");
+
+watch(isInProgress, (value) => {
+  if (!value || !shouldOpenTaskAfterTakeToWork.value) return;
+  shouldOpenTaskAfterTakeToWork.value = false;
+  isTakingToWork.value = false;
+  showTakeToWorkModal.value = false;
+  openTaskModal();
+});
 
 const handleAddTaskClick = () => {
   if (!isInProgress.value) {
@@ -193,11 +199,13 @@ const handleAddTaskClick = () => {
 
 const confirmTakeToWorkAndAddTask = async () => {
   isTakingToWork.value = true;
-  emit("takeToWork");
-  showTakeToWorkModal.value = false;
-  isTakingToWork.value = false;
-  // Open task modal after taking to work
-  openTaskModal();
+  shouldOpenTaskAfterTakeToWork.value = true;
+  emit("takeToWork", (success) => {
+    isTakingToWork.value = false;
+    if (!success) {
+      shouldOpenTaskAfterTakeToWork.value = false;
+    }
+  });
 };
 
 const scores = computed(() => {
@@ -292,11 +300,8 @@ const scores = computed(() => {
                   Ответственный:
                   <strong>
                     {{
-                      lead.responsible_member.first_name ??
-                      lead.responsible_member.email ??
-                      "—"
+                      lead.responsible_member?.user_full_name ?? lead.responsible_member?.user_email ?? "-"
                     }}
-                    {{ lead.responsible_member.last_name ?? "" }}
                   </strong>
                 </span>
               </div>
@@ -458,13 +463,13 @@ const scores = computed(() => {
                           }}</span>
                         </div>
                         <div
-                          v-if="lead.signals.is_open_24_7 != null"
+                          v-if="lead.signals.is_24x7 != null"
                           class="ldp-signal-chip"
                         >
                           <span class="ldp-signal-key">24/7</span>
                           <span class="ldp-signal-val">{{
-                            lead.signals.is_open_24_7 ? "Да" : "Нет"
-                          }}</span>
+                              lead.signals?.is_24x7 ? "Да" : "Нет"
+                            }}</span>
                         </div>
                       </div>
                     </section>

@@ -167,8 +167,7 @@ const handleSnoozePreset = (hours: number) => {
           class="lead-actions__item"
           @click="handleAssign(member.id)"
         >
-          {{ member.first_name ?? member.email ?? member.id }}
-          {{ member.last_name ?? "" }}
+          {{ member.user_full_name ?? member.user_email }}
         </button>
       </template>
     </div>

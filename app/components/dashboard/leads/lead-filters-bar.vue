@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { TenantLeadStage } from "~/api/generated/api";
-import { STAGE_OPTIONS, SORT_OPTIONS } from "~/stores/leads.store";
-import type { LeadFilters } from "~/stores/leads.store";
+import {TenantLeadStage} from "~/api/generated/api";
+import {STAGE_OPTIONS, SORT_OPTIONS} from "~/stores/leads.store";
+import type {LeadFilters} from "~/stores/leads.store";
 
 const props = defineProps<{
   modelValue: LeadFilters;
@@ -15,59 +15,76 @@ const emit = defineEmits<{
   reset: [];
 }>();
 
+const localFilters = ref<LeadFilters>({...props.modelValue});
 const localSearch = ref(props.searchQuery);
 
-// Local filter state - only synced to parent on Apply
-const localStage = ref(props.modelValue.stage ?? "");
-const localSortBy = ref(props.modelValue.sort_by ?? "");
-const localSortDir = ref(props.modelValue.sort_dir ?? "desc");
-
-// Sync from parent when props change (e.g., on reset)
 watch(
-  () => props.searchQuery,
-  (val) => {
-    localSearch.value = val;
-  },
+    () => props.modelValue,
+    (val) => {
+      localFilters.value = {...val};
+    },
+    {deep: true},
 );
 
 watch(
-  () => props.modelValue,
-  (val) => {
-    localStage.value = val.stage ?? "";
-    localSortBy.value = val.sort_by ?? "";
-    localSortDir.value = val.sort_dir ?? "desc";
-  },
-  { deep: true },
+    () => props.searchQuery,
+    (val) => {
+      localSearch.value = val;
+    },
 );
 
-const hasActiveFilters = computed(
-  () =>
-    localStage.value !== "" ||
-    localSortBy.value !== "" ||
-    localSortDir.value !== "desc" ||
-    localSearch.value !== "",
+const hasActiveFilters = computed(() =>
+    Object.values(localFilters.value).some((v) => v != null && v !== ""),
 );
 
-const stageOptions = [{ value: "", label: "Все этапы" }, ...STAGE_OPTIONS];
-
-const sortByOptions = [{ value: "", label: "По умолчанию" }, ...SORT_OPTIONS];
-
-const sortDirOptions = [
-  { value: "desc", label: "По убыванию" },
-  { value: "asc", label: "По возрастанию" },
+const stageOptions = [
+  {value: "", label: "Все этапы"},
+  ...STAGE_OPTIONS,
 ];
 
+const sortByOptions = [
+  {value: "", label: "По умолчанию"},
+  ...SORT_OPTIONS,
+];
+
+const sortDirOptions = [
+  {value: "desc", label: "По убыванию"},
+  {value: "asc", label: "По возрастанию"},
+];
+
+const stageModel = computed<string>({
+  get: () => localFilters.value.stage ?? "",
+  set: (value) => {
+    localFilters.value.stage = value ? (value as TenantLeadStage) : null;
+  },
+});
+
+const sortByModel = computed<string>({
+  get: () => localFilters.value.sort_by ?? "",
+  set: (value) => {
+    if (value) {
+      localFilters.value.sort_by = value;
+    } else {
+      delete localFilters.value.sort_by;
+    }
+  },
+});
+
+const sortDirModel = computed<string>({
+  get: () => localFilters.value.sort_dir ?? "desc",
+  set: (value) => {
+    localFilters.value.sort_dir = value as "asc" | "desc";
+  },
+});
+
 const handleApply = () => {
-  emit("update:modelValue", {
-    stage: localStage.value ? (localStage.value as TenantLeadStage) : null,
-    sort_by: localSortBy.value || undefined,
-    sort_dir: localSortDir.value as "asc" | "desc",
-  });
+  emit("update:modelValue", {...localFilters.value});
   emit("update:searchQuery", localSearch.value);
   emit("apply");
 };
 
 const handleReset = () => {
+  localFilters.value = {};
   localSearch.value = "";
   emit("update:modelValue", {});
   emit("update:searchQuery", "");
@@ -82,45 +99,41 @@ const onKeydown = (e: KeyboardEvent) => {
 <template>
   <div class="leads-filter-bar">
     <div class="leads-filter-bar__row">
-      <label class="leads-filter-bar__search">
-        <Icon name="my-icon-search" mode="svg" :size="16" />
-        <input
+      <ui-form-field
           v-model="localSearch"
-          type="search"
-          class="leads-filter-bar__search-input"
+          class="leads-filter-bar__search"
+          type="text"
+          icon-left="my-icon-search"
           placeholder="Поиск по названию / адресу"
           @keydown="onKeydown"
-        />
-      </label>
+      />
 
       <ui-button variant="primary" @click="handleApply">Найти</ui-button>
 
-      <ui-button
-        v-if="hasActiveFilters || localSearch"
-        variant="outline"
-        @click="handleReset"
-      >
+      <ui-button v-if="hasActiveFilters || localSearch" variant="outline" @click="handleReset">
         Сбросить
       </ui-button>
     </div>
 
     <div class="leads-filter-bar__selectors">
-      <ui-fields-select-field
-        v-model="localStage"
-        :options="stageOptions"
-        placeholder="Этап"
+      <ui-form-field
+          type="select"
+          v-model="stageModel"
+          class="leads-filter-bar__select"
+          :options="stageOptions"
+      />
+
+      <ui-form-field
+          type="select"
+          v-model="sortByModel"
+          class="leads-filter-bar__select"
+          :options="sortByOptions"
       />
 
       <ui-fields-select-field
-        v-model="localSortBy"
-        :options="sortByOptions"
-        placeholder="Сортировка"
-      />
-
-      <ui-fields-select-field
-        v-model="localSortDir"
-        :options="sortDirOptions"
-        placeholder="Направление"
+          v-model="sortDirModel"
+          class="leads-filter-bar__select"
+          :options="sortDirOptions"
       />
     </div>
   </div>
@@ -141,32 +154,7 @@ const onKeydown = (e: KeyboardEvent) => {
 
 .leads-filter-bar__search {
   flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 24px;
-  background: var(--color-neutral-ll);
-  color: var(--color-neutral-dd);
   min-width: 0;
-}
-
-.leads-filter-bar__search-input {
-  flex: 1;
-  border: 0;
-  background: transparent;
-  outline: none;
-  color: var(--color-neutral-dd);
-  font-family: var(--font-base), sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  min-width: 0;
-}
-
-.leads-filter-bar__search-input::placeholder {
-  color: var(--color-neutral-dl);
 }
 
 .leads-filter-bar__selectors {
@@ -175,10 +163,20 @@ const onKeydown = (e: KeyboardEvent) => {
   flex-wrap: wrap;
 }
 
-.leads-filter-bar__selectors :deep(.select__trigger) {
-  height: 36px;
-  padding: 0 12px;
-  border-radius: 12px;
+.leads-filter-bar__select {
+  flex: 1 1 150px;
+  min-width: 150px;
+}
+
+.leads-filter-bar :deep(.field-input) {
+  height: 44px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.leads-filter-bar :deep(.select__trigger) {
+  min-height: 36px;
+  padding: 8px 12px;
   font-size: 12px;
   font-weight: 500;
 }

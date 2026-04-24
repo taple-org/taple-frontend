@@ -32,7 +32,7 @@ async function confirmDelete() {
     await $apiClient.api.deleteAccountApiV1AuthAccountDelete();
     notification.success("Успех", "Аккаунт удален");
     showDeleteModal.value = false;
-    authStore.logout();
+    await authStore.signOut();
     await navigateTo("/auth/login");
   } catch (error) {
     console.error("Failed to delete account:", error);
@@ -48,7 +48,7 @@ async function confirmDeactivate() {
     await $apiClient.api.deactivateAccountApiV1AuthAccountDeactivatePost();
     notification.success("Успех", "Аккаунт деактивирован");
     showDeactivateModal.value = false;
-    authStore.logout();
+    await authStore.signOut();
     await navigateTo("/auth/login");
   } catch (error) {
     console.error("Failed to deactivate account:", error);

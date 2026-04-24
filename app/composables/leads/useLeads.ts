@@ -1,21 +1,9 @@
 import type { TenantLeadListItem } from '~/api/generated/api'
 import { TenantLeadStage } from '~/api/generated/api'
-import type { Lead, LeadFit } from '~/components/dashboard/leads/types'
+import type { Lead, LeadBranch, LeadFit } from '~/components/dashboard/leads/types'
+import { STAGE_LABELS } from '~/stores/leads.store'
 
 const LIMIT = 5
-
-const STAGE_LABELS: Record<TenantLeadStage, string> = {
-    [TenantLeadStage.New]: 'Новый',
-    [TenantLeadStage.Snoozed]: 'Отложен',
-    [TenantLeadStage.InProgress]: 'В работе',
-    [TenantLeadStage.FirstContact]: 'Первый контакт',
-    [TenantLeadStage.Negotiation]: 'Переговоры',
-    [TenantLeadStage.Contract]: 'Договор',
-    [TenantLeadStage.Monitoring]: 'Мониторинг',
-    [TenantLeadStage.Won]: 'Выигран',
-    [TenantLeadStage.Lost]: 'Проигран',
-    [TenantLeadStage.Hidden]: 'Скрыт',
-}
 
 function mapToLead(item: TenantLeadListItem): Lead {
     const contacts = item.contacts ?? []
@@ -41,6 +29,14 @@ function mapToLead(item: TenantLeadListItem): Lead {
         fitScores.push({ label: 'Филиалы', level: String(item.signals.branch_count) })
 
     const locationParts = [item.address_city_name_ru, item.address_district_name_ru].filter(Boolean)
+    const branches: LeadBranch[] = (item.branches ?? []).map((b) => ({
+        id: b.id,
+        name: b.name,
+        fullAddress: b.full_address,
+        isActive: b.is_active,
+        rating: b.signals?.rating,
+        reviewCount: b.signals?.review_count,
+    }))
 
     return {
         id: item.id,
@@ -59,6 +55,7 @@ function mapToLead(item: TenantLeadListItem): Lead {
         freshness: item.freshness_score != null
             ? `${Math.round(item.freshness_score * 100)}%`
             : '',
+        branches,
     }
 }
 
@@ -107,7 +104,7 @@ export function useLeads(workspaceId: string) {
     }
 
     async function postponeLead(leadId: string) {
-        const snoozed_until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        const snoozed_until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 19)
         try {
             await $apiClient.api.snoozeLeadApiV1LeadsTenantLeadIdSnoozePost(
                 leadId,
