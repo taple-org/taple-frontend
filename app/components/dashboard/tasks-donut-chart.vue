@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Chart from 'chart.js/auto';
+import Chart from "chart.js/auto";
 
 interface TasksStats {
   open: number;
@@ -12,59 +12,58 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let chartInstance: Chart | null = null;
 
 const chartData = computed(() => ({
-  labels: ['Открытые', 'Завершенные', 'Просроченные'],
-  datasets: [{
-    data: [props.tasks.open, props.tasks.completed, props.tasks.overdue],
-    backgroundColor: [
-      'rgba(0, 111, 253, 0.8)',
-      'rgba(58, 192, 160, 0.8)',
-      'rgba(255, 97, 109, 0.8)',
-    ],
-    borderColor: [
-      'rgba(0, 111, 253, 1)',
-      'rgba(58, 192, 160, 1)',
-      'rgba(255, 97, 109, 1)',
-    ],
-    borderWidth: 2,
-    hoverOffset: 4,
-  }],
+  labels: ["Открытые", "Завершенные", "Просроченные"],
+  datasets: [
+    {
+      data: [props.tasks.open, props.tasks.completed, props.tasks.overdue],
+      backgroundColor: [
+        "rgba(108, 156, 255, 0.52)",
+        "rgba(58, 192, 160, 0.5)",
+        "rgba(247, 149, 120, 0.46)",
+      ],
+      borderColor: ["#6c9cff", "#3ac0a0", "#f79578"],
+      borderWidth: 1,
+      hoverOffset: 4,
+    },
+  ],
 }));
 
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  cutout: '60%',
+  cutout: "62%",
   plugins: {
     legend: {
-      position: 'bottom' as const,
+      position: "bottom" as const,
       labels: {
         usePointStyle: true,
-        pointStyle: 'circle',
-        padding: 16,
+        pointStyle: "circle",
+        padding: 14,
         font: {
-          family: 'StyreneALC, sans-serif',
+          family: "StyreneALC, sans-serif",
           size: 12,
         },
-        color: 'var(--color-neutral-dm)',
+        color: "#494a50",
       },
     },
     tooltip: {
-      backgroundColor: 'var(--color-neutral-dd)',
-      titleColor: 'var(--color-white)',
-      bodyColor: 'var(--color-white)',
-      borderColor: 'var(--color-neutral-dm)',
+      backgroundColor: "#1f2024",
+      titleColor: "#ffffff",
+      bodyColor: "#ffffff",
+      borderColor: "#494a50",
       borderWidth: 1,
-      cornerRadius: 8,
+      cornerRadius: 10,
       padding: 12,
       callbacks: {
-        label: (context: any) => {
-          const label = context.label || '';
+        label: (context: { label: string; parsed: number; dataset: { data: number[] } }) => {
+          const label = context.label || "";
           const value = context.parsed;
-          const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+          const total = context.dataset.data.reduce((a, b) => a + b, 0);
           const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
           return ` ${label}: ${value} (${percentage}%)`;
         },
@@ -74,26 +73,30 @@ const chartOptions = {
 };
 
 onMounted(() => {
-  if (canvasRef.value) {
-    chartInstance = new Chart(canvasRef.value, {
-      type: 'doughnut',
-      data: chartData.value,
-      options: chartOptions as any,
-    });
-  }
+  if (!canvasRef.value) return;
+  chartInstance = new Chart(canvasRef.value, {
+    type: "doughnut",
+    data: chartData.value,
+    options: chartOptions as never,
+  });
 });
 
-watch(() => props.tasks, (newTasks) => {
-  if (chartInstance && chartInstance.data.datasets[0]) {
-    chartInstance.data.datasets[0].data = [newTasks.open, newTasks.completed, newTasks.overdue];
+watch(
+  () => props.tasks,
+  (newTasks) => {
+    if (!chartInstance || !chartInstance.data.datasets[0]) return;
+    chartInstance.data.datasets[0].data = [
+      newTasks.open,
+      newTasks.completed,
+      newTasks.overdue,
+    ];
     chartInstance.update();
-  }
-}, { deep: true });
+  },
+  { deep: true },
+);
 
 onUnmounted(() => {
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
+  chartInstance?.destroy();
 });
 </script>
 
@@ -105,17 +108,17 @@ onUnmounted(() => {
     </div>
     <div class="tasks-donut-chart__stats">
       <div class="tasks-donut-chart__stat">
-        <span class="tasks-donut-chart__stat-dot" style="background: rgba(0, 111, 253, 0.8)" />
+        <span class="tasks-donut-chart__stat-dot" style="background: rgba(108, 156, 255, 0.52)" />
         <span class="tasks-donut-chart__stat-label">Открытые</span>
         <span class="tasks-donut-chart__stat-value">{{ tasks.open }}</span>
       </div>
       <div class="tasks-donut-chart__stat">
-        <span class="tasks-donut-chart__stat-dot" style="background: rgba(58, 192, 160, 0.8)" />
+        <span class="tasks-donut-chart__stat-dot" style="background: rgba(58, 192, 160, 0.5)" />
         <span class="tasks-donut-chart__stat-label">Завершенные</span>
         <span class="tasks-donut-chart__stat-value">{{ tasks.completed }}</span>
       </div>
       <div class="tasks-donut-chart__stat">
-        <span class="tasks-donut-chart__stat-dot" style="background: rgba(255, 97, 109, 0.8)" />
+        <span class="tasks-donut-chart__stat-dot" style="background: rgba(247, 149, 120, 0.46)" />
         <span class="tasks-donut-chart__stat-label">Просроченные</span>
         <span class="tasks-donut-chart__stat-value">{{ tasks.overdue }}</span>
       </div>
@@ -125,9 +128,9 @@ onUnmounted(() => {
 
 <style scoped>
 .tasks-donut-chart {
-  background: var(--color-white);
-  border: 1px solid var(--color-neutral-lm);
-  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #ffffff 0%, #fcfcff 100%);
+  border: 1px solid #eceef5;
+  border-radius: 16px;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -135,10 +138,10 @@ onUnmounted(() => {
 }
 
 .tasks-donut-chart__title {
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-neutral-dd);
-  margin: 0;
+  color: #2f3036;
 }
 
 .tasks-donut-chart__container {
@@ -173,12 +176,12 @@ onUnmounted(() => {
 }
 
 .tasks-donut-chart__stat-label {
-  color: var(--color-neutral-dl);
+  color: #8f9098;
   flex: 1;
 }
 
 .tasks-donut-chart__stat-value {
   font-weight: 600;
-  color: var(--color-neutral-dd);
+  color: #2f3036;
 }
 </style>

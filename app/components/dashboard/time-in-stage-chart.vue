@@ -1,18 +1,10 @@
 <script setup lang="ts">
 import Chart from "chart.js/auto";
-
-interface MemberPerformance {
-  member_id: string;
-  full_name: string;
-  tasks_completed?: number;
-  notes_added?: number;
-  stage_changes?: number;
-  leads_won?: number;
-  leads_lost?: number;
-}
+import type { AvgTimeInStage } from "~/api/generated/api";
+import { formatStageLabel } from "~/utils/formatStageLabel";
 
 interface Props {
-  members: MemberPerformance[];
+  items: AvgTimeInStage[];
 }
 
 const props = defineProps<Props>();
@@ -21,52 +13,27 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 let chartInstance: Chart | null = null;
 
 const chartData = computed(() => ({
-  labels: props.members.map((member) => member.full_name.split(" ")[0]),
+  labels: props.items.map((item) => formatStageLabel(item.stage, item.label_ru)),
   datasets: [
     {
-      label: "Задачи",
-      data: props.members.map((member) => member.tasks_completed || 0),
-      backgroundColor: "rgba(108, 156, 255, 0.54)",
-      borderColor: "rgba(108, 156, 255, 0.95)",
+      label: "Среднее время в этапе, дней",
+      data: props.items.map((item) => Number(Number(item.avg_days || 0).toFixed(1))),
+      backgroundColor: "rgba(247, 149, 120, 0.42)",
+      borderColor: "rgba(247, 149, 120, 0.88)",
       borderWidth: 1,
       borderRadius: 8,
-    },
-    {
-      label: "Заметки",
-      data: props.members.map((member) => member.notes_added || 0),
-      backgroundColor: "rgba(58, 192, 160, 0.46)",
-      borderColor: "rgba(58, 192, 160, 0.9)",
-      borderWidth: 1,
-      borderRadius: 8,
-    },
-    {
-      label: "Смены этапов",
-      data: props.members.map((member) => member.stage_changes || 0),
-      backgroundColor: "rgba(247, 149, 120, 0.43)",
-      borderColor: "rgba(247, 149, 120, 0.9)",
-      borderWidth: 1,
-      borderRadius: 8,
+      maxBarThickness: 26,
     },
   ],
 }));
 
 const chartOptions = {
+  indexAxis: "y" as const,
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: "top" as const,
-      align: "start" as const,
-      labels: {
-        usePointStyle: true,
-        pointStyle: "rectRounded",
-        padding: 12,
-        font: {
-          family: "StyreneALC, sans-serif",
-          size: 12,
-        },
-        color: "#494a50",
-      },
+      display: false,
     },
     tooltip: {
       backgroundColor: "#1f2024",
@@ -77,15 +44,12 @@ const chartOptions = {
       cornerRadius: 10,
       padding: 12,
       callbacks: {
-        title: (items: Array<{ dataIndex: number }>) => {
-          const index = items[0]?.dataIndex ?? 0;
-          return props.members[index]?.full_name || "";
-        },
+        label: (context: { parsed: { x: number } }) => ` ${context.parsed.x} дн.`,
       },
     },
   },
   scales: {
-    y: {
+    x: {
       beginAtZero: true,
       grid: {
         color: "rgba(143, 144, 152, 0.12)",
@@ -99,7 +63,7 @@ const chartOptions = {
         },
       },
     },
-    x: {
+    y: {
       grid: {
         display: false,
         drawBorder: false,
@@ -125,7 +89,7 @@ onMounted(() => {
 });
 
 watch(
-  () => props.members,
+  () => props.items,
   () => {
     if (!chartInstance) return;
     chartInstance.data = chartData.value;
@@ -140,16 +104,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="member-performance-chart">
-    <h3 class="member-performance-chart__title">Эффективность команды</h3>
-    <div class="member-performance-chart__container">
+  <div class="time-in-stage-chart">
+    <h3 class="time-in-stage-chart__title">Среднее время нахождения в этапах</h3>
+    <div class="time-in-stage-chart__container">
       <canvas ref="canvasRef" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.member-performance-chart {
+.time-in-stage-chart {
   background: linear-gradient(180deg, #ffffff 0%, #fcfcff 100%);
   border: 1px solid #eceef5;
   border-radius: 16px;
@@ -159,20 +123,20 @@ onUnmounted(() => {
   gap: 16px;
 }
 
-.member-performance-chart__title {
+.time-in-stage-chart__title {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #2f3036;
 }
 
-.member-performance-chart__container {
+.time-in-stage-chart__container {
   position: relative;
   height: 280px;
   width: 100%;
 }
 
-.member-performance-chart__container canvas {
+.time-in-stage-chart__container canvas {
   width: 100% !important;
   height: 100% !important;
 }

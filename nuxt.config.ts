@@ -49,7 +49,8 @@ export default defineNuxtConfig({
         "@ark-ui/vue/tabs",
         "@ark-ui/vue/avatar",
         "@ark-ui/vue/file-upload",
-        "@ark-ui/vue/switch"
+        "@ark-ui/vue/switch",
+        "@ark-ui/vue/date-picker"
       ],
     },
   },
