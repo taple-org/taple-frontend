@@ -12,7 +12,6 @@ export type MonitoringColumn = {
 };
 
 export const MONITORING_STATUS_ORDER: TenantMerchantMonitoringStatus[] = [
-  TenantMerchantMonitoringStatus.Pending,
   TenantMerchantMonitoringStatus.Monitoring,
   TenantMerchantMonitoringStatus.Attention,
   TenantMerchantMonitoringStatus.Success,
@@ -21,11 +20,11 @@ export const MONITORING_STATUS_ORDER: TenantMerchantMonitoringStatus[] = [
 
 export const MONITORING_STATUS_LABELS: Record<TenantMerchantMonitoringStatus, string> = {
   [TenantMerchantMonitoringStatus.Pending]: "Ожидают",
-  [TenantMerchantMonitoringStatus.Monitoring]: "Мониторинг",
+  [TenantMerchantMonitoringStatus.Monitoring]: "На Мониторинге",
   [TenantMerchantMonitoringStatus.Attention]: "Требуют внимания",
   [TenantMerchantMonitoringStatus.Success]: "Успешно",
   [TenantMerchantMonitoringStatus.Recall]: "Перезвонить",
-  [TenantMerchantMonitoringStatus.Closed]: "Закрыто",
+  [TenantMerchantMonitoringStatus.Closed]: "Отказ от Лида",
   [TenantMerchantMonitoringStatus.Other]: "Другое",
 };
 

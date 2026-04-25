@@ -2,13 +2,8 @@ import type {
   TenantLeadListItem,
   LeadBranchRead,
   TenantLeadDetail,
-  MoveLeadRequest,
-  SnoozeLeadRequest,
-  AssignLeadRequest,
-  BulkMoveRequest,
-  BulkAssignRequest,
+  CreateTaskRequest,
   TenantMemberBrief,
-  ActivityHistoryItem,
 } from "~/api/generated/api";
 import { TenantLeadStage } from "~/api/generated/api";
 import type {
@@ -25,7 +20,7 @@ export const STAGE_LABELS: Record<TenantLeadStage, string> = {
   [TenantLeadStage.InProgress]: "В работе",
   [TenantLeadStage.FirstContact]: "Первый контакт",
   [TenantLeadStage.Negotiation]: "Переговоры",
-  [TenantLeadStage.Contract]: "Договор",
+  [TenantLeadStage.Contract]: "Заключение Договора",
   [TenantLeadStage.Monitoring]: "Мониторинг",
   [TenantLeadStage.Won]: "Выигран",
   [TenantLeadStage.Lost]: "Проигран",
@@ -122,6 +117,32 @@ export interface LeadFilters {
   responsible_member_id?: string | null;
 }
 
+const buildLeadListParams = (
+  filterValues: LeadFilters,
+  offset: number,
+): Record<string, unknown> => ({
+  offset,
+  limit: LIMIT,
+  ...(filterValues.stage ? { stage: filterValues.stage } : {}),
+  ...(filterValues.sort_by ? { sort_by: filterValues.sort_by } : {}),
+  ...(filterValues.sort_dir ? { sort_dir: filterValues.sort_dir } : {}),
+  ...(filterValues.min_fit_score != null
+    ? { min_fit_score: filterValues.min_fit_score }
+    : {}),
+  ...(filterValues.max_fit_score != null
+    ? { max_fit_score: filterValues.max_fit_score }
+    : {}),
+  ...(filterValues.min_priority_score != null
+    ? { min_priority_score: filterValues.min_priority_score }
+    : {}),
+  ...(filterValues.max_priority_score != null
+    ? { max_priority_score: filterValues.max_priority_score }
+    : {}),
+  ...(filterValues.responsible_member_id
+    ? { responsible_member_id: filterValues.responsible_member_id }
+    : {}),
+});
+
 export const useLeadsStore = defineStore("leads", () => {
   const notification = useNotification();
   const { $apiClient } = useNuxtApp();
@@ -154,8 +175,45 @@ export const useLeadsStore = defineStore("leads", () => {
   // ─── Bulk selection ───────────────────────────────────────────────────────
   const selectedIds = ref<Set<string>>(new Set());
 
+  // ─── Search ───────────────────────────────────────────────────────────────
+  const searchQuery = ref<string>("");
+
   // ─── Computed ─────────────────────────────────────────────────────────────
   const leads = computed<Lead[]>(() => rawLeads.value.map(mapToLead));
+
+  const filteredRawLeads = computed<TenantLeadListItem[]>(() => {
+    const query = searchQuery.value.trim().toLowerCase();
+    if (!query) return rawLeads.value;
+
+    return rawLeads.value.filter((lead) => {
+      const phones =
+        lead.contacts
+          ?.filter((c) => c.type === "phone")
+          .map((c) => c.value)
+          .join(" ") ?? "";
+      const emails =
+        lead.contacts
+          ?.filter((c) => c.type === "email")
+          .map((c) => c.value)
+          .join(" ") ?? "";
+
+      const searchableText = [
+        lead.lead_name,
+        lead.lead_business_category_name_ru,
+        lead.address_full,
+        lead.address_city_name_ru,
+        lead.address_district_name_ru,
+        phones,
+        emails,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(query);
+    });
+  });
+
   const hasSelection = computed(() => selectedIds.value.size > 0);
   const selectedCount = computed(() => selectedIds.value.size);
 
@@ -188,33 +246,10 @@ export const useLeadsStore = defineStore("leads", () => {
       currentWorkspaceId.value = workspaceId;
       if (opts) filters.value = opts;
 
-      const params: Record<string, any> = {
-        offset: 0,
-        limit: LIMIT,
-        ...(filters.value.stage ? { stage: filters.value.stage } : {}),
-        ...(filters.value.sort_by ? { sort_by: filters.value.sort_by } : {}),
-        ...(filters.value.sort_dir ? { sort_dir: filters.value.sort_dir } : {}),
-        ...(filters.value.min_fit_score != null
-          ? { min_fit_score: filters.value.min_fit_score }
-          : {}),
-        ...(filters.value.max_fit_score != null
-          ? { max_fit_score: filters.value.max_fit_score }
-          : {}),
-        ...(filters.value.min_priority_score != null
-          ? { min_priority_score: filters.value.min_priority_score }
-          : {}),
-        ...(filters.value.max_priority_score != null
-          ? { max_priority_score: filters.value.max_priority_score }
-          : {}),
-        ...(filters.value.responsible_member_id
-          ? { responsible_member_id: filters.value.responsible_member_id }
-          : {}),
-      };
-
       const resp =
         await $apiClient.api.listTenantLeadsApiV1TenantsTenantIdLeadsGet(
           workspaceId,
-          params,
+          buildLeadListParams(filters.value, 0),
         );
       rawLeads.value = resp.data.result;
       totalCount.value = resp.data.meta?.total ?? resp.data.result.length;
@@ -229,18 +264,10 @@ export const useLeadsStore = defineStore("leads", () => {
     isLoadingMore.value = true;
     error.value = null;
     try {
-      const params: Record<string, any> = {
-        offset: rawLeads.value.length,
-        limit: LIMIT,
-        ...(filters.value.stage ? { stage: filters.value.stage } : {}),
-        ...(filters.value.sort_by ? { sort_by: filters.value.sort_by } : {}),
-        ...(filters.value.sort_dir ? { sort_dir: filters.value.sort_dir } : {}),
-      };
-
       const resp =
         await $apiClient.api.listTenantLeadsApiV1TenantsTenantIdLeadsGet(
           currentWorkspaceId.value,
-          params,
+          buildLeadListParams(filters.value, rawLeads.value.length),
         );
       rawLeads.value.push(...resp.data.result);
       hasMore.value = resp.data.result.length >= LIMIT;
@@ -315,6 +342,8 @@ export const useLeadsStore = defineStore("leads", () => {
       );
       const lead = rawLeads.value.find((l) => l.id === leadId);
       if (lead) lead.stage_code = TenantLeadStage.Snoozed;
+      if (selectedLeadDetail.value?.id === leadId)
+        selectedLeadDetail.value.stage_code = TenantLeadStage.Snoozed;
       notification.success("Успешно", "Лид отложен");
       return true;
     } catch {
@@ -339,6 +368,10 @@ export const useLeadsStore = defineStore("leads", () => {
         lead.stage_code = TenantLeadStage.Snoozed;
         lead.snoozed_until = snoozedUntil;
       }
+      if (selectedLeadDetail.value?.id === leadId) {
+        selectedLeadDetail.value.stage_code = TenantLeadStage.Snoozed;
+        selectedLeadDetail.value.snoozed_until = snoozedUntil;
+      }
       notification.success("Успешно", "Лид отложен");
       return true;
     } catch {
@@ -354,6 +387,8 @@ export const useLeadsStore = defineStore("leads", () => {
       });
       const lead = rawLeads.value.find((l) => l.id === leadId);
       if (lead) lead.stage_code = TenantLeadStage.Hidden;
+      if (selectedLeadDetail.value?.id === leadId)
+        selectedLeadDetail.value.stage_code = TenantLeadStage.Hidden;
       notification.success("Успешно", "Лид скрыт");
       return true;
     } catch {
@@ -406,6 +441,8 @@ export const useLeadsStore = defineStore("leads", () => {
       );
       const raw = rawLeads.value.find((l) => l.id === leadId);
       if (raw) raw.stage_code = TenantLeadStage.InProgress;
+      if (selectedLeadDetail.value?.id === leadId)
+        selectedLeadDetail.value.stage_code = TenantLeadStage.InProgress;
       notification.success("Успешно", "Лид взят в работу");
       return true;
     } catch {
@@ -451,8 +488,8 @@ export const useLeadsStore = defineStore("leads", () => {
         { tenant_id: workspaceId },
         { tenant_lead_ids: leadIds, member_id: memberId },
       );
-      selectedIds.value.clear();
       notification.success("Успешно", `${leadIds.length} лидов назначено`);
+      selectedIds.value.clear();
       return true;
     } catch {
       notification.error("Ошибка", "Не удалось назначить лиды");
@@ -533,7 +570,7 @@ export const useLeadsStore = defineStore("leads", () => {
   const createTask = async (
     leadId: string,
     workspaceId: string,
-    data: { title: string; due_at?: string; description?: string },
+    data: CreateTaskRequest,
   ) => {
     try {
       const resp =
@@ -655,8 +692,13 @@ export const useLeadsStore = defineStore("leads", () => {
     selectedIds,
     hasSelection,
     selectedCount,
+    searchQuery,
 
     // actions
+    // Getters
+    filteredRawLeads,
+
+    // Actions
     fetchLeads,
     fetchMore,
     fetchLeadDetail,

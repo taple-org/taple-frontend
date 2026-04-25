@@ -12,17 +12,18 @@ const emit = defineEmits<{
   submit: [payload: TaskCreatePayload];
 }>();
 
-const { open, workspaceId, pending } = defineProps<{
+const { open, workspaceId, pending, preSelectedLead } = defineProps<{
   open: boolean;
   workspaceId: string;
   pending?: boolean;
+  preSelectedLead?: LeadSearchItem | null;
 }>();
 
 const { $apiClient } = useNuxtApp();
 
 const query = ref("");
 const results = ref<LeadSearchItem[]>([]);
-const selectedLead = ref<LeadSearchItem | null>(null);
+const selectedLead = ref<LeadSearchItem | null>(preSelectedLead ?? null);
 const title = ref("");
 const description = ref("");
 const taskType = ref<TenantLeadTaskType>(TenantLeadTaskType.FollowUp);
@@ -31,9 +32,8 @@ const assignedToMemberId = ref("");
 const isSearching = ref(false);
 const minDate = new Date().toISOString().slice(0, 10);
 
-const { options: memberOptions, pending: membersPending } = useWorkspaceMemberOptions(
-  computed(() => workspaceId),
-);
+const { options: memberOptions, pending: membersPending } =
+  useWorkspaceMemberOptions(computed(() => workspaceId));
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -44,7 +44,7 @@ watch(
 
     query.value = "";
     results.value = [];
-    selectedLead.value = null;
+    selectedLead.value = preSelectedLead ?? null;
     title.value = "";
     description.value = "";
     taskType.value = TenantLeadTaskType.FollowUp;
@@ -87,23 +87,25 @@ function handleSubmit() {
     title: title.value.trim(),
     description: description.value.trim() || null,
     task_type: taskType.value,
-    due_at: fromDateOnly(dueDate.value)?.slice(0,10),
+    due_at: fromDateOnly(dueDate.value)?.slice(0, 10),
     assigned_to_member_id: assignedToMemberId.value || null,
   });
 }
 </script>
 
 <template>
-  <ui-simple-modal
-    :open="open"
-    @update:open="!$event && emit('close')"
-  >
+  <ui-simple-modal :open="open" @update:open="!$event && emit('close')">
     <div class="task-create">
       <header class="task-create__header">
         <div>
           <h3 class="task-create__title">Создать задачу</h3>
           <p class="task-create__description-text">
-            Найдите лид и добавьте новую задачу в глобальную task board
+            <template v-if="preSelectedLead">
+              Для лида: <strong>{{ preSelectedLead.lead_name }}</strong>
+            </template>
+            <template v-else>
+              Найдите лид и добавьте новую задачу в глобальную task board
+            </template>
           </p>
         </div>
         <button type="button" class="task-create__close" @click="emit('close')">
@@ -111,7 +113,7 @@ function handleSubmit() {
         </button>
       </header>
 
-      <div class="task-create__group">
+      <div v-if="!preSelectedLead" class="task-create__group">
         <label class="task-create__label">Лид</label>
         <ui-form-field
           v-model="query"
@@ -124,14 +126,19 @@ function handleSubmit() {
           Выбран: <strong>{{ selectedLead.lead_name }}</strong>
         </div>
 
-        <div v-if="isSearching" class="task-create__search-state">Ищем лиды...</div>
+        <div v-if="isSearching" class="task-create__search-state">
+          Ищем лиды...
+        </div>
 
         <ul v-else-if="results.length" class="task-create__results">
           <li v-for="lead in results" :key="lead.tenant_lead_id">
             <button
               type="button"
               class="task-create__result"
-              :class="{ 'task-create__result--active': selectedLead?.tenant_lead_id === lead.tenant_lead_id }"
+              :class="{
+                'task-create__result--active':
+                  selectedLead?.tenant_lead_id === lead.tenant_lead_id,
+              }"
               @click="selectedLead = lead"
             >
               <strong>{{ lead.lead_name }}</strong>
@@ -143,13 +150,22 @@ function handleSubmit() {
 
       <div class="task-create__group">
         <label class="task-create__label">Заголовок</label>
-        <ui-form-field v-model="title" type="text" placeholder="Например, созвониться с клиентом" />
+        <ui-form-field
+          v-model="title"
+          type="text"
+          placeholder="Например, созвониться с клиентом"
+        />
       </div>
 
       <div class="task-create__grid">
         <div class="task-create__group">
           <label class="task-create__label">Тип задачи</label>
-          <ui-form-field v-model="taskType" type="select" :options="TASK_TYPE_OPTIONS" placeholder="Тип задачи" />
+          <ui-form-field
+            v-model="taskType"
+            type="select"
+            :options="TASK_TYPE_OPTIONS"
+            placeholder="Тип задачи"
+          />
         </div>
 
         <div class="task-create__group">

@@ -24,8 +24,7 @@ async function deactivateAccount() {
     await $apiClient.api.deactivateAccountApiV1AuthAccountDeactivatePost();
     notification.success("Успех", "Аккаунт деактивирован");
     showDeactivateModal.value = false;
-    // Log out and redirect
-    authStore.logout();
+    authStore.clearAuth();
     await router.push("/auth/login");
   } catch (error) {
     console.error("Failed to deactivate account:", error);
@@ -41,8 +40,7 @@ async function deleteAccount() {
     await $apiClient.api.deleteAccountApiV1AuthAccountDelete();
     notification.success("Успех", "Аккаунт удален");
     showDeleteModal.value = false;
-    // Log out and redirect
-    authStore.logout();
+    authStore.clearAuth();
     await router.push("/auth/login");
   } catch (error) {
     console.error("Failed to delete account:", error);

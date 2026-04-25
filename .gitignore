@@ -26,3 +26,4 @@ logs
 
 #Generated code
 app/api
+openapi.json
