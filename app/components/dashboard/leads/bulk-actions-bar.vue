@@ -19,13 +19,14 @@ const showMovePopover = ref(false);
 const showAssignPopover = ref(false);
 const selectedStage = ref<TenantLeadStage | "">("");
 const selectedMemberId = ref<string>("");
+const hasSelectedMember = ref(false);
 
 const stageOptions = computed<SelectOption[]>(() =>
   STAGE_OPTIONS.map((s) => ({ value: s.value, label: s.label })),
 );
 
 const memberOptions = computed<SelectOption[]>(() => [
-  { value: "", label: "Без ответственного" },
+  { value: "__UNASSIGN__", label: "Без ответственного" },
   ...props.members.map((m) => ({
     value: m.id,
     label: m.user_full_name ?? m.user_email,
@@ -40,8 +41,11 @@ const handleMove = () => {
 };
 
 const handleAssign = () => {
-  emit("bulkAssign", selectedMemberId.value || null);
+  const memberId =
+    selectedMemberId.value === "__UNASSIGN__" ? null : selectedMemberId.value;
+  emit("bulkAssign", memberId);
   selectedMemberId.value = "";
+  hasSelectedMember.value = false;
   showAssignPopover.value = false;
 };
 </script>
@@ -91,8 +95,15 @@ const handleAssign = () => {
             v-model="selectedMemberId"
             :options="memberOptions"
             placeholder="Выберите ответственного"
+            @update:model-value="hasSelectedMember = true"
           />
-          <ui-button size="sm" @click="handleAssign"> Применить </ui-button>
+          <ui-button
+            size="sm"
+            :disabled="!hasSelectedMember"
+            @click="handleAssign"
+          >
+            Применить
+          </ui-button>
         </div>
       </ui-popover>
     </div>

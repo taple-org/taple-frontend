@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Dialog } from "@ark-ui/vue/dialog";
-import { TenantLeadTaskType } from "~/api/generated/api";
+import { TenantLeadStage, TenantLeadTaskType } from "~/api/generated/api";
 import type { CreateTaskRequest, TenantLeadDetail } from "~/api/generated/api";
 import { STAGE_LABELS } from "~/stores/leads.store";
 import type { ContentSwitcherItem } from "~/components/ui/ContentSwitcher.vue";
@@ -56,7 +56,7 @@ const isAddingNote = ref(false);
 
 // ── Task creation modal state ──────────────────────────────────────────────
 const showTaskModal = ref(false);
-const taskModalStep = ref<TaskModalStep>(TaskModalStep.Create);
+const taskModalStep = ref<TaskModalStep>(TaskModalStep.Confirm);
 const taskModalDirection = ref<Direction>(Direction.Forward);
 const isCreatingTask = ref(false);
 
@@ -132,7 +132,6 @@ const closeTaskModal = () => {
 };
 
 const submitTask = (payload: TaskCreatePayload) => {
-  isCreatingTask.value = true;
   emit("createTask", {
     title: payload.title,
     description: payload.description || undefined,
@@ -141,7 +140,6 @@ const submitTask = (payload: TaskCreatePayload) => {
     assigned_to_member_id: payload.assigned_to_member_id || undefined,
   });
   closeTaskModal();
-  isCreatingTask.value = false;
 };
 
 const goToStep = (step: TaskModalStep) => {
@@ -180,7 +178,9 @@ const getActivityDescription = (item: any): string => {
 const isTakingToWork = ref(false);
 const shouldOpenTaskAfterTakeToWork = ref(false);
 
-const isInProgress = computed(() => props.lead?.stage_code === "in_progress");
+const isInProgress = computed(
+  () => props.lead?.stage_code === TenantLeadStage.InProgress,
+);
 
 watch(isInProgress, (value) => {
   if (!value || !shouldOpenTaskAfterTakeToWork.value) return;
@@ -699,7 +699,7 @@ const scores = computed(() => {
       <!-- Create step: Task form -->
       <div v-else key="create" class="task-create-wrapper">
         <WorkspaceTasksCreateModal
-          :open="true"
+          :open="showTaskModal"
           :workspace-id="lead?.tenant_id ?? ''"
           :pending="isCreatingTask"
           :pre-selected-lead="

@@ -488,8 +488,8 @@ export const useLeadsStore = defineStore("leads", () => {
         { tenant_id: workspaceId },
         { tenant_lead_ids: leadIds, member_id: memberId },
       );
-      selectedIds.value.clear();
       notification.success("Успешно", `${leadIds.length} лидов назначено`);
+      selectedIds.value.clear();
       return true;
     } catch {
       notification.error("Ошибка", "Не удалось назначить лиды");
