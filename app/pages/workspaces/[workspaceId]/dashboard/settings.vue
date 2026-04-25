@@ -479,10 +479,10 @@ async function saveTags() {
                 getRoleOptionsForMember(member.role).length > 0
               "
               type="select"
-              v-model="member.role"
+              :model-value="mapLocalRole(member.role)"
               :options="
                 getRoleOptionsForMember(member.role).map((r) => ({
-                  value: r.value.toLowerCase(),
+                  value: r.value,
                   label: r.label,
                 }))
               "

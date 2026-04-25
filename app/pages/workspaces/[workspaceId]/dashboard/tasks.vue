@@ -40,7 +40,7 @@ const {
     $apiClient.api
       .getTaskBoardApiV1LeadsTasksGet({
         tenant_id: workspaceId,
-        search: search.value.trim() || null,
+        search: search.value.trim() || undefined,
         responsible_member_id: responsibleMemberId.value || undefined,
         assigned_to_member_id: assignedToMemberId.value || undefined,
         buckets: visibleBuckets.value.length ? visibleBuckets.value : null,

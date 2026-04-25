@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { TenantLeadStage } from "~/api/generated/api";
-import type { TenantLeadListItem } from "~/api/generated/api";
+import type {
+  TenantLeadListItem,
+  CreateTaskRequest,
+} from "~/api/generated/api";
 import type { LeadFilters } from "~/stores/leads.store";
 
 import DashboardLeadsLeadFiltersBar from "~/components/dashboard/leads/lead-filters-bar.vue";
@@ -48,6 +51,7 @@ const handleCloseDetail = () => {
 
 // ── Apply/Reset filters ────────────────────────────────────────────────────
 const applyFilters = async () => {
+  leadsStore.searchQuery = searchQuery.value;
   await leadsStore.fetchLeads(workspaceId, { ...filters.value });
 };
 
@@ -58,6 +62,7 @@ const resetFilters = async () => {
     sort_dir: "desc",
   };
   searchQuery.value = "";
+  leadsStore.searchQuery = "";
   await leadsStore.fetchLeads(workspaceId, { ...filters.value });
 };
 
@@ -107,7 +112,7 @@ const handleCreateNote = async (text: string) => {
   await leadsStore.createNote(selectedLeadId.value, workspaceId, text);
 };
 
-const handleCreateTask = async (data: { title: string; due_at?: string }) => {
+const handleCreateTask = async (data: CreateTaskRequest) => {
   if (!selectedLeadId.value) return;
   await leadsStore.createTask(selectedLeadId.value, workspaceId, data);
 };
@@ -117,9 +122,16 @@ const handleCompleteTask = async (taskId: string) => {
   await leadsStore.completeTask(selectedLeadId.value, taskId, workspaceId);
 };
 
-const handleTakeToWorkFromDetail = async () => {
-  if (!selectedLeadId.value) return;
-  await leadsStore.takeLead(selectedLeadId.value, workspaceId);
+const handleTakeToWorkFromDetail = async (
+  done?: (success: boolean) => void,
+) => {
+  if (!selectedLeadId.value) {
+    done?.(false);
+    return;
+  }
+  const success = await leadsStore.takeLead(selectedLeadId.value, workspaceId);
+  done?.(success);
+  if (!success) return;
   // Refresh lead detail to show updated stage
   await leadsStore.fetchLeadDetail(selectedLeadId.value, workspaceId);
 };
@@ -153,7 +165,7 @@ provide("workspaceId", workspaceId);
         <div class="leads-page__topbar-left">
           <h1 class="leads-page__heading">Лиды</h1>
           <span v-if="!leadsStore.isLoading" class="leads-page__count">
-            {{ leadsStore.totalCount }}
+            {{ leadsStore.filteredRawLeads.length }}
           </span>
         </div>
 
@@ -191,7 +203,7 @@ provide("workspaceId", workspaceId);
       <div class="leads-page__main">
         <div class="leads-page__table-wrap">
           <DashboardLeadsLeadsTable
-            :leads="leadsStore.rawLeads"
+            :leads="leadsStore.filteredRawLeads"
             :selected-ids="leadsStore.selectedIds"
             :is-loading="leadsStore.isLoading"
             :has-more="leadsStore.hasMore"
