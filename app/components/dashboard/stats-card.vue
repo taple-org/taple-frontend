@@ -26,7 +26,7 @@ const trendClass = computed(() => {
   <div class="stats-card">
     <div class="stats-card__header">
       <span v-if="icon" class="stats-card__icon">
-        <Icon :name="icon" mode="svg" :size="20" />
+        <Icon :name="icon" mode="svg" :size="18" />
       </span>
       <span class="stats-card__title">{{ title }}</span>
     </div>
@@ -59,18 +59,21 @@ const trendClass = computed(() => {
 
 <style scoped>
 .stats-card {
-  background: var(--color-white);
-  border: 1px solid var(--color-neutral-lm);
-  border-radius: var(--radius-md);
-  padding: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #fcfcff 100%);
+  border: 1px solid #eceef5;
+  border-radius: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: box-shadow var(--transition-base);
+  gap: 10px;
+  transition:
+    box-shadow var(--transition-base),
+    transform var(--transition-base);
 }
 
 .stats-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(56, 73, 112, 0.08);
+  transform: translateY(-1px);
 }
 
 .stats-card__header {
@@ -83,17 +86,17 @@ const trendClass = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: var(--color-highlight-l);
-  color: var(--color-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #eef4ff;
+  color: #6c9cff;
 }
 
 .stats-card__title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--color-neutral-dl);
+  color: #8f9098;
 }
 
 .stats-card__body {
@@ -103,34 +106,34 @@ const trendClass = computed(() => {
 }
 
 .stats-card__value {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--color-neutral-dd);
-  line-height: 1.2;
+  font-size: 28px;
+  font-weight: 600;
+  color: #2f3036;
+  line-height: 1.1;
 }
 
 .stats-card__change {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
 }
 
 .stats-card__change--positive {
-  color: var(--color-success);
+  color: #2ca385;
 }
 
 .stats-card__change--negative {
-  color: var(--color-error);
+  color: #dd6b75;
 }
 
 .stats-card__change--neutral {
-  color: var(--color-neutral-dl);
+  color: #8f9098;
 }
 
 .stats-card__change-label {
-  color: var(--color-neutral-dl);
+  color: #8f9098;
   font-weight: 400;
 }
 </style>

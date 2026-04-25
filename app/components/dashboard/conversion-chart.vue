@@ -1,18 +1,10 @@
 <script setup lang="ts">
 import Chart from "chart.js/auto";
-
-interface MemberPerformance {
-  member_id: string;
-  full_name: string;
-  tasks_completed?: number;
-  notes_added?: number;
-  stage_changes?: number;
-  leads_won?: number;
-  leads_lost?: number;
-}
+import type { StageConversionItem } from "~/api/generated/api";
+import { formatStageLabel } from "~/utils/formatStageLabel";
 
 interface Props {
-  members: MemberPerformance[];
+  conversions: StageConversionItem[];
 }
 
 const props = defineProps<Props>();
@@ -20,32 +12,40 @@ const props = defineProps<Props>();
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let chartInstance: Chart | null = null;
 
+const toRatePercent = (value?: number | null) => {
+  if (!value) return 0;
+  if (value <= 1) return Math.round(value * 100);
+  return Math.round(value);
+};
+
 const chartData = computed(() => ({
-  labels: props.members.map((member) => member.full_name.split(" ")[0]),
+  labels: props.conversions.map(
+    (item) => `${formatStageLabel(item.from_stage)} -> ${formatStageLabel(item.to_stage)}`,
+  ),
   datasets: [
     {
-      label: "Задачи",
-      data: props.members.map((member) => member.tasks_completed || 0),
-      backgroundColor: "rgba(108, 156, 255, 0.54)",
-      borderColor: "rgba(108, 156, 255, 0.95)",
+      type: "bar" as const,
+      label: "Количество переходов",
+      data: props.conversions.map((item) => item.count),
+      backgroundColor: "rgba(108, 156, 255, 0.46)",
+      borderColor: "rgba(108, 156, 255, 0.92)",
       borderWidth: 1,
       borderRadius: 8,
+      yAxisID: "y",
+      order: 2,
+      maxBarThickness: 34,
     },
     {
-      label: "Заметки",
-      data: props.members.map((member) => member.notes_added || 0),
-      backgroundColor: "rgba(58, 192, 160, 0.46)",
+      type: "line" as const,
+      label: "Конверсия, %",
+      data: props.conversions.map((item) => toRatePercent(item.rate)),
       borderColor: "rgba(58, 192, 160, 0.9)",
-      borderWidth: 1,
-      borderRadius: 8,
-    },
-    {
-      label: "Смены этапов",
-      data: props.members.map((member) => member.stage_changes || 0),
-      backgroundColor: "rgba(247, 149, 120, 0.43)",
-      borderColor: "rgba(247, 149, 120, 0.9)",
-      borderWidth: 1,
-      borderRadius: 8,
+      backgroundColor: "rgba(58, 192, 160, 0.2)",
+      yAxisID: "y1",
+      tension: 0.35,
+      pointRadius: 3,
+      pointHoverRadius: 4,
+      order: 1,
     },
   ],
 }));
@@ -59,7 +59,7 @@ const chartOptions = {
       align: "start" as const,
       labels: {
         usePointStyle: true,
-        pointStyle: "rectRounded",
+        pointStyle: "circle",
         padding: 12,
         font: {
           family: "StyreneALC, sans-serif",
@@ -76,12 +76,6 @@ const chartOptions = {
       borderWidth: 1,
       cornerRadius: 10,
       padding: 12,
-      callbacks: {
-        title: (items: Array<{ dataIndex: number }>) => {
-          const index = items[0]?.dataIndex ?? 0;
-          return props.members[index]?.full_name || "";
-        },
-      },
     },
   },
   scales: {
@@ -99,6 +93,18 @@ const chartOptions = {
         },
       },
     },
+    y1: {
+      beginAtZero: true,
+      position: "right" as const,
+      suggestedMax: 100,
+      grid: {
+        drawOnChartArea: false,
+      },
+      ticks: {
+        color: "#8f9098",
+        callback: (value: string | number) => `${value}%`,
+      },
+    },
     x: {
       grid: {
         display: false,
@@ -106,6 +112,8 @@ const chartOptions = {
       },
       ticks: {
         color: "#71727a",
+        maxRotation: 30,
+        minRotation: 0,
         font: {
           family: "StyreneALC, sans-serif",
           size: 11,
@@ -125,7 +133,7 @@ onMounted(() => {
 });
 
 watch(
-  () => props.members,
+  () => props.conversions,
   () => {
     if (!chartInstance) return;
     chartInstance.data = chartData.value;
@@ -140,16 +148,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="member-performance-chart">
-    <h3 class="member-performance-chart__title">Эффективность команды</h3>
-    <div class="member-performance-chart__container">
+  <div class="conversion-chart">
+    <h3 class="conversion-chart__title">Переходы и конверсия между этапами</h3>
+    <div class="conversion-chart__container">
       <canvas ref="canvasRef" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.member-performance-chart {
+.conversion-chart {
   background: linear-gradient(180deg, #ffffff 0%, #fcfcff 100%);
   border: 1px solid #eceef5;
   border-radius: 16px;
@@ -159,20 +167,20 @@ onUnmounted(() => {
   gap: 16px;
 }
 
-.member-performance-chart__title {
+.conversion-chart__title {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #2f3036;
 }
 
-.member-performance-chart__container {
+.conversion-chart__container {
   position: relative;
-  height: 280px;
+  height: 300px;
   width: 100%;
 }
 
-.member-performance-chart__container canvas {
+.conversion-chart__container canvas {
   width: 100% !important;
   height: 100% !important;
 }

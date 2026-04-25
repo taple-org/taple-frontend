@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Chart from "chart.js/auto";
+import { formatStageLabel } from "~/utils/formatStageLabel";
 
 interface FunnelItem {
   stage: string;
@@ -12,30 +13,32 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let chartInstance: Chart | null = null;
 
-const chartData = computed(() => {
-  return {
-    labels: props.data.map((item) => item.label_ru),
-    datasets: [
-      {
-        label: "Количество",
-        data: props.data.map((item) => item.count),
-        backgroundColor: [
-          "rgba(0, 111, 253, 0.8)",
-          "rgba(0, 111, 253, 0.65)",
-          "rgba(0, 111, 253, 0.5)",
-          "rgba(0, 111, 253, 0.35)",
-          "rgba(0, 111, 253, 0.2)",
-        ],
-        borderColor: "rgba(0, 111, 253, 1)",
-        borderWidth: 1,
-        borderRadius: 6,
-      },
-    ],
-  };
-});
+const palette = [
+  "rgba(108, 156, 255, 0.58)",
+  "rgba(133, 175, 255, 0.54)",
+  "rgba(159, 193, 255, 0.5)",
+  "rgba(184, 209, 255, 0.45)",
+  "rgba(208, 226, 255, 0.4)",
+];
+
+const chartData = computed(() => ({
+  labels: props.data.map((item) => formatStageLabel(item.stage, item.label_ru)),
+  datasets: [
+    {
+      label: "Количество лидов",
+      data: props.data.map((item) => item.count),
+      backgroundColor: props.data.map((_, idx) => palette[idx % palette.length]),
+      borderColor: "rgba(108, 156, 255, 0.95)",
+      borderWidth: 1,
+      borderRadius: 10,
+      maxBarThickness: 38,
+    },
+  ],
+}));
 
 const chartOptions = {
   responsive: true,
@@ -45,18 +48,15 @@ const chartOptions = {
       display: false,
     },
     tooltip: {
-      backgroundColor: "var(--color-neutral-dd)",
-      titleColor: "var(--color-white)",
-      bodyColor: "var(--color-white)",
-      borderColor: "var(--color-neutral-dm)",
+      backgroundColor: "#1f2024",
+      titleColor: "#ffffff",
+      bodyColor: "#ffffff",
+      borderColor: "#494a50",
       borderWidth: 1,
-      cornerRadius: 8,
+      cornerRadius: 10,
       padding: 12,
-      displayColors: true,
       callbacks: {
-        label: (context: any) => {
-          return ` ${context.parsed.y} лидов`;
-        },
+        label: (context: { parsed: { y: number } }) => ` ${context.parsed.y} лидов`,
       },
     },
   },
@@ -64,11 +64,11 @@ const chartOptions = {
     y: {
       beginAtZero: true,
       grid: {
-        color: "rgba(0, 0, 0, 0.05)",
+        color: "rgba(143, 144, 152, 0.12)",
         drawBorder: false,
       },
       ticks: {
-        color: "var(--color-neutral-dl)",
+        color: "#8f9098",
         font: {
           family: "StyreneALC, sans-serif",
           size: 12,
@@ -81,12 +81,12 @@ const chartOptions = {
         drawBorder: false,
       },
       ticks: {
-        color: "var(--color-neutral-dl)",
+        color: "#71727a",
         font: {
           family: "StyreneALC, sans-serif",
           size: 11,
         },
-        maxRotation: 45,
+        maxRotation: 35,
         minRotation: 0,
       },
     },
@@ -94,31 +94,26 @@ const chartOptions = {
 };
 
 onMounted(() => {
-  if (canvasRef.value) {
-    chartInstance = new Chart(canvasRef.value, {
-      type: "bar",
-      data: chartData.value,
-      options: chartOptions as any,
-    });
-  }
+  if (!canvasRef.value) return;
+  chartInstance = new Chart(canvasRef.value, {
+    type: "bar",
+    data: chartData.value,
+    options: chartOptions as never,
+  });
 });
 
 watch(
   () => props.data,
-  (newData) => {
-    if (chartInstance && chartInstance.data.datasets[0]) {
-      chartInstance.data.labels = newData.map((item) => item.label_ru);
-      chartInstance.data.datasets[0].data = newData.map((item) => item.count);
-      chartInstance.update();
-    }
+  () => {
+    if (!chartInstance) return;
+    chartInstance.data = chartData.value;
+    chartInstance.update();
   },
   { deep: true },
 );
 
 onUnmounted(() => {
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
+  chartInstance?.destroy();
 });
 </script>
 
@@ -133,9 +128,9 @@ onUnmounted(() => {
 
 <style scoped>
 .funnel-chart {
-  background: var(--color-white);
-  border: 1px solid var(--color-neutral-lm);
-  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #ffffff 0%, #fcfcff 100%);
+  border: 1px solid #eceef5;
+  border-radius: 16px;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -143,10 +138,10 @@ onUnmounted(() => {
 }
 
 .funnel-chart__title {
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-neutral-dd);
-  margin: 0;
+  color: #2f3036;
 }
 
 .funnel-chart__container {
