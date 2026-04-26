@@ -1,40 +1,44 @@
 <script lang="ts" setup>
 import type { ITariffCard } from "~/interfaces/landing.interfaces";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
 const cards: ITariffCard[] = [
   {
-    name: 'Plan 1',
-    description: 'For individuals',
+    name: "Plan 1",
+    description: "For individuals",
     pricing: {
       price: 2,
-      time: 'month'
+      time: "month",
     },
-    features: ['Feature 1', 'Feature 2', 'Feature 3'],
+    features: ["Feature 1", "Feature 2", "Feature 3"],
   },
   {
-    name: 'Plan 1',
-    description: 'For individuals',
+    name: "Plan 1",
+    description: "For individuals",
     pricing: {
       price: 2,
-      time: 'month'
+      time: "month",
     },
-    features: ['Feature 1', 'Feature 2', 'Feature 3'],
+    features: ["Feature 1", "Feature 2", "Feature 3"],
   },
   {
-    name: 'Plan 1',
-    description: 'For individuals',
+    name: "Plan 1",
+    description: "For individuals",
     pricing: {
       price: 2,
-      time: 'month'
+      time: "month",
     },
-    features: ['Feature 1', 'Feature 2', 'Feature 3'],
-  }
-]
+    features: ["Feature 1", "Feature 2", "Feature 3"],
+  },
+];
 </script>
 <template>
   <section class="tariffs" id="tariffs">
     <ui-container class="tariffs__inner" :padding="[30, 15]">
       <h3 class="tariffs__title">
-        Тарифы
+        {{ t("landing.pricingTitle") }}
       </h3>
       <ul class="tariffs__list">
         <li v-for="tariff in cards" class="tariffs__item">

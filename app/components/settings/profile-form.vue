@@ -1,8 +1,8 @@
 <template>
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Личная информация</h2>
-      <p class="card-desc">Ваши персональные данные</p>
+      <h2 class="card-title">{{ $t("profile.personalInfo") }}</h2>
+      <p class="card-desc">{{ $t("profile.personalInfoDesc") }}</p>
     </div>
 
     <form class="form-grid" @submit.prevent="handleSubmit">
@@ -10,35 +10,32 @@
         type="text"
         v-model="r$.$value.first_name"
         :error="r$.first_name.$errors[0]"
-        label="Имя"
-        placeholder="Введите имя"
+        :label="$t('profile.firstName')"
+        :placeholder="$t('profile.firstNamePlaceholder')"
       />
       <ui-form-field
         type="text"
         v-model="r$.$value.last_name"
         :error="r$.last_name.$errors[0]"
-        label="Фамилия"
-        placeholder="Введите фамилию"
+        :label="$t('profile.lastName')"
+        :placeholder="$t('profile.lastNamePlaceholder')"
       />
 
       <ui-form-field
         class="form__lang"
         type="select"
         v-model="r$.$value.language"
-        label="Язык"
-        placeholder="Выберите язык"
-        :options="[
-          { label: 'Русский', value: 'ru' },
-          { label: 'English', value: 'en' }
-        ]"
+        :label="$t('profile.language')"
+        :placeholder="$t('profile.languagePlaceholder')"
+        :options="languageOptions"
       />
 
       <div class="form-footer">
         <ui-button variant="outline" type="button" @click="r$.$reset()">
-          Отмена
+          {{ $t("profile.cancel") }}
         </ui-button>
         <ui-button type="submit" variant="primary" :disabled="isLoading">
-          {{ isLoading ? 'Сохранение...' : 'Сохранить изменения' }}
+          {{ isLoading ? $t("profile.saving") : $t("profile.saveChanges") }}
         </ui-button>
       </div>
     </form>
@@ -51,28 +48,50 @@
 import { useProfileForm } from "~/composables/settings/useProfileForm";
 import { useAuthStore } from "~/stores/auth.store";
 
+const { t, setLocale } = useI18n();
 const authStore = useAuthStore();
 const { r$, state } = useProfileForm(computed(() => authStore.user));
 
-const isLoading = ref(false)
-const successMessage = ref('')
+const isLoading = ref(false);
+const successMessage = ref("");
+
+const languageOptions = computed(() => [
+  { label: t("languages.ru"), value: "ru" },
+  { label: t("languages.en"), value: "en" },
+  { label: t("languages.kk"), value: "kk" },
+]);
 
 async function handleSubmit() {
-  const result = await r$.$validate()
-  if (!result.valid) return
+  const result = await r$.$validate();
+  if (!result.valid) return;
 
-  isLoading.value = true
-  successMessage.value = ''
+  isLoading.value = true;
+  successMessage.value = "";
   try {
+    // Update user data
     Object.assign(authStore.user ?? {}, {
       first_name: state.first_name,
       last_name: state.last_name,
-    })
-    await new Promise(r => setTimeout(r, 600))
-    successMessage.value = 'Профиль обновлён'
-    setTimeout(() => { successMessage.value = '' }, 3000)
+      language: state.language,
+    });
+
+    // Apply locale change immediately
+    if (state.language && ["en", "ru", "kk"].includes(state.language)) {
+      await setLocale(state.language as "en" | "ru" | "kk");
+      if (import.meta.client) {
+        localStorage.setItem("i18n_locale", state.language);
+        useCookie("i18n_locale", { maxAge: 60 * 60 * 24 * 365 }).value =
+          state.language;
+      }
+    }
+
+    await new Promise((r) => setTimeout(r, 600));
+    successMessage.value = t("profile.updated");
+    setTimeout(() => {
+      successMessage.value = "";
+    }, 3000);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 </script>

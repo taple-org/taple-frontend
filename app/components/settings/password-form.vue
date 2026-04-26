@@ -1,8 +1,8 @@
 <template>
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Смена пароля</h2>
-      <p class="card-desc">Используйте надёжный пароль длиной от 8 символов</p>
+      <h2 class="card-title">{{ t("settings.changePassword") }}</h2>
+      <p class="card-desc">{{ t("settings.passwordDesc") }}</p>
     </div>
 
     <form class="form" @submit.prevent="handleSubmit">
@@ -10,8 +10,8 @@
         type="password"
         v-model="r$.$value.currentPassword"
         :error="r$.currentPassword.$errors[0]"
-        label="Текущий пароль"
-        placeholder="Введите текущий пароль"
+        :label="t('settings.currentPassword')"
+        :placeholder="t('settings.currentPasswordPlaceholder')"
       />
 
       <div class="field-with-strength">
@@ -19,8 +19,8 @@
           type="password"
           v-model="r$.$value.newPassword"
           :error="r$.newPassword.$errors[0]"
-          label="Новый пароль"
-          placeholder="Минимум 8 символов"
+          :label="t('settings.newPassword')"
+          :placeholder="t('settings.newPasswordPlaceholder')"
         />
         <template v-if="r$.$value.newPassword">
           <div class="strength-bar">
@@ -44,15 +44,15 @@
         type="password"
         v-model="r$.$value.confirmPassword"
         :error="r$.confirmPassword.$errors[0]"
-        label="Подтверждение пароля"
-        placeholder="Повторите пароль"
+        :label="t('settings.confirmPassword')"
+        :placeholder="t('settings.confirmPasswordPlaceholder')"
       />
 
       <div v-if="successMsg" class="success-banner">{{ successMsg }}</div>
 
       <div class="form-footer">
         <ui-button type="submit" :disabled="isLoading">
-          {{ isLoading ? "Сохранение..." : "Сменить пароль" }}
+          {{ isLoading ? t("common.saving") : t("settings.changePasswordBtn") }}
         </ui-button>
       </div>
     </form>
@@ -62,6 +62,9 @@
 <script setup lang="ts">
 import { usePasswordForm } from "~/composables/settings/usePasswordForm";
 import { extractApiClientError } from "~/utils/extractApiClientError";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const { r$, state, externalErrors } = usePasswordForm();
 
@@ -75,8 +78,14 @@ const strength = computed(() => {
   if (p.length >= 12) score++;
   if (/[A-Z]/.test(p) && /[a-z]/.test(p)) score++;
   if (/\d/.test(p) && /[^A-Za-z0-9]/.test(p)) score++;
-  const labels = ["", "Слабый", "Средний", "Хороший", "Надёжный"];
-  return { score, level: score, label: labels[score] || "Слабый" };
+  const labels = [
+    "",
+    t("password.weak"),
+    t("password.medium"),
+    t("password.good"),
+    t("password.strong"),
+  ];
+  return { score, level: score, label: labels[score] || t("password.weak") };
 });
 
 function strengthClass(segment: number) {
@@ -100,14 +109,14 @@ async function handleSubmit() {
         new_password_confirm: data.confirmPassword,
       });
     r$.$reset();
-    successMsg.value = "Пароль успешно изменён";
+    successMsg.value = t("settings.passwordChangedSuccess");
     setTimeout(() => {
       successMsg.value = "";
     }, 3000);
   } catch (e) {
     console.log("error", e);
     const error = extractApiClientError(e);
-    useNotification().error("Упс!", error?.message, 1000);
+    useNotification().error(t("common.error"), error?.message, 1000);
   } finally {
     isLoading.value = false;
   }

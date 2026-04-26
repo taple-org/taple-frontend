@@ -1,10 +1,19 @@
 <script setup lang="ts">
 import { useNotification } from "~/composables/useNotification";
 import { useAuthStore } from "~/stores/auth.store";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 definePageMeta({
-  title: "Безопасность",
+  title: "Security",
   layout: "dashboard",
+});
+
+useSeoMeta({
+  title: `${t("security.pageTitle")} — Taple`,
+  description: t("security.pageDescription"),
+  robots: "noindex, nofollow",
 });
 
 const { $apiClient } = useNuxtApp();
@@ -22,13 +31,13 @@ async function deactivateAccount() {
   isDeactivating.value = true;
   try {
     await $apiClient.api.deactivateAccountApiV1AuthAccountDeactivatePost();
-    notification.success("Успех", "Аккаунт деактивирован");
+    notification.success(t("common.success"), t("security.deactivateSuccess"));
     showDeactivateModal.value = false;
     authStore.clearAuth();
     await router.push("/auth/login");
   } catch (error) {
     console.error("Failed to deactivate account:", error);
-    notification.error("Ошибка", "Не удалось деактивировать аккаунт");
+    notification.error(t("common.error"), t("security.deactivateError"));
   } finally {
     isDeactivating.value = false;
   }
@@ -38,13 +47,13 @@ async function deleteAccount() {
   isDeleting.value = true;
   try {
     await $apiClient.api.deleteAccountApiV1AuthAccountDelete();
-    notification.success("Успех", "Аккаунт удален");
+    notification.success(t("common.success"), t("security.deleteSuccess"));
     showDeleteModal.value = false;
     authStore.clearAuth();
     await router.push("/auth/login");
   } catch (error) {
     console.error("Failed to delete account:", error);
-    notification.error("Ошибка", "Не удалось удалить аккаунт");
+    notification.error(t("common.error"), t("security.deleteError"));
   } finally {
     isDeleting.value = false;
   }
@@ -55,23 +64,25 @@ async function deleteAccount() {
   <ui-container :padding="[20, 15, 20]" class="security-container">
     <div class="security-settings">
       <div class="page-header">
-        <h1 class="page-title">Безопасность</h1>
-        <p class="page-desc">Управление безопасностью аккаунта</p>
+        <h1 class="page-title">{{ t("security.pageTitle") }}</h1>
+        <p class="page-desc">{{ t("security.pageDescription") }}</p>
       </div>
 
       <!-- Danger Zone -->
       <div class="settings-card danger-zone">
         <div class="card-header">
-          <h2 class="card-title">Опасная зона</h2>
-          <p class="card-desc">Действия в этой зоне необратимы</p>
+          <h2 class="card-title">{{ t("security.dangerZoneTitle") }}</h2>
+          <p class="card-desc">{{ t("security.dangerZoneDesc") }}</p>
         </div>
 
         <div class="danger-actions">
           <div class="danger-action">
             <div class="danger-action__info">
-              <h3 class="danger-action__title">Деактивировать аккаунт</h3>
+              <h3 class="danger-action__title">
+                {{ t("security.deactivateTitle") }}
+              </h3>
               <p class="danger-action__desc">
-                Временно отключить доступ к аккаунту. Вы сможете активировать его позже.
+                {{ t("security.deactivateDesc") }}
               </p>
             </div>
             <ui-button
@@ -79,22 +90,19 @@ async function deleteAccount() {
               class="btn-danger-outline"
               @click="showDeactivateModal = true"
             >
-              Деактивировать
+              {{ t("security.deactivateButton") }}
             </ui-button>
           </div>
 
           <div class="danger-action">
             <div class="danger-action__info">
-              <h3 class="danger-action__title">Удалить аккаунт</h3>
-              <p class="danger-action__desc">
-                Полное удаление аккаунта и всех данных. Это действие необратимо.
-              </p>
+              <h3 class="danger-action__title">
+                {{ t("security.deleteTitle") }}
+              </h3>
+              <p class="danger-action__desc">{{ t("security.deleteDesc") }}</p>
             </div>
-            <ui-button
-              class="btn-danger"
-              @click="showDeleteModal = true"
-            >
-              Удалить
+            <ui-button class="btn-danger" @click="showDeleteModal = true">
+              {{ t("security.deleteButton") }}
             </ui-button>
           </div>
         </div>
@@ -104,14 +112,14 @@ async function deleteAccount() {
     <!-- Deactivate Confirmation Modal -->
     <ui-modal
       v-model:open="showDeactivateModal"
-      title="Деактивировать аккаунт?"
-      description="Ваш аккаунт будет временно отключен. Вы сможете активировать его позже, связавшись с поддержкой."
+      :title="t('security.deactivateModalTitle')"
+      :description="t('security.deactivateModalDesc')"
       :persistent="isDeactivating"
     >
       <div class="modal-body">
         <p class="modal-warning">
           <Icon name="my-icon:alert" class="modal-warning__icon" />
-          <span>После деактивации вы не сможете войти в систему до повторной активации.</span>
+          <span>{{ t("security.deactivateWarning") }}</span>
         </p>
       </div>
 
@@ -122,14 +130,18 @@ async function deleteAccount() {
             :disabled="isDeactivating"
             @click="showDeactivateModal = false"
           >
-            Отмена
+            {{ t("security.cancel") }}
           </ui-button>
           <ui-button
             class="btn-danger-outline"
             :disabled="isDeactivating"
             @click="deactivateAccount"
           >
-            {{ isDeactivating ? "Деактивация..." : "Деактивировать" }}
+            {{
+              isDeactivating
+                ? t("security.deactivating")
+                : t("security.deactivateButton")
+            }}
           </ui-button>
         </div>
       </template>
@@ -138,14 +150,14 @@ async function deleteAccount() {
     <!-- Delete Confirmation Modal -->
     <ui-modal
       v-model:open="showDeleteModal"
-      title="Удалить аккаунт?"
-      description="Это действие необратимо. Все ваши данные будут безвозвратно удалены."
+      :title="t('security.deleteModalTitle')"
+      :description="t('security.deleteModalDesc')"
       :persistent="isDeleting"
     >
       <div class="modal-body">
         <p class="modal-warning modal-warning--critical">
           <Icon name="my-icon:alert" class="modal-warning__icon" />
-          <span>Все данные аккаунта, включая рабочие пространства и настройки, будут удалены без возможности восстановления.</span>
+          <span>{{ t("security.deleteWarning") }}</span>
         </p>
       </div>
 
@@ -156,14 +168,18 @@ async function deleteAccount() {
             :disabled="isDeleting"
             @click="showDeleteModal = false"
           >
-            Отмена
+            {{ t("security.cancel") }}
           </ui-button>
           <ui-button
             class="btn-danger"
             :disabled="isDeleting"
             @click="deleteAccount"
           >
-            {{ isDeleting ? "Удаление..." : "Удалить аккаунт" }}
+            {{
+              isDeleting
+                ? t("security.deleting")
+                : t("security.deleteAccountConfirm")
+            }}
           </ui-button>
         </div>
       </template>

@@ -6,11 +6,7 @@
     </div>
 
     <div class="toggle-list">
-      <div
-        v-for="item in group.items"
-        :key="item.key"
-        class="toggle-row"
-      >
+      <div v-for="item in group.items" :key="item.key" class="toggle-row">
         <div class="toggle-info">
           <div class="toggle-name">{{ item.label }}</div>
           <div class="toggle-desc">{{ item.description }}</div>
@@ -20,88 +16,144 @@
     </div>
 
     <div v-if="group === groups[groups.length - 1]" class="form-footer">
-      <div v-if="saved" class="success-banner">Настройки сохранены</div>
-      <ui-button variant="outline" @click="resetToDefault">Сбросить</ui-button>
+      <div v-if="saved" class="success-banner">
+        {{ t("notifications.saved") }}
+      </div>
+      <ui-button variant="outline" @click="resetToDefault">{{
+        t("notifications.reset")
+      }}</ui-button>
       <ui-button :disabled="isSaving" @click="saveSettings">
-        {{ isSaving ? 'Сохранение...' : 'Сохранить' }}
+        {{ isSaving ? t("notifications.saving") : t("common.save") }}
       </ui-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 interface NotificationItem {
-  key: string
-  label: string
-  description: string
-  enabled: boolean
+  key: string;
+  label: string;
+  description: string;
+  enabled: boolean;
 }
 
 interface NotificationGroup {
-  title: string
-  description: string
-  items: NotificationItem[]
+  title: string;
+  description: string;
+  items: NotificationItem[];
 }
 
-const groups = reactive<NotificationGroup[]>([
+const groups = computed<NotificationGroup[]>(() => [
   {
-    title: 'Уведомления по Email',
-    description: 'Выберите, какие письма вы хотите получать на почту',
+    title: t("notifications.emailTitle"),
+    description: t("notifications.emailDesc"),
     items: [
-      { key: 'email_security',  label: 'Безопасность',        description: 'Входы с новых устройств, смена пароля и подозрительная активность', enabled: true },
-      { key: 'email_activity',  label: 'Активность аккаунта', description: 'Обновления лидов, изменения в рабочих пространствах и задачи',     enabled: true },
-      { key: 'email_product',   label: 'Новости продукта',    description: 'Анонсы функций, обновления и советы по использованию',              enabled: false },
-      { key: 'email_billing',   label: 'Биллинг и оплата',    description: 'Квитанции, предстоящие списания и уведомления о подписке',          enabled: true },
+      {
+        key: "email_security",
+        label: t("notifications.security"),
+        description: t("notifications.securityDesc"),
+        enabled: true,
+      },
+      {
+        key: "email_activity",
+        label: t("notifications.accountActivity"),
+        description: t("notifications.accountActivityDesc"),
+        enabled: true,
+      },
+      {
+        key: "email_product",
+        label: t("notifications.productNews"),
+        description: t("notifications.productNewsDesc"),
+        enabled: false,
+      },
+      {
+        key: "email_billing",
+        label: t("notifications.billing"),
+        description: t("notifications.billingDesc"),
+        enabled: true,
+      },
     ],
   },
   {
-    title: 'Push-уведомления',
-    description: 'Уведомления прямо в браузере или мобильном приложении',
+    title: t("notifications.pushTitle"),
+    description: t("notifications.pushDesc"),
     items: [
-      { key: 'push_leads', label: 'Новые лиды',      description: 'Уведомления о новых контрагентах, найденных системой',           enabled: true },
-      { key: 'push_tasks', label: 'Задачи',           description: 'Напоминания о дедлайнах и назначенных задачах',                  enabled: true },
-      { key: 'push_team',  label: 'Действия команды', description: 'Когда участники команды вносят изменения в общее пространство',  enabled: false },
+      {
+        key: "push_leads",
+        label: t("notifications.newLeads"),
+        description: t("notifications.newLeadsDesc"),
+        enabled: true,
+      },
+      {
+        key: "push_tasks",
+        label: t("notifications.tasks"),
+        description: t("notifications.tasksDesc"),
+        enabled: true,
+      },
+      {
+        key: "push_team",
+        label: t("notifications.teamActions"),
+        description: t("notifications.teamActionsDesc"),
+        enabled: false,
+      },
     ],
   },
   {
-    title: 'Уведомления по SMS',
-    description: 'Важные оповещения через текстовые сообщения',
+    title: t("notifications.smsTitle"),
+    description: t("notifications.smsDesc"),
     items: [
-      { key: 'sms_security', label: 'Критическая безопасность', description: 'Только самые важные предупреждения о безопасности аккаунта',    enabled: true },
-      { key: 'sms_billing',  label: 'Платёжные уведомления',    description: 'Подтверждение транзакций и предупреждения о сбоях оплаты',      enabled: false },
+      {
+        key: "sms_security",
+        label: t("notifications.criticalSecurity"),
+        description: t("notifications.criticalSecurityDesc"),
+        enabled: true,
+      },
+      {
+        key: "sms_billing",
+        label: t("notifications.paymentNotices"),
+        description: t("notifications.paymentNoticesDesc"),
+        enabled: false,
+      },
     ],
   },
-])
+]);
 
-const isSaving = ref(false)
-const saved = ref(false)
+const isSaving = ref(false);
+const saved = ref(false);
 
-const defaults = groups.map(g => ({
-  key: g.title,
-  items: g.items.map(i => ({ key: i.key, enabled: i.enabled })),
-}))
+const defaults = computed(() =>
+  groups.value.map((g) => ({
+    key: g.title,
+    items: g.items.map((i) => ({ key: i.key, enabled: i.enabled })),
+  })),
+);
 
 async function saveSettings() {
-  isSaving.value = true
-  saved.value = false
+  isSaving.value = true;
+  saved.value = false;
   try {
     // TODO: await $fetch('/api/user/notifications', { method: 'PUT', body: { ... } })
-    await new Promise(r => setTimeout(r, 600))
-    saved.value = true
-    setTimeout(() => { saved.value = false }, 3000)
+    await new Promise((r) => setTimeout(r, 600));
+    saved.value = true;
+    setTimeout(() => {
+      saved.value = false;
+    }, 3000);
   } finally {
-    isSaving.value = false
+    isSaving.value = false;
   }
 }
 
 function resetToDefault() {
-  defaults.forEach(d => {
-    const group = groups.find(g => g.title === d.key)
-    d.items.forEach(di => {
-      const item = group?.items.find(i => i.key === di.key)
-      if (item) item.enabled = di.enabled
-    })
-  })
+  defaults.value.forEach((d) => {
+    const group = groups.value.find((g) => g.title === d.key);
+    d.items.forEach((di) => {
+      const item = group?.items.find((i) => i.key === di.key);
+      if (item) item.enabled = di.enabled;
+    });
+  });
 }
 </script>
 

@@ -11,6 +11,9 @@ import DashboardLeadsLeadsTable from "~/components/dashboard/leads/leads-table.v
 import DashboardLeadsLeadDetailPanel from "~/components/dashboard/leads/lead-detail-panel.vue";
 import DashboardLeadsLeadActionsDropdown from "~/components/dashboard/leads/lead-actions-dropdown.vue";
 import DashboardLeadsBulkActionsBar from "~/components/dashboard/leads/bulk-actions-bar.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 definePageMeta({
   title: "Leads",
@@ -163,7 +166,7 @@ provide("workspaceId", workspaceId);
       <!-- ── Top bar ── -->
       <div class="leads-page__topbar">
         <div class="leads-page__topbar-left">
-          <h1 class="leads-page__heading">Лиды</h1>
+          <h1 class="leads-page__heading">{{ t("dashboard.leads") }}</h1>
           <span v-if="!leadsStore.isLoading" class="leads-page__count">
             {{ leadsStore.filteredRawLeads.length }}
           </span>
@@ -172,7 +175,7 @@ provide("workspaceId", workspaceId);
         <div class="leads-page__topbar-right">
           <button
             class="leads-page__icon-btn"
-            title="Обновить лиды"
+            :title="t('leads.refreshLeads')"
             :class="{ 'leads-page__icon-btn--spinning': isRefreshing }"
             @click="handleRefresh"
           >

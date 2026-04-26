@@ -1,47 +1,47 @@
 <template>
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Email адрес</h2>
-      <p class="card-desc">Используется для входа, уведомлений и восстановления аккаунта</p>
+      <h2 class="card-title">{{ t("settings.emailAddress") }}</h2>
+      <p class="card-desc">{{ t("settings.emailAddressDesc") }}</p>
     </div>
 
     <div class="email-list">
-      <div
-          v-for="(item, i) in emails"
-          :key="i"
-          class="email-row"
-      >
+      <div v-for="(item, i) in emails" :key="i" class="email-row">
         <div class="email-info">
-          <span class="email-text">{{ item.email || '—' }}</span>
-          <span v-if="item.isPrimary" class="badge badge-primary">Основной</span>
+          <span class="email-text">{{ item.email || "—" }}</span>
+          <span v-if="item.isPrimary" class="badge badge-primary">{{
+            t("settings.primary")
+          }}</span>
           <span
-              class="badge"
-              :class="item.verified ? 'badge-verified' : 'badge-unverified'"
+            class="badge"
+            :class="item.verified ? 'badge-verified' : 'badge-unverified'"
           >
-            {{ item.verified ? 'Подтверждён' : 'Не подтверждён' }}
+            {{
+              item.verified ? t("settings.verified") : t("settings.notVerified")
+            }}
           </span>
         </div>
         <div class="email-actions">
           <button
-              v-if="!item.verified"
-              class="btn-link"
-              @click="resendVerification(item.email)"
+            v-if="!item.verified"
+            class="btn-link"
+            @click="resendVerification(item.email)"
           >
-            Отправить код
+            {{ t("settings.sendCode") }}
           </button>
           <button
-              v-if="!item.isPrimary"
-              class="btn-link"
-              @click="makePrimary(i)"
+            v-if="!item.isPrimary"
+            class="btn-link"
+            @click="makePrimary(i)"
           >
-            Сделать основным
+            {{ t("settings.makePrimary") }}
           </button>
           <button
-              v-if="!item.isPrimary"
-              class="btn-link btn-link-danger"
-              @click="removeEmail(i)"
+            v-if="!item.isPrimary"
+            class="btn-link btn-link-danger"
+            @click="removeEmail(i)"
           >
-            Удалить
+            {{ t("common.delete") }}
           </button>
         </div>
       </div>
@@ -49,21 +49,23 @@
 
     <div v-if="!showAddForm">
       <ui-button @click="showAddForm = true" variant="outline">
-        Добавить email
+        {{ t("settings.addEmail") }}
       </ui-button>
     </div>
 
     <form v-else class="add-form" @submit.prevent="addEmail">
       <ui-form-field
-          class="add-form__email"
-          type="text"
-          v-model="newEmail"
-          placeholder="new@example.com"
+        class="add-form__email"
+        type="text"
+        v-model="newEmail"
+        placeholder="new@example.com"
       />
       <div class="add-form-footer">
-        <ui-button type="button" variant="ghost" @click="cancelAdd" size="sm" >Отмена</ui-button>
+        <ui-button type="button" variant="ghost" @click="cancelAdd" size="sm">{{
+          t("common.cancel")
+        }}</ui-button>
         <ui-button type="submit" :disabled="isLoading" size="sm">
-          {{ isLoading ? 'Добавление...' : 'Добавить' }}
+          {{ isLoading ? t("settings.adding") : t("common.add") }}
         </ui-button>
       </div>
     </form>
@@ -71,71 +73,81 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
 interface EmailEntry {
-  email: string
-  verified: boolean
-  isPrimary: boolean
+  email: string;
+  verified: boolean;
+  isPrimary: boolean;
 }
 
 // TODO: загрузить из API
 const emails = ref<EmailEntry[]>([
-  { email: 'askar@example.com', verified: true, isPrimary: true },
-  { email: 'askar.backup@example.com', verified: false, isPrimary: false },
-])
+  { email: "askar@example.com", verified: true, isPrimary: true },
+  { email: "askar.backup@example.com", verified: false, isPrimary: false },
+]);
 
-const showAddForm = ref(false)
-const newEmail = ref('')
-const newEmailError = ref('')
-const isLoading = ref(false)
+const showAddForm = ref(false);
+const newEmail = ref("");
+const newEmailError = ref("");
+const isLoading = ref(false);
 
 function validateEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 async function addEmail() {
-  newEmailError.value = ''
+  newEmailError.value = "";
 
   if (!validateEmail(newEmail.value)) {
-    newEmailError.value = 'Введите корректный email'
-    return
+    newEmailError.value = "Введите корректный email";
+    return;
   }
 
-  if (emails.value.some(e => e.email === newEmail.value)) {
-    newEmailError.value = 'Этот email уже добавлен'
-    return
+  if (emails.value.some((e) => e.email === newEmail.value)) {
+    newEmailError.value = "Этот email уже добавлен";
+    return;
   }
 
-  isLoading.value = true
+  isLoading.value = true;
   try {
     // TODO: await $fetch('/api/user/emails', { method: 'POST', body: { email: newEmail.value } })
-    await new Promise(r => setTimeout(r, 500))
-    emails.value.push({ email: newEmail.value, verified: false, isPrimary: false })
-    cancelAdd()
+    await new Promise((r) => setTimeout(r, 500));
+    emails.value.push({
+      email: newEmail.value,
+      verified: false,
+      isPrimary: false,
+    });
+    cancelAdd();
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 
 async function resendVerification(email: string) {
   // TODO: await $fetch('/api/user/emails/verify', { method: 'POST', body: { email } })
-  alert(`Код подтверждения отправлен на ${email}`)
+  alert(`Код подтверждения отправлен на ${email}`);
 }
 
 function makePrimary(index: number) {
-  emails.value.forEach(e => { e.isPrimary = false })
-  emails.value[index]!.isPrimary = true
+  emails.value.forEach((e) => {
+    e.isPrimary = false;
+  });
+  emails.value[index]!.isPrimary = true;
   // TODO: await $fetch('/api/user/emails/primary', { method: 'PUT', body: { email: emails.value[index].email } })
 }
 
 function removeEmail(index: number) {
-  emails.value.splice(index, 1)
+  emails.value.splice(index, 1);
   // TODO: await $fetch('/api/user/emails', { method: 'DELETE', body: { email } })
 }
 
 function cancelAdd() {
-  showAddForm.value = false
-  newEmail.value = ''
-  newEmailError.value = ''
+  showAddForm.value = false;
+  newEmail.value = "";
+  newEmailError.value = "";
 }
 </script>
 
@@ -257,8 +269,7 @@ function cancelAdd() {
   gap: 10px;
 }
 
-.add-form__email{
+.add-form__email {
   flex-grow: 1;
 }
-
 </style>

@@ -3,6 +3,9 @@ import type { TenantMemberBrief } from "~/api/generated/api";
 import { TenantLeadStage } from "~/api/generated/api";
 import { STAGE_OPTIONS } from "~/stores/leads.store";
 import type { SelectOption } from "~/components/ui/fields/registry";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   selectedCount: number;
@@ -26,7 +29,7 @@ const stageOptions = computed<SelectOption[]>(() =>
 );
 
 const memberOptions = computed<SelectOption[]>(() => [
-  { value: "__UNASSIGN__", label: "Без ответственного" },
+  { value: "__UNASSIGN__", label: t("leads.unassigned") },
   ...props.members.map((m) => ({
     value: m.id,
     label: m.user_full_name ?? m.user_email,
@@ -53,11 +56,13 @@ const handleAssign = () => {
 <template>
   <div class="bulk-bar">
     <div class="bulk-bar__left">
-      <span class="bulk-bar__count">Выбрано: {{ selectedCount }}</span>
+      <span class="bulk-bar__count"
+        >{{ t("leads.selected") }}: {{ selectedCount }}</span
+      >
 
       <button class="bulk-bar__clear" @click="emit('clearSelection')">
         <Icon name="other-icon-close" mode="svg" :size="10" />
-        Снять выделение
+        {{ t("leads.clearSelection") }}
       </button>
     </div>
 
@@ -66,7 +71,7 @@ const handleAssign = () => {
       <ui-popover v-model:open="showMovePopover" placement="top-end">
         <template #trigger>
           <button class="bulk-bar__btn">
-            Переместить
+            {{ t("leads.move") }}
             <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
           </button>
         </template>
@@ -74,10 +79,10 @@ const handleAssign = () => {
           <ui-fields-select-field
             v-model="selectedStage"
             :options="stageOptions"
-            placeholder="Выберите этап"
+            :placeholder="t('leads.selectStage')"
           />
           <ui-button size="sm" :disabled="!selectedStage" @click="handleMove">
-            Применить
+            {{ t("common.apply") }}
           </ui-button>
         </div>
       </ui-popover>
@@ -86,7 +91,7 @@ const handleAssign = () => {
       <ui-popover v-model:open="showAssignPopover" placement="top-end">
         <template #trigger>
           <button class="bulk-bar__btn">
-            Назначить
+            {{ t("leads.assign") }}
             <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
           </button>
         </template>
@@ -94,7 +99,7 @@ const handleAssign = () => {
           <ui-fields-select-field
             v-model="selectedMemberId"
             :options="memberOptions"
-            placeholder="Выберите ответственного"
+            :placeholder="t('leads.selectAssignee')"
             @update:model-value="hasSelectedMember = true"
           />
           <ui-button
@@ -102,7 +107,7 @@ const handleAssign = () => {
             :disabled="!hasSelectedMember"
             @click="handleAssign"
           >
-            Применить
+            {{ t("common.apply") }}
           </ui-button>
         </div>
       </ui-popover>

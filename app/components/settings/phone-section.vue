@@ -1,20 +1,29 @@
 <template>
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Номер телефона</h2>
-      <p class="card-desc">Используется для двухфакторной аутентификации и восстановления доступа</p>
+      <h2 class="card-title">{{ t("settings.phoneNumber") }}</h2>
+      <p class="card-desc">{{ t("settings.phoneNumberDesc") }}</p>
     </div>
 
     <div v-if="currentPhone" class="current-phone">
       <div class="phone-info">
         <span class="phone-text">{{ formatPhone(currentPhone) }}</span>
-        <span class="badge" :class="phoneVerified ? 'badge-verified' : 'badge-unverified'">
-          {{ phoneVerified ? 'Подтверждён' : 'Не подтверждён' }}
+        <span
+          class="badge"
+          :class="phoneVerified ? 'badge-verified' : 'badge-unverified'"
+        >
+          {{
+            phoneVerified ? t("settings.verified") : t("settings.notVerified")
+          }}
         </span>
       </div>
       <div class="phone-actions">
-        <button class="btn-link" @click="openChangeForm">Изменить</button>
-        <button class="btn-link btn-link-danger" @click="removePhone">Удалить</button>
+        <button class="btn-link" @click="openChangeForm">
+          {{ t("common.change") }}
+        </button>
+        <button class="btn-link btn-link-danger" @click="removePhone">
+          {{ t("common.delete") }}
+        </button>
       </div>
     </div>
 
@@ -28,33 +37,37 @@
           <option value="+90">+90 (TR)</option>
         </select>
         <input
-            v-model="phoneNumber"
-            class="field-input phone-input"
-            :class="{ error: phoneError }"
-            type="tel"
-            placeholder="700 000 0000"
-            autocomplete="tel-national"
+          v-model="phoneNumber"
+          class="field-input phone-input"
+          :class="{ error: phoneError }"
+          type="tel"
+          placeholder="700 000 0000"
+          autocomplete="tel-national"
         />
       </div>
       <span v-if="phoneError" class="field-error">{{ phoneError }}</span>
 
       <div v-if="showCodeInput" class="code-row">
-        <p class="code-hint">Код отправлен на {{ countryCode }} {{ phoneNumber }}</p>
+        <p class="code-hint">
+          {{ t("settings.codeSentTo") }} {{ countryCode }} {{ phoneNumber }}
+        </p>
         <input
-            v-model="verifyCode"
-            class="field-input code-input"
-            :class="{ error: codeError }"
-            type="text"
-            placeholder="Введите 6-значный код"
-            maxlength="6"
-            inputmode="numeric"
-            autofocus
+          v-model="verifyCode"
+          class="field-input code-input"
+          :class="{ error: codeError }"
+          type="text"
+          :placeholder="t('settings.enter6DigitCode')"
+          maxlength="6"
+          inputmode="numeric"
+          autofocus
         />
         <span v-if="codeError" class="field-error">{{ codeError }}</span>
       </div>
 
       <div class="form-footer">
-        <button type="button" class="btn-ghost" @click="cancelForm">Отмена</button>
+        <button type="button" class="btn-ghost" @click="cancelForm">
+          {{ t("common.cancel") }}
+        </button>
         <button type="submit" class="btn-primary" :disabled="isLoading">
           {{ submitLabel }}
         </button>
@@ -62,88 +75,93 @@
     </form>
 
     <div v-if="!currentPhone && !showForm">
-      <button class="btn-ghost" @click="showForm = true">+ Добавить номер</button>
+      <button class="btn-ghost" @click="showForm = true">
+        + {{ t("settings.addPhone") }}
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
 // TODO: данные из useAuthStore или загрузить через $fetch('/api/user/phone')
-const currentPhone = ref('+7 700 000 0000')
-const phoneVerified = ref(true)
+const currentPhone = ref("+7 700 000 0000");
+const phoneVerified = ref(true);
 
-const showForm = ref(false)
-const showCodeInput = ref(false)
+const showForm = ref(false);
+const showCodeInput = ref(false);
 
-const countryCode = ref('+7')
-const phoneNumber = ref('')
-const verifyCode = ref('')
-const phoneError = ref('')
-const codeError = ref('')
-const isLoading = ref(false)
+const countryCode = ref("+7");
+const phoneNumber = ref("");
+const verifyCode = ref("");
+const phoneError = ref("");
+const codeError = ref("");
+const isLoading = ref(false);
 
 const submitLabel = computed(() => {
-  if (isLoading.value) return 'Загрузка...'
-  return showCodeInput.value ? 'Подтвердить' : 'Отправить код'
-})
+  if (isLoading.value) return t("common.loading");
+  return showCodeInput.value ? t("settings.confirm") : t("settings.sendCode");
+});
 
 function formatPhone(phone: string) {
-  return phone
+  return phone;
 }
 
 function openChangeForm() {
-  showForm.value = true
+  showForm.value = true;
 }
 
 async function handleSubmit() {
   if (!showCodeInput.value) {
-    phoneError.value = ''
+    phoneError.value = "";
     if (!phoneNumber.value.trim()) {
-      phoneError.value = 'Введите номер телефона'
-      return
+      phoneError.value = t("settings.enterPhoneNumber");
+      return;
     }
-    isLoading.value = true
+    isLoading.value = true;
     try {
       // TODO: await $fetch('/api/user/phone/send-code', { method: 'POST', body: { phone: countryCode.value + phoneNumber.value } })
-      await new Promise(r => setTimeout(r, 500))
-      showCodeInput.value = true
+      await new Promise((r) => setTimeout(r, 500));
+      showCodeInput.value = true;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   } else {
-    codeError.value = ''
+    codeError.value = "";
     if (verifyCode.value.length !== 6) {
-      codeError.value = 'Введите 6-значный код'
-      return
+      codeError.value = t("settings.enter6DigitCode");
+      return;
     }
-    isLoading.value = true
+    isLoading.value = true;
     try {
       // TODO: await $fetch('/api/user/phone/verify', { method: 'POST', body: { code: verifyCode.value } })
-      await new Promise(r => setTimeout(r, 500))
-      currentPhone.value = `${countryCode.value} ${phoneNumber.value}`
-      phoneVerified.value = true
-      cancelForm()
+      await new Promise((r) => setTimeout(r, 500));
+      currentPhone.value = `${countryCode.value} ${phoneNumber.value}`;
+      phoneVerified.value = true;
+      cancelForm();
     } catch {
-      codeError.value = 'Неверный код. Попробуйте ещё раз'
+      codeError.value = t("settings.invalidCodeTryAgain");
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 }
 
 function removePhone() {
-  currentPhone.value = ''
-  phoneVerified.value = false
+  currentPhone.value = "";
+  phoneVerified.value = false;
   // TODO: await $fetch('/api/user/phone', { method: 'DELETE' })
 }
 
 function cancelForm() {
-  showForm.value = false
-  showCodeInput.value = false
-  phoneNumber.value = ''
-  verifyCode.value = ''
-  phoneError.value = ''
-  codeError.value = ''
+  showForm.value = false;
+  showCodeInput.value = false;
+  phoneNumber.value = "";
+  verifyCode.value = "";
+  phoneError.value = "";
+  codeError.value = "";
 }
 </script>
 
@@ -250,7 +268,9 @@ function cancelForm() {
   color: var(--color-neutral-dd);
   background: var(--color-white);
   outline: none;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
   width: 100%;
 }
 

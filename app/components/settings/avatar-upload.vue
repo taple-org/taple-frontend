@@ -1,47 +1,50 @@
 <script setup lang="ts">
-import { Avatar } from '@ark-ui/vue/avatar'
-import { FileUpload } from '@ark-ui/vue/file-upload'
+import { Avatar } from "@ark-ui/vue/avatar";
+import { FileUpload } from "@ark-ui/vue/file-upload";
+import { useI18n } from "vue-i18n";
 
-const MAX_SIZE_MB = 5
-const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
+const { t } = useI18n();
 
-const previewUrl = ref<string | null>(null)
-const isUploading = ref(false)
-const errorMsg = ref('')
-const { user } = storeToRefs(useAuthStore())
+const MAX_SIZE_MB = 5;
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+const previewUrl = ref<string | null>(null);
+const isUploading = ref(false);
+const errorMsg = ref("");
+const { user } = storeToRefs(useAuthStore());
 
 const initials = computed(() => {
-  const first = user.value?.first_name?.[0] ?? ''
-  const last = user.value?.last_name?.[0] ?? ''
-  return (first + last).toUpperCase() || '?'
-})
+  const first = user.value?.first_name?.[0] ?? "";
+  const last = user.value?.last_name?.[0] ?? "";
+  return (first + last).toUpperCase() || "?";
+});
 
 async function onFileChange(details: { acceptedFiles: File[] }) {
-  const file = details.acceptedFiles[0]
-  if (!file) return
+  const file = details.acceptedFiles[0];
+  if (!file) return;
 
-  errorMsg.value = ''
-  previewUrl.value = URL.createObjectURL(file)
-  isUploading.value = true
+  errorMsg.value = "";
+  previewUrl.value = URL.createObjectURL(file);
+  isUploading.value = true;
 
   try {
     // TODO: upload file to API
-    await new Promise(r => setTimeout(r, 800))
+    await new Promise((r) => setTimeout(r, 800));
   } catch {
-    errorMsg.value = 'Не удалось загрузить фото. Попробуйте ещё раз'
-    previewUrl.value = null
+    errorMsg.value = t("settings.uploadPhotoError");
+    previewUrl.value = null;
   } finally {
-    isUploading.value = false
+    isUploading.value = false;
   }
 }
 
 function onFileReject() {
-  errorMsg.value = `Файл слишком большой или неподдерживаемый формат. Максимум ${MAX_SIZE_MB} МБ`
+  errorMsg.value = t("settings.fileTooBig", { maxSize: MAX_SIZE_MB });
 }
 
 function removeAvatar() {
-  previewUrl.value = null
-  errorMsg.value = ''
+  previewUrl.value = null;
+  errorMsg.value = "";
   // TODO: await $fetch('/api/user/avatar', { method: 'DELETE' })
 }
 </script>
@@ -49,8 +52,8 @@ function removeAvatar() {
 <template>
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Фото профиля</h2>
-      <p class="card-desc">Ваше фото отображается в профиле и комментариях. JPG, PNG — не более 5 МБ</p>
+      <h2 class="card-title">{{ t("settings.profilePhoto") }}</h2>
+      <p class="card-desc">{{ t("settings.profilePhotoDesc") }}</p>
     </div>
 
     <div class="avatar-row">
@@ -58,7 +61,7 @@ function removeAvatar() {
         <Avatar.Image
           v-if="previewUrl"
           :src="previewUrl"
-          alt="Фото профиля"
+          :alt="t('settings.profilePhoto')"
           class="avatar__image"
         />
         <Avatar.Fallback class="avatar__fallback">
@@ -79,7 +82,9 @@ function removeAvatar() {
             :class="{ 'btn-upload--loading': isUploading }"
             :disabled="isUploading"
           >
-            {{ isUploading ? 'Загрузка...' : 'Загрузить фото' }}
+            {{
+              isUploading ? t("common.uploading") : t("settings.uploadPhoto")
+            }}
           </FileUpload.Trigger>
           <FileUpload.HiddenInput />
         </FileUpload.Root>
@@ -90,7 +95,7 @@ function removeAvatar() {
           :disabled="isUploading"
           @click="removeAvatar"
         >
-          Удалить
+          {{ t("common.delete") }}
         </ui-button>
       </div>
     </div>
@@ -150,7 +155,7 @@ function removeAvatar() {
   object-fit: cover;
 }
 
-.avatar__image[data-state='hidden'] {
+.avatar__image[data-state="hidden"] {
   display: none;
 }
 
@@ -160,7 +165,7 @@ function removeAvatar() {
   color: var(--color-primary);
 }
 
-.avatar__fallback[data-state='hidden'] {
+.avatar__fallback[data-state="hidden"] {
   display: none;
 }
 
@@ -184,7 +189,9 @@ function removeAvatar() {
   font-weight: 400;
   color: var(--color-neutral-dd);
   cursor: pointer;
-  transition: background var(--transition-base), border-color var(--transition-base);
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base);
 }
 
 .btn-upload:hover:not(:disabled) {

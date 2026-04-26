@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import Chart from "chart.js/auto";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface TasksStats {
   open: number;
@@ -17,7 +20,7 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 let chartInstance: Chart | null = null;
 
 const chartData = computed(() => ({
-  labels: ["Открытые", "Завершенные", "Просроченные"],
+  labels: [t("tasks.open"), t("tasks.completed"), t("tasks.overdue")],
   datasets: [
     {
       data: [props.tasks.open, props.tasks.completed, props.tasks.overdue],
@@ -60,7 +63,11 @@ const chartOptions = {
       cornerRadius: 10,
       padding: 12,
       callbacks: {
-        label: (context: { label: string; parsed: number; dataset: { data: number[] } }) => {
+        label: (context: {
+          label: string;
+          parsed: number;
+          dataset: { data: number[] };
+        }) => {
           const label = context.label || "";
           const value = context.parsed;
           const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -102,24 +109,41 @@ onUnmounted(() => {
 
 <template>
   <div class="tasks-donut-chart">
-    <h3 class="tasks-donut-chart__title">Задачи</h3>
+    <h3 class="tasks-donut-chart__title">
+      {{ t("dashboard.charts.tasksTitle") }}
+    </h3>
     <div class="tasks-donut-chart__container">
       <canvas ref="canvasRef" />
     </div>
     <div class="tasks-donut-chart__stats">
       <div class="tasks-donut-chart__stat">
-        <span class="tasks-donut-chart__stat-dot" style="background: rgba(108, 156, 255, 0.52)" />
-        <span class="tasks-donut-chart__stat-label">Открытые</span>
+        <span
+          class="tasks-donut-chart__stat-dot"
+          style="background: rgba(108, 156, 255, 0.52)"
+        />
+        <span class="tasks-donut-chart__stat-label">{{
+          t("dashboard.charts.open")
+        }}</span>
         <span class="tasks-donut-chart__stat-value">{{ tasks.open }}</span>
       </div>
       <div class="tasks-donut-chart__stat">
-        <span class="tasks-donut-chart__stat-dot" style="background: rgba(58, 192, 160, 0.5)" />
-        <span class="tasks-donut-chart__stat-label">Завершенные</span>
+        <span
+          class="tasks-donut-chart__stat-dot"
+          style="background: rgba(58, 192, 160, 0.5)"
+        />
+        <span class="tasks-donut-chart__stat-label">{{
+          t("dashboard.charts.completed")
+        }}</span>
         <span class="tasks-donut-chart__stat-value">{{ tasks.completed }}</span>
       </div>
       <div class="tasks-donut-chart__stat">
-        <span class="tasks-donut-chart__stat-dot" style="background: rgba(247, 149, 120, 0.46)" />
-        <span class="tasks-donut-chart__stat-label">Просроченные</span>
+        <span
+          class="tasks-donut-chart__stat-dot"
+          style="background: rgba(247, 149, 120, 0.46)"
+        />
+        <span class="tasks-donut-chart__stat-label">{{
+          t("dashboard.charts.overdue")
+        }}</span>
         <span class="tasks-donut-chart__stat-value">{{ tasks.overdue }}</span>
       </div>
     </div>

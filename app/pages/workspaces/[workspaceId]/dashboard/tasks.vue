@@ -5,6 +5,9 @@ import {
   type TaskCreatePayload,
 } from "~/components/workspace/tasks/model";
 import type { TaskBucket, TaskBoardResponse } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 definePageMeta({
   layout: "dashboard",
@@ -12,8 +15,8 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Задачи — Taple",
-  description: "Глобальная kanban-доска задач рабочего пространства в Taple.",
+  title: t("tasks.pageTitle"),
+  description: t("tasks.pageDescription"),
   robots: "noindex, nofollow",
 });
 
@@ -53,11 +56,15 @@ const {
   },
 );
 
-watch(error, (err) => {
-  if (err) {
-    notification.error("Ошибка", "Не удалось загрузить task board");
-  }
-}, { immediate: true });
+watch(
+  error,
+  (err) => {
+    if (err) {
+      notification.error(t("common.error"), t("tasks.loadError"));
+    }
+  },
+  { immediate: true },
+);
 
 const columns = computed(() =>
   filterTaskBoardColumns(taskBoard.value?.columns ?? [], visibleBuckets.value),
@@ -74,10 +81,10 @@ async function handleCreate(payload: TaskCreatePayload) {
       payload,
     );
     isCreateOpen.value = false;
-    notification.success("Готово", "Задача создана");
+    notification.success(t("common.success"), t("tasks.created"));
     await refresh();
   } catch {
-    notification.error("Ошибка", "Не удалось создать задачу");
+    notification.error(t("common.error"), t("tasks.createError"));
   } finally {
     isCreatePending.value = false;
   }
@@ -90,10 +97,10 @@ async function handleCreate(payload: TaskCreatePayload) {
       <div class="tasks-page__actions">
         <div class="tasks-page__stat">
           <strong>{{ totalCount }}</strong>
-          <span>задач в выбранных таблицах</span>
+          <span>{{ t("tasks.taskCount", { count: totalCount }) }}</span>
         </div>
         <ui-button icon-left="my-icon:add" @click="isCreateOpen = true">
-          Создать задачу
+          {{ t("tasks.createTaskBtn") }}
         </ui-button>
       </div>
     </section>
@@ -105,7 +112,9 @@ async function handleCreate(payload: TaskCreatePayload) {
       v-model:responsible-member-id="responsibleMemberId"
       v-model:assigned-to-member-id="assignedToMemberId"
     />
-    <div v-if="pending" class="tasks-page__state">Загружаем task board...</div>
+    <div v-if="pending" class="tasks-page__state">
+      {{ t("tasks.loadingBoard") }}
+    </div>
     <client-only v-else>
       <workspace-tasks-board
         :columns="columns"
@@ -124,7 +133,6 @@ async function handleCreate(payload: TaskCreatePayload) {
 </template>
 
 <style scoped>
-
 .tasks-page__hero {
   display: flex;
   justify-content: space-between;

@@ -1,8 +1,8 @@
 <template>
   <div class="profile-page">
     <div class="page-header">
-      <h1 class="page-title">Профиль</h1>
-      <p class="page-desc">Управляйте личными данными и настройками аккаунта</p>
+      <h1 class="page-title">{{ t("settings.profile") }}</h1>
+      <p class="page-desc">{{ t("settings.profileDesc") }}</p>
     </div>
 
     <settings-avatar-upload />
@@ -13,7 +13,8 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'settings' })
+const { t } = useI18n();
+definePageMeta({ layout: "settings" });
 </script>
 
 <style scoped>

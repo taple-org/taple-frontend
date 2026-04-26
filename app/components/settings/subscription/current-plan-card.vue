@@ -1,8 +1,8 @@
 <template>
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Текущий план</h2>
-      <p class="card-desc">Управляйте подпиской и способом оплаты</p>
+      <h2 class="card-title">{{ t("subscription.currentPlan") }}</h2>
+      <p class="card-desc">{{ t("subscription.manageSubscription") }}</p>
     </div>
 
     <div class="current-plan">
@@ -13,16 +13,20 @@
         </div>
         <div class="plan-meta">
           <span class="plan-price">
-            ${{ currentPlan.price }}<span class="plan-price__period"> / месяц</span>
+            ${{ currentPlan.price
+            }}<span class="plan-price__period">
+              {{ t("subscription.perMonth") }}</span
+            >
           </span>
           <span class="plan-renewal">
-            Следующее списание: <strong>{{ currentPlan.renewalDate }}</strong>
+            {{ t("subscription.nextBilling") }}:
+            <strong>{{ currentPlan.renewalDate }}</strong>
           </span>
         </div>
       </div>
       <div class="plan-actions">
         <ui-button variant="outline" @click="cancelSubscription">
-          Отменить подписку
+          {{ t("subscription.cancelSubscription") }}
         </ui-button>
       </div>
     </div>
@@ -46,18 +50,27 @@
 </template>
 
 <script setup lang="ts">
-const currentPlan = reactive({
-  id: 'pro',
-  name: 'Pro',
-  price: 29,
-  renewalDate: '1 июня 2025',
-})
+import { useI18n } from "vue-i18n";
 
-const usageItems = [
-  { label: 'Запросы API',         used: '7 240', total: '10 000', percent: 72 },
-  { label: 'Рабочие пространства', used: '3',     total: '5',      percent: 60 },
-  { label: 'Участники',           used: '8',     total: '10',     percent: 80 },
-]
+const { t } = useI18n();
+
+const currentPlan = reactive({
+  id: "pro",
+  name: "Pro",
+  price: 29,
+  renewalDate: "1 июня 2025",
+});
+
+const usageItems = computed(() => [
+  {
+    label: t("subscription.apiRequests"),
+    used: "7 240",
+    total: "10 000",
+    percent: 72,
+  },
+  { label: t("subscription.workspaces"), used: "3", total: "5", percent: 60 },
+  { label: t("subscription.members"), used: "8", total: "10", percent: 80 },
+]);
 
 function cancelSubscription() {
   // TODO: open confirmation modal, then await $fetch('/api/billing/cancel', { method: 'POST' })
@@ -200,7 +213,11 @@ function cancelSubscription() {
     align-items: flex-start;
     gap: 6px;
   }
-  .usage-label { width: auto; }
-  .usage-bar-wrap { width: 100%; }
+  .usage-label {
+    width: auto;
+  }
+  .usage-bar-wrap {
+    width: 100%;
+  }
 }
 </style>

@@ -1,13 +1,25 @@
 <script setup lang="ts">
 import type { CongestionRead } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   congestion: CongestionRead;
 }>();
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const DAY_RU = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 const HOUR_LABELS = ["0", "3", "6", "9", "12", "15", "18", "21"];
+
+const dayLabels = computed(() => [
+  t("common.shortMon"),
+  t("common.shortTue"),
+  t("common.shortWed"),
+  t("common.shortThu"),
+  t("common.shortFri"),
+  t("common.shortSat"),
+  t("common.shortSun"),
+]);
 
 // Build grid[dayIdx][hour] = level
 const grid = computed(() => {
@@ -35,14 +47,14 @@ const getColor = (level: number): string => {
   return "#E53935";
 };
 
-const avgDisplay = computed(() =>
-  Math.round((props.congestion.avg_level ?? 0) * 10) / 10,
+const avgDisplay = computed(
+  () => Math.round((props.congestion.avg_level ?? 0) * 10) / 10,
 );
 
 const peakLabel = computed(() => {
   const tags = [];
-  if (props.congestion.evening_peak) tags.push("вечером");
-  if (props.congestion.weekend_peak) tags.push("в выходные");
+  if (props.congestion.evening_peak) tags.push(t("congestion.evening"));
+  if (props.congestion.weekend_peak) tags.push(t("congestion.weekend"));
   return tags.join(", ");
 });
 </script>
@@ -52,13 +64,16 @@ const peakLabel = computed(() => {
     <!-- Summary chips -->
     <div class="cong__summary">
       <span class="cong__chip cong__chip--avg">
-        Ср. загруженность: {{ avgDisplay }}/10
+        {{ t("congestion.avgLoad") }}: {{ avgDisplay }}/10
       </span>
-      <span v-if="congestion.evening_peak || congestion.weekend_peak" class="cong__chip cong__chip--peak">
-        Пик {{ peakLabel }}
+      <span
+        v-if="congestion.evening_peak || congestion.weekend_peak"
+        class="cong__chip cong__chip--peak"
+      >
+        {{ t("congestion.peak") }} {{ peakLabel }}
       </span>
       <span class="cong__chip cong__chip--hours">
-        {{ congestion.peak_hours_count ?? 0 }} ч. в пике
+        {{ congestion.peak_hours_count ?? 0 }} {{ t("congestion.hoursInPeak") }}
       </span>
     </div>
 
@@ -69,29 +84,30 @@ const peakLabel = computed(() => {
         <span class="cong__day-stub" />
         <div class="cong__hours-track">
           <span
-              v-for="(label, i) in HOUR_LABELS"
-              :key="i"
-              class="cong__hour-label"
-              :style="{ left: `${(i / 8) * 100}%` }"
-          >{{ label }}</span>
+            v-for="(label, i) in HOUR_LABELS"
+            :key="i"
+            class="cong__hour-label"
+            :style="{ left: `${(i / 8) * 100}%` }"
+            >{{ label }}</span
+          >
         </div>
       </div>
 
       <!-- Day rows -->
       <div
-          v-for="(dayLabel, dIdx) in DAY_RU"
-          :key="dIdx"
-          class="cong__row"
-          :class="{ 'cong__row--weekend': dIdx >= 5 }"
+        v-for="(dayLabel, dIdx) in dayLabels"
+        :key="dIdx"
+        class="cong__row"
+        :class="{ 'cong__row--weekend': dIdx >= 5 }"
       >
         <span class="cong__day-label">{{ dayLabel }}</span>
         <div class="cong__cells">
           <div
-              v-for="hour in 24"
-              :key="hour - 1"
-              class="cong__cell"
-              :style="{ background: getColor(grid[dIdx][hour - 1]) }"
-              :title="`${dayLabel} ${hour - 1}:00 — уровень ${grid[dIdx][hour - 1] || '–'}`"
+            v-for="hour in 24"
+            :key="hour - 1"
+            class="cong__cell"
+            :style="{ background: getColor(grid[dIdx][hour - 1]) }"
+            :title="`${dayLabel} ${hour - 1}:00 — ${t('congestion.level')} ${grid[dIdx][hour - 1] || '–'}`"
           />
         </div>
       </div>
@@ -99,16 +115,16 @@ const peakLabel = computed(() => {
 
     <!-- Legend -->
     <div class="cong__legend">
-      <span class="cong__legend-label">Тихо</span>
+      <span class="cong__legend-label">{{ t("congestion.quiet") }}</span>
       <div class="cong__legend-scale">
         <div
-            v-for="l in 10"
-            :key="l"
-            class="cong__legend-step"
-            :style="{ background: getColor(l) }"
+          v-for="l in 10"
+          :key="l"
+          class="cong__legend-step"
+          :style="{ background: getColor(l) }"
         />
       </div>
-      <span class="cong__legend-label">Загружено</span>
+      <span class="cong__legend-label">{{ t("congestion.busy") }}</span>
     </div>
   </div>
 </template>
@@ -138,18 +154,18 @@ const peakLabel = computed(() => {
 }
 
 .cong__chip--avg {
-  background: #EAF2FF;
-  color: #006FFD;
+  background: #eaf2ff;
+  color: #006ffd;
 }
 
 .cong__chip--peak {
-  background: #FFF3E0;
-  color: #E65100;
+  background: #fff3e0;
+  color: #e65100;
 }
 
 .cong__chip--hours {
-  background: #F3E5F5;
-  color: #7B1FA2;
+  background: #f3e5f5;
+  color: #7b1fa2;
 }
 
 /* Grid */
@@ -181,7 +197,7 @@ const peakLabel = computed(() => {
   transform: translateX(-50%);
   font-size: 8px;
   font-weight: 500;
-  color: #8F9098;
+  color: #8f9098;
 }
 
 .cong__row {
@@ -195,12 +211,12 @@ const peakLabel = computed(() => {
   flex-shrink: 0;
   font-size: 9px;
   font-weight: 600;
-  color: #71727A;
+  color: #71727a;
   text-align: right;
 }
 
 .cong__row--weekend .cong__day-label {
-  color: #E65100;
+  color: #e65100;
 }
 
 .cong__cells {
@@ -233,7 +249,7 @@ const peakLabel = computed(() => {
 .cong__legend-label {
   font-size: 8px;
   font-weight: 500;
-  color: #8F9098;
+  color: #8f9098;
   white-space: nowrap;
 }
 

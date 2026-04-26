@@ -6,6 +6,9 @@ import {
   TASK_TYPE_OPTIONS,
   type TaskCreatePayload,
 } from "./model";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   close: [];
@@ -79,6 +82,25 @@ watch(query, (value) => {
 
 const canSubmit = computed(() => !!selectedLead.value && title.value.trim());
 
+// Map stage codes to translated labels
+const getStageLabel = (stageCode?: string): string => {
+  if (!stageCode) return "—";
+  const keyMap: Record<string, string> = {
+    new: "leads.new",
+    in_progress: "leads.inProgress",
+    won: "leads.won",
+    lost: "leads.lost",
+    hidden: "leads.hidden",
+    snoozed: "leads.snoozed",
+    negotiation: "leads.negotiation",
+    first_contact: "leads.firstContact",
+    contract: "leads.contract",
+    monitoring: "leads.monitoring",
+  };
+  const key = keyMap[stageCode];
+  return key ? t(key) : stageCode;
+};
+
 function handleSubmit() {
   if (!selectedLead.value || !title.value.trim()) return;
 
@@ -98,13 +120,14 @@ function handleSubmit() {
     <div class="task-create">
       <header class="task-create__header">
         <div>
-          <h3 class="task-create__title">Создать задачу</h3>
+          <h3 class="task-create__title">{{ t("tasks.createTask") }}</h3>
           <p class="task-create__description-text">
             <template v-if="preSelectedLead">
-              Для лида: <strong>{{ preSelectedLead.lead_name }}</strong>
+              {{ t("tasks.forLead") }}:
+              <strong>{{ preSelectedLead.lead_name }}</strong>
             </template>
             <template v-else>
-              Найдите лид и добавьте новую задачу в глобальную task board
+              {{ t("tasks.findLeadAndAdd") }}
             </template>
           </p>
         </div>
@@ -114,20 +137,21 @@ function handleSubmit() {
       </header>
 
       <div v-if="!preSelectedLead" class="task-create__group">
-        <label class="task-create__label">Лид</label>
+        <label class="task-create__label">{{ t("tasks.lead") }}</label>
         <ui-form-field
           v-model="query"
           type="text"
-          placeholder="Начните вводить название лида"
+          :placeholder="t('tasks.startTypingLead')"
           icon-left="my-icon-search"
         />
 
         <div v-if="selectedLead" class="task-create__selected">
-          Выбран: <strong>{{ selectedLead.lead_name }}</strong>
+          {{ t("tasks.selected") }}:
+          <strong>{{ selectedLead.lead_name }}</strong>
         </div>
 
         <div v-if="isSearching" class="task-create__search-state">
-          Ищем лиды...
+          {{ t("tasks.searchingLeads") }}
         </div>
 
         <ul v-else-if="results.length" class="task-create__results">
@@ -142,67 +166,69 @@ function handleSubmit() {
               @click="selectedLead = lead"
             >
               <strong>{{ lead.lead_name }}</strong>
-              <span>{{ lead.stage_code }}</span>
+              <span>{{ getStageLabel(lead.stage_code) }}</span>
             </button>
           </li>
         </ul>
       </div>
 
       <div class="task-create__group">
-        <label class="task-create__label">Заголовок</label>
+        <label class="task-create__label">{{ t("tasks.title") }}</label>
         <ui-form-field
           v-model="title"
           type="text"
-          placeholder="Например, созвониться с клиентом"
+          :placeholder="t('tasks.titlePlaceholder')"
         />
       </div>
 
       <div class="task-create__grid">
         <div class="task-create__group">
-          <label class="task-create__label">Тип задачи</label>
+          <label class="task-create__label">{{ t("tasks.taskType") }}</label>
           <ui-form-field
             v-model="taskType"
             type="select"
             :options="TASK_TYPE_OPTIONS"
-            placeholder="Тип задачи"
+            :placeholder="t('tasks.taskType')"
           />
         </div>
 
         <div class="task-create__group">
-          <label class="task-create__label">Срок</label>
+          <label class="task-create__label">{{ t("tasks.dueDate") }}</label>
           <ui-form-field
             v-model="dueDate"
             type="date"
             :min="minDate"
-            placeholder="Выберите дату"
+            :placeholder="t('tasks.selectDate')"
           />
         </div>
 
         <div class="task-create__group">
-          <label class="task-create__label">Ответственный</label>
+          <label class="task-create__label">{{ t("tasks.assignee") }}</label>
           <ui-form-field
             v-model="assignedToMemberId"
             type="select"
             :options="memberOptions"
             :disabled="membersPending"
-            placeholder="Выберите участника"
+            :placeholder="t('tasks.selectMember')"
           />
         </div>
       </div>
 
       <div class="task-create__group">
-        <label class="task-create__label">Описание</label>
+        <label class="task-create__label">{{ t("tasks.description") }}</label>
         <textarea
           v-model="description"
           class="task-create__textarea"
-          placeholder="Контекст задачи, детали разговора, что проверить..."
+          :placeholder="t('tasks.descriptionPlaceholder')"
         />
       </div>
 
       <div class="task-create__footer">
-        <ui-button variant="outline" @click="emit('close')">Отмена</ui-button>
+        <ui-button variant="outline" @click="emit('close')">{{
+          t("common.cancel")
+        }}</ui-button>
         <ui-button :disabled="!canSubmit || pending" @click="handleSubmit">
-          Создать задачу
+          {{ t("tasks.createTaskBtn") }}
         </ui-button>
       </div>
     </div>

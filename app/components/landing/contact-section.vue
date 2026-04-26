@@ -1,25 +1,30 @@
 <script setup lang="ts">
-import { Field } from '@ark-ui/vue/field'
-import {useContactForm} from "~/composables/contacts/useContactForm";
+import { Field } from "@ark-ui/vue/field";
+import { useContactForm } from "~/composables/contacts/useContactForm";
+import { useI18n } from "vue-i18n";
 
-const { r$, state } = useContactForm()
+const { t } = useI18n();
 
-const isSending = ref(false)
-const sent = ref(false)
+const { r$, state } = useContactForm();
+
+const isSending = ref(false);
+const sent = ref(false);
 
 async function handleSubmit() {
-  const result = await r$.$validate()
-  if (!result.valid) return
+  const result = await r$.$validate();
+  if (!result.valid) return;
 
-  isSending.value = true
+  isSending.value = true;
   try {
     // TODO: await $fetch('/api/contact', { method: 'POST', body: { name: state.name, email: state.email, message: state.message } })
-    await new Promise(r => setTimeout(r, 800))
-    sent.value = true
-    r$.$reset()
-    setTimeout(() => { sent.value = false }, 5000)
+    await new Promise((r) => setTimeout(r, 800));
+    sent.value = true;
+    r$.$reset();
+    setTimeout(() => {
+      sent.value = false;
+    }, 5000);
   } finally {
-    isSending.value = false
+    isSending.value = false;
   }
 }
 </script>
@@ -29,57 +34,73 @@ async function handleSubmit() {
     <ui-container :padding="[80, 15]">
       <div class="contact-section__inner">
         <div class="contact-section__copy">
-          <h2 class="contact-section__heading">Свяжитесь с нами</h2>
-          <p class="contact-section__subheading">Расскажите о задаче — мы подберём решение</p>
+          <h2 class="contact-section__heading">
+            {{ t("landing.contactHeading") }}
+          </h2>
+          <p class="contact-section__subheading">
+            {{ t("landing.contactSubheading") }}
+          </p>
           <ul class="contact-section__list">
-            <li>Демонстрация платформы</li>
-            <li>Вопросы по интеграции</li>
-            <li>Корпоративные условия</li>
-            <li>Техническая поддержка</li>
+            <li>{{ t("landing.contactItem1") }}</li>
+            <li>{{ t("landing.contactItem2") }}</li>
+            <li>{{ t("landing.contactItem3") }}</li>
+            <li>{{ t("landing.contactItem4") }}</li>
           </ul>
         </div>
 
         <div class="contact-section__form-wrap">
           <form class="contact-form" @submit.prevent="handleSubmit">
-            <h3 class="contact-form__title">Напишите нам</h3>
+            <h3 class="contact-form__title">
+              {{ t("landing.contactFormTitle") }}
+            </h3>
 
             <ui-form-field
               type="text"
               v-model="r$.$value.name"
               :error="r$.name.$errors[0]"
-              label="Имя"
-              placeholder="Ваше имя"
+              :label="t('landing.contactName')"
+              :placeholder="t('landing.contactNamePlaceholder')"
             />
             <ui-form-field
               type="email"
               v-model="r$.$value.email"
               :error="r$.email.$errors[0]"
-              label="Email"
-              placeholder="email@company.com"
+              :label="t('landing.contactEmail')"
+              :placeholder="t('landing.contactEmailPlaceholder')"
             />
 
-            <Field.Root
-              class="field"
-              :invalid="!!r$.message.$errors[0]"
-            >
-              <Field.Label class="field__label">Сообщение</Field.Label>
+            <Field.Root class="field" :invalid="!!r$.message.$errors[0]">
+              <Field.Label class="field__label">{{
+                t("landing.contactMessage")
+              }}</Field.Label>
               <Field.Textarea
                 class="field-textarea"
                 v-model="r$.$value.message"
-                placeholder="Опишите вашу задачу..."
+                :placeholder="t('landing.contactMessagePlaceholder')"
                 rows="4"
               />
-              <Field.ErrorText v-if="r$.message.$errors[0]" class="field__error">
+              <Field.ErrorText
+                v-if="r$.message.$errors[0]"
+                class="field__error"
+              >
                 {{ r$.message.$errors[0] }}
               </Field.ErrorText>
             </Field.Root>
 
             <div v-if="sent" class="success-banner">
-              Сообщение отправлено! Мы ответим в течение одного рабочего дня.
+              {{ t("landing.contactSuccess") }}
             </div>
 
-            <ui-button type="submit" :disabled="isSending" class="contact-form__submit">
-              {{ isSending ? 'Отправка...' : 'Отправить сообщение' }}
+            <ui-button
+              type="submit"
+              :disabled="isSending"
+              class="contact-form__submit"
+            >
+              {{
+                isSending
+                  ? t("landing.contactSending")
+                  : t("landing.contactSubmit")
+              }}
             </ui-button>
           </form>
         </div>
@@ -134,7 +155,7 @@ async function handleSubmit() {
 }
 
 .contact-section__list li::before {
-  content: '→';
+  content: "→";
   position: absolute;
   left: 0;
   font-weight: 700;
@@ -185,12 +206,15 @@ async function handleSubmit() {
   min-height: 100px;
   color: var(--color-neutral-dd);
   background: var(--color-secondary);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .field-textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-primary) 15%, transparent);
 }
 
 .field[data-invalid] .field-textarea {

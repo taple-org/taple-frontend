@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { TenantLeadListItem } from "~/api/generated/api";
 import { STAGE_LABELS } from "~/stores/leads.store";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   leads: TenantLeadListItem[];
@@ -32,7 +35,7 @@ const toggleAll = () => {
 };
 
 const formatDate = (dateStr: string) =>
-  new Date(dateStr).toLocaleDateString("ru-RU", {
+  new Date(dateStr).toLocaleDateString(undefined, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -62,13 +65,13 @@ const stageColor = (stage: string) => {
   <div class="leads-table-wrapper">
     <div v-if="isLoading" class="leads-table__loading">
       <div class="leads-table__spinner" />
-      <span>Загрузка лидов...</span>
+      <span>{{ t("leads.loading") }}</span>
     </div>
 
     <div v-else-if="leads.length === 0" class="leads-table__empty">
       <Icon name="my-icon-inbox" mode="svg" :size="32" />
-      <p>Лиды не найдены</p>
-      <span>Попробуйте изменить фильтры или обновить список</span>
+      <p>{{ t("leads.notFound") }}</p>
+      <span>{{ t("leads.tryChangeFilters") }}</span>
     </div>
 
     <table v-else class="leads-table">
@@ -83,13 +86,23 @@ const stageColor = (stage: string) => {
               @change="toggleAll"
             />
           </th>
-          <th class="leads-table__th">Название</th>
-          <th class="leads-table__th leads-table__th--hide-sm">Категория</th>
-          <th class="leads-table__th leads-table__th--hide-md">Город</th>
-          <th class="leads-table__th">Этап</th>
-          <th class="leads-table__th leads-table__th--hide-sm">Приоритет</th>
-          <th class="leads-table__th leads-table__th--hide-md">Соответствие</th>
-          <th class="leads-table__th leads-table__th--hide-lg">Дата</th>
+          <th class="leads-table__th">{{ t("leads.table.name") }}</th>
+          <th class="leads-table__th leads-table__th--hide-sm">
+            {{ t("leads.table.category") }}
+          </th>
+          <th class="leads-table__th leads-table__th--hide-md">
+            {{ t("leads.table.city") }}
+          </th>
+          <th class="leads-table__th">{{ t("leads.table.stage") }}</th>
+          <th class="leads-table__th leads-table__th--hide-sm">
+            {{ t("leads.table.priority") }}
+          </th>
+          <th class="leads-table__th leads-table__th--hide-md">
+            {{ t("leads.table.fit") }}
+          </th>
+          <th class="leads-table__th leads-table__th--hide-lg">
+            {{ t("leads.table.date") }}
+          </th>
           <th class="leads-table__th leads-table__th--actions" />
         </tr>
       </thead>
@@ -138,7 +151,10 @@ const stageColor = (stage: string) => {
           <td class="leads-table__td">
             <span
               class="leads-table__stage"
-              :style="{ color: stageColor(lead.stage_code), borderColor: stageColor(lead.stage_code) + '33' }"
+              :style="{
+                color: stageColor(lead.stage_code),
+                borderColor: stageColor(lead.stage_code) + '33',
+              }"
             >
               {{ STAGE_LABELS[lead.stage_code] ?? lead.stage_code }}
             </span>
@@ -150,16 +166,22 @@ const stageColor = (stage: string) => {
                 class="leads-table__score-bar"
                 :style="{ width: `${formatScore(lead.priority_score)}%` }"
               />
-              <span class="leads-table__score-val">{{ formatScore(lead.priority_score) }}</span>
+              <span class="leads-table__score-val">{{
+                formatScore(lead.priority_score)
+              }}</span>
             </div>
           </td>
 
           <td class="leads-table__td leads-table__td--hide-md">
-            <span class="leads-table__text">{{ formatScore(lead.fit_score) }}</span>
+            <span class="leads-table__text">{{
+              formatScore(lead.fit_score)
+            }}</span>
           </td>
 
           <td class="leads-table__td leads-table__td--hide-lg">
-            <span class="leads-table__date">{{ formatDate(lead.created_at) }}</span>
+            <span class="leads-table__date">{{
+              formatDate(lead.created_at)
+            }}</span>
           </td>
 
           <td class="leads-table__td leads-table__td--actions" @click.stop>
@@ -213,7 +235,9 @@ const stageColor = (stage: string) => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .leads-table__empty p {

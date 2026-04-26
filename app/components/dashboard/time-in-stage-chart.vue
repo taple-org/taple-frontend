@@ -2,6 +2,9 @@
 import Chart from "chart.js/auto";
 import type { AvgTimeInStage } from "~/api/generated/api";
 import { formatStageLabel } from "~/utils/formatStageLabel";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface Props {
   items: AvgTimeInStage[];
@@ -13,11 +16,15 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 let chartInstance: Chart | null = null;
 
 const chartData = computed(() => ({
-  labels: props.items.map((item) => formatStageLabel(item.stage, item.label_ru)),
+  labels: props.items.map((item) =>
+    formatStageLabel(item.stage, item.label_ru),
+  ),
   datasets: [
     {
-      label: "Среднее время в этапе, дней",
-      data: props.items.map((item) => Number(Number(item.avg_days || 0).toFixed(1))),
+      label: t("dashboard.charts.timeInStage"),
+      data: props.items.map((item) =>
+        Number(Number(item.avg_days || 0).toFixed(1)),
+      ),
       backgroundColor: "rgba(247, 149, 120, 0.42)",
       borderColor: "rgba(247, 149, 120, 0.88)",
       borderWidth: 1,
@@ -44,7 +51,8 @@ const chartOptions = {
       cornerRadius: 10,
       padding: 12,
       callbacks: {
-        label: (context: { parsed: { x: number } }) => ` ${context.parsed.x} дн.`,
+        label: (context: { parsed: { x: number } }) =>
+          ` ${context.parsed.x} ${t("dashboard.charts.days")}`,
       },
     },
   },
@@ -105,7 +113,9 @@ onUnmounted(() => {
 
 <template>
   <div class="time-in-stage-chart">
-    <h3 class="time-in-stage-chart__title">Среднее время нахождения в этапах</h3>
+    <h3 class="time-in-stage-chart__title">
+      {{ t("dashboard.charts.timeInStage") }}
+    </h3>
     <div class="time-in-stage-chart__container">
       <canvas ref="canvasRef" />
     </div>

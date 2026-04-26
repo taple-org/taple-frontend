@@ -1,55 +1,70 @@
 <script lang="ts" setup>
-import {useWorkspaceMakeFlow} from '~/composables/workspace/useWorkspaceMakeFlow';
-import type {ProfileListConfig, ProfileListItem} from '~/interfaces/profile.interfaces';
+import { useWorkspaceMakeFlow } from "~/composables/workspace/useWorkspaceMakeFlow";
+import type {
+  ProfileListConfig,
+  ProfileListItem,
+} from "~/interfaces/profile.interfaces";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const controller = useWorkspaceMakeFlow();
-const {user} = storeToRefs(useAuthStore());
-const {signOut} = useAuthStore();
-const {$apiClient} = useNuxtApp();
+const { user } = storeToRefs(useAuthStore());
+const { signOut } = useAuthStore();
+const { $apiClient } = useNuxtApp();
 const workspaceStore = useWorkspaceStore();
 const router = useRouter();
 
-const {data: tenats, error, refresh} = useAsyncData(() => $apiClient.api.listMyTenantsApiV1TenantsGet(), {lazy: true});
+const {
+  data: tenats,
+  error,
+  refresh,
+} = useAsyncData(() => $apiClient.api.listMyTenantsApiV1TenantsGet(), {
+  lazy: true,
+});
 
 const configs = computed<ProfileListConfig>(() => {
   return [
     {
-      title: 'Профиль',
-      icon: 'my-icon:profile',
-      type: 'link',
-      to: '/settings/profile'
+      title: t("nav.profile"),
+      icon: "my-icon:profile",
+      type: "link",
+      to: "/settings/profile",
     },
     {
-      title: 'Безопасность',
-      icon: 'my-icon:lock',
-      type: 'link',
-      to: '/settings/security'
+      title: t("nav.security"),
+      icon: "my-icon:lock",
+      type: "link",
+      to: "/settings/security",
     },
     {
-      title: 'Рабочие пространства',
-      icon: 'my-icon:categories',
-      type: 'nested',
+      title: t("nav.workspaces"),
+      icon: "my-icon:categories",
+      type: "nested",
       full: true,
-      items: [...(tenats.value?.data.result.map((tenat): ProfileListItem => ({
-        type: 'action',
-        title: tenat.name,
-        action: () => {
-          workspaceStore.setCurrentWorkspace(tenat.id);
-          router.push(`/workspaces/${tenat.id}/dashboard/leads`);
-        }
-      })) ?? []), {
-        title: 'Создать',
-        description: 'Добавить новое рабочее пространство',
-        icon: 'my-icon:add',
-        type: 'action',
-        action: () => {
-          controller.open({ handleResolve: () => refresh() });
-        }
-      }]
-    }]
-
-})
-
+      items: [
+        ...(tenats.value?.data.result.map(
+          (tenat): ProfileListItem => ({
+            type: "action",
+            title: tenat.name,
+            action: () => {
+              workspaceStore.setCurrentWorkspace(tenat.id);
+              router.push(`/workspaces/${tenat.id}/dashboard/leads`);
+            },
+          }),
+        ) ?? []),
+        {
+          title: t("common.create"),
+          description: t("workspace.addWorkspaceDesc"),
+          icon: "my-icon:add",
+          type: "action",
+          action: () => {
+            controller.open({ handleResolve: () => refresh() });
+          },
+        },
+      ],
+    },
+  ];
+});
 </script>
 <template>
   <ui-popover class="profile" placement="bottom" :offset="{ mainAxis: 36 }">
@@ -63,16 +78,23 @@ const configs = computed<ProfileListConfig>(() => {
         <ul class="profile__list">
           <template v-for="element in configs" :key="element.title">
             <li :class="{ 'profile__list-item--full': element.full }">
-              <app-header-profile-list-link-item v-if="element.type === 'link'" v-bind="element"/>
-              <app-header-profile-list-nested-item v-else-if="element.type === 'nested'"
-                                                   v-bind="element"/>
-              <app-header-profile-list-action-item v-else-if="element.type === 'action'"
-                                                   v-bind="element"/>
+              <app-header-profile-list-link-item
+                v-if="element.type === 'link'"
+                v-bind="element"
+              />
+              <app-header-profile-list-nested-item
+                v-else-if="element.type === 'nested'"
+                v-bind="element"
+              />
+              <app-header-profile-list-action-item
+                v-else-if="element.type === 'action'"
+                v-bind="element"
+              />
             </li>
           </template>
         </ul>
         <ui-button class="profile__logout" variant="error" @click="signOut">
-          Выйти
+          {{ t("auth.logout") }}
         </ui-button>
       </section>
     </template>
@@ -81,23 +103,22 @@ const configs = computed<ProfileListConfig>(() => {
 </template>
 <style>
 .profile__content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 800px;
-    padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 800px;
+  padding: 30px;
 }
 
 .profile__list {
-    display: grid;
-    row-gap: 10px;
-    column-gap: 10px;
-    align-self: stretch;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: grid;
+  row-gap: 10px;
+  column-gap: 10px;
+  align-self: stretch;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .profile__list-item--full {
-    grid-column: 1 / span 2;
-
+  grid-column: 1 / span 2;
 }
 </style>
