@@ -2,16 +2,18 @@
   <section class="comparison-section">
     <ui-container :padding="[80, 15]">
       <div class="section-header">
-        <h2 class="section-title">Taple vs. ручной поиск</h2>
-        <p class="section-subtitle">Сравните сами — и сделайте выбор</p>
+        <h2 class="section-title">{{ t("landing.comparisonTitle") }}</h2>
+        <p class="section-subtitle">{{ t("landing.comparisonSubtitle") }}</p>
       </div>
       <div class="comparison-table-wrap">
         <table class="comparison-table">
           <thead>
             <tr>
-              <th class="col-criteria">Критерий</th>
+              <th class="col-criteria">
+                {{ t("landing.comparisonCriteria") }}
+              </th>
               <th class="col-taple">Taple</th>
-              <th class="col-manual">Ручной поиск</th>
+              <th class="col-manual">{{ t("landing.comparisonManual") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -38,13 +40,37 @@
 </template>
 
 <script setup lang="ts">
-const rows = [
-  { criteria: 'Источники данных',   taple: 'Автоматически из 2ГИС, ЕГРЮЛ, открытых баз', manual: 'Ручной сбор, часто устаревшие справочники' },
-  { criteria: 'Частота обновления', taple: 'Ежедневно',                                  manual: 'Редко, только при ручном обходе' },
-  { criteria: 'Дублирование',       taple: 'Нормализация и дедупликация на входе',        manual: 'Дубли накапливаются, требуют ручной чистки' },
-  { criteria: 'Экспорт',            taple: 'Excel, CRM, 1С — одним кликом',              manual: 'Копирование вручную или сложный импорт' },
-  { criteria: 'Командная работа',   taple: 'Роли, совместный доступ, история действий',  manual: 'Таблицы в Google Sheets без контроля' },
-]
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
+const rows = computed(() => [
+  {
+    criteria: t("landing.criteriaDataSources"),
+    taple: t("landing.tapleDataSources"),
+    manual: t("landing.manualDataSources"),
+  },
+  {
+    criteria: t("landing.criteriaUpdateFreq"),
+    taple: t("landing.tapleUpdateFreq"),
+    manual: t("landing.manualUpdateFreq"),
+  },
+  {
+    criteria: t("landing.criteriaDeduplication"),
+    taple: t("landing.tapleDeduplication"),
+    manual: t("landing.manualDeduplication"),
+  },
+  {
+    criteria: t("landing.criteriaExport"),
+    taple: t("landing.tapleExport"),
+    manual: t("landing.manualExport"),
+  },
+  {
+    criteria: t("landing.criteriaTeamwork"),
+    taple: t("landing.tapleTeamwork"),
+    manual: t("landing.manualTeamwork"),
+  },
+]);
 </script>
 
 <style scoped>
@@ -110,11 +136,19 @@ const rows = [
   color: var(--color-neutral-dd);
 }
 
-.col-taple   { width: 39%; }
-.col-manual  { width: 39%; }
+.col-taple {
+  width: 39%;
+}
+.col-manual {
+  width: 39%;
+}
 
-th.col-taple  { color: var(--color-primary); }
-th.col-manual { color: var(--color-neutral-dl); }
+th.col-taple {
+  color: var(--color-primary);
+}
+th.col-manual {
+  color: var(--color-neutral-dl);
+}
 
 .badge {
   display: inline-flex;
@@ -131,9 +165,17 @@ th.col-manual { color: var(--color-neutral-dl); }
   margin-top: 2px;
 }
 
-.badge--yes { color: var(--color-neutral-dd); }
-.badge--yes .badge__icon { color: var(--color-success); }
+.badge--yes {
+  color: var(--color-neutral-dd);
+}
+.badge--yes .badge__icon {
+  color: var(--color-success);
+}
 
-.badge--no  { color: var(--color-neutral-dl); }
-.badge--no .badge__icon { color: var(--color-error); }
+.badge--no {
+  color: var(--color-neutral-dl);
+}
+.badge--no .badge__icon {
+  color: var(--color-error);
+}
 </style>

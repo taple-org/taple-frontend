@@ -146,6 +146,7 @@ const buildLeadListParams = (
 export const useLeadsStore = defineStore("leads", () => {
   const notification = useNotification();
   const { $apiClient } = useNuxtApp();
+  const { t } = useI18n();
 
   // ─── List state ───────────────────────────────────────────────────────────
   const rawLeads = ref<TenantLeadListItem[]>([]);
@@ -228,10 +229,10 @@ export const useLeadsStore = defineStore("leads", () => {
       } catch (e: unknown) {
         if (e instanceof Error) {
           error.value = e.message;
-          notification.error("Ошибка", e.message);
+          notification.error(t("common.error"), e.message);
         } else {
-          error.value = "Неизвестная ошибка";
-          notification.error("Ошибка", "Неизвестная ошибка");
+          error.value = t("leads.unknownError");
+          notification.error(t("common.error"), t("leads.unknownError"));
         }
         return false;
       } finally {
@@ -275,9 +276,9 @@ export const useLeadsStore = defineStore("leads", () => {
     } catch (e: unknown) {
       if (e instanceof Error) {
         error.value = e.message;
-        notification.error("Ошибка", "Не удалось загрузить ещё лиды");
+        notification.error(t("common.error"), t("leads.loadMoreError"));
       } else {
-        notification.error("Ошибка", "Не удалось загрузить ещё лиды");
+        notification.error(t("common.error"), t("leads.loadMoreError"));
       }
       return false;
     } finally {
@@ -296,7 +297,7 @@ export const useLeadsStore = defineStore("leads", () => {
         );
       selectedLeadDetail.value = resp.data.result;
     } catch (e) {
-      notification.error("Ошибка", "Не удалось загрузить детали лида");
+      notification.error(t("common.error"), t("leads.fetchDetailError"));
     } finally {
       isLoadingDetail.value = false;
     }
@@ -320,12 +321,12 @@ export const useLeadsStore = defineStore("leads", () => {
       if (selectedLeadDetail.value?.id === leadId)
         selectedLeadDetail.value.stage_code = toStage;
       notification.success(
-        "Успешно",
-        `Лид перемещён: ${STAGE_LABELS[toStage]}`,
+        t("common.success"),
+        t("leads.moveLeadSuccess", { stage: STAGE_LABELS[toStage] }),
       );
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось переместить лид");
+      notification.error(t("common.error"), t("leads.moveLeadError"));
       return false;
     }
   };
@@ -344,10 +345,10 @@ export const useLeadsStore = defineStore("leads", () => {
       if (lead) lead.stage_code = TenantLeadStage.Snoozed;
       if (selectedLeadDetail.value?.id === leadId)
         selectedLeadDetail.value.stage_code = TenantLeadStage.Snoozed;
-      notification.success("Успешно", "Лид отложен");
+      notification.success(t("common.success"), t("leads.postponeLeadSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось отложить лид");
+      notification.error(t("common.error"), t("leads.postponeLeadError"));
       return false;
     }
   };
@@ -372,10 +373,10 @@ export const useLeadsStore = defineStore("leads", () => {
         selectedLeadDetail.value.stage_code = TenantLeadStage.Snoozed;
         selectedLeadDetail.value.snoozed_until = snoozedUntil;
       }
-      notification.success("Успешно", "Лид отложен");
+      notification.success(t("common.success"), t("leads.postponeLeadSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось отложить лид");
+      notification.error(t("common.error"), t("leads.postponeLeadError"));
       return false;
     }
   };
@@ -389,10 +390,10 @@ export const useLeadsStore = defineStore("leads", () => {
       if (lead) lead.stage_code = TenantLeadStage.Hidden;
       if (selectedLeadDetail.value?.id === leadId)
         selectedLeadDetail.value.stage_code = TenantLeadStage.Hidden;
-      notification.success("Успешно", "Лид скрыт");
+      notification.success(t("common.success"), t("leads.hideLeadSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось скрыть лид");
+      notification.error(t("common.error"), t("leads.hideLeadError"));
       return false;
     }
   };
@@ -408,10 +409,10 @@ export const useLeadsStore = defineStore("leads", () => {
         { tenant_id: workspaceId },
         { member_id: memberId },
       );
-      notification.success("Успешно", "Лид назначен");
+      notification.success(t("common.success"), t("leads.assignLeadSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось назначить лид");
+      notification.error(t("common.error"), t("leads.assignLeadError"));
       return false;
     }
   };
@@ -424,10 +425,10 @@ export const useLeadsStore = defineStore("leads", () => {
       rawLeads.value = rawLeads.value.filter((l) => l.id !== leadId);
       if (selectedLeadDetail.value?.id === leadId)
         selectedLeadDetail.value = null;
-      notification.success("Успешно", "Лид удалён");
+      notification.success(t("common.success"), t("leads.deleteLeadSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось удалить лид");
+      notification.error(t("common.error"), t("leads.deleteLeadError"));
       return false;
     }
   };
@@ -443,10 +444,10 @@ export const useLeadsStore = defineStore("leads", () => {
       if (raw) raw.stage_code = TenantLeadStage.InProgress;
       if (selectedLeadDetail.value?.id === leadId)
         selectedLeadDetail.value.stage_code = TenantLeadStage.InProgress;
-      notification.success("Успешно", "Лид взят в работу");
+      notification.success(t("common.success"), t("leads.takeLeadSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось взять лид в работу");
+      notification.error(t("common.error"), t("leads.takeLeadError"));
       return false;
     }
   };
@@ -468,12 +469,15 @@ export const useLeadsStore = defineStore("leads", () => {
       });
       selectedIds.value.clear();
       notification.success(
-        "Успешно",
-        `${leadIds.length} лидов перемещено: ${STAGE_LABELS[toStage]}`,
+        t("common.success"),
+        t("leads.bulkMoveSuccess", {
+          count: leadIds.length,
+          stage: STAGE_LABELS[toStage],
+        }),
       );
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось переместить лиды");
+      notification.error(t("common.error"), t("leads.bulkMoveError"));
       return false;
     }
   };
@@ -488,11 +492,14 @@ export const useLeadsStore = defineStore("leads", () => {
         { tenant_id: workspaceId },
         { tenant_lead_ids: leadIds, member_id: memberId },
       );
-      notification.success("Успешно", `${leadIds.length} лидов назначено`);
+      notification.success(
+        t("common.success"),
+        t("leads.bulkAssignSuccess", { count: leadIds.length }),
+      );
       selectedIds.value.clear();
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось назначить лиды");
+      notification.error(t("common.error"), t("leads.bulkAssignError"));
       return false;
     }
   };
@@ -522,7 +529,7 @@ export const useLeadsStore = defineStore("leads", () => {
       );
       notes.value = resp.data.result;
     } catch {
-      notification.error("Ошибка", "Не удалось загрузить заметки");
+      notification.error(t("common.error"), t("leads.fetchNotesError"));
     } finally {
       isLoadingNotes.value = false;
     }
@@ -541,10 +548,10 @@ export const useLeadsStore = defineStore("leads", () => {
           { note: text },
         );
       notes.value.unshift(resp.data.result);
-      notification.success("Успешно", "Заметка добавлена");
+      notification.success(t("common.success"), t("leads.createNoteSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось добавить заметку");
+      notification.error(t("common.error"), t("leads.createNoteError"));
       return false;
     }
   };
@@ -561,7 +568,7 @@ export const useLeadsStore = defineStore("leads", () => {
       );
       tasks.value = resp.data.result;
     } catch {
-      notification.error("Ошибка", "Не удалось загрузить задачи");
+      notification.error(t("common.error"), t("leads.fetchTasksError"));
     } finally {
       isLoadingTasks.value = false;
     }
@@ -580,10 +587,10 @@ export const useLeadsStore = defineStore("leads", () => {
           data,
         );
       tasks.value.unshift(resp.data.result);
-      notification.success("Успешно", "Задача создана");
+      notification.success(t("common.success"), t("leads.createTaskSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось создать задачу");
+      notification.error(t("common.error"), t("leads.createTaskError"));
       return false;
     }
   };
@@ -602,10 +609,10 @@ export const useLeadsStore = defineStore("leads", () => {
       );
       const task = tasks.value.find((t: any) => t.id === taskId);
       if (task) task.completed_at = new Date().toISOString();
-      notification.success("Успешно", "Задача выполнена");
+      notification.success(t("common.success"), t("leads.completeTaskSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось выполнить задачу");
+      notification.error(t("common.error"), t("leads.completeTaskError"));
       return false;
     }
   };
@@ -625,10 +632,10 @@ export const useLeadsStore = defineStore("leads", () => {
       a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-      notification.success("Успешно", "Экспорт запущен");
+      notification.success(t("common.success"), t("leads.exportSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось экспортировать лиды");
+      notification.error(t("common.error"), t("leads.exportError"));
       return false;
     }
   };
@@ -638,10 +645,10 @@ export const useLeadsStore = defineStore("leads", () => {
       await $apiClient.api.refreshTenantLeadsApiV1TenantsTenantIdRefreshLeadsPost(
         workspaceId,
       );
-      notification.success("Успешно", "Лиды обновляются");
+      notification.success(t("common.success"), t("leads.refreshSuccess"));
       return true;
     } catch {
-      notification.error("Ошибка", "Не удалось обновить лиды");
+      notification.error(t("common.error"), t("leads.refreshError"));
       return false;
     }
   };

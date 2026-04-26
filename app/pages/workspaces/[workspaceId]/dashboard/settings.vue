@@ -14,11 +14,13 @@ definePageMeta({
   middleware: "auth",
 });
 
+const { t } = useI18n();
+
 useSeoMeta({
-  title: "Настройки рабочего пространства — Taple",
-  description: "Управление участниками, ролями и параметрами рабочего пространства в Taple.",
+  title: `${t("settings.workspaceSettings")} — Taple`,
+  description: t("settings.workspaceSettingsDesc"),
   robots: "noindex, nofollow",
-})
+});
 
 const route = useRoute();
 const router = useRouter();
@@ -217,7 +219,7 @@ async function fetchMembers() {
     }));
   } catch (error) {
     console.error("Failed to fetch members:", error);
-    notification.error("Ошибка", "Не удалось загрузить список участников");
+    notification.error(t("common.error"), t("settings.loadingError"));
   } finally {
     isLoadingMembers.value = false;
   }
@@ -332,7 +334,10 @@ function getRoleOptionsForMember(currentRole: MemberRole) {
 }
 
 function initials(m: Member) {
-  return ((m.firstName[0] ?? "") + (m.lastName[0] ?? "")).toUpperCase() || (m.email[0] ?? "?").toUpperCase();
+  return (
+    ((m.firstName[0] ?? "") + (m.lastName[0] ?? "")).toUpperCase() ||
+    (m.email[0] ?? "?").toUpperCase()
+  );
 }
 
 const roleLabel: Record<MemberRole, string> = {
@@ -513,7 +518,7 @@ async function saveTags() {
               "
               class="btn-remove"
               @click="removeMember(member.userId, member.role)"
-              title="Удалить участника"
+              :title="t('settings.removeMember')"
             >
               <Icon name="my-icon:close" class="btn-remove__icon" />
             </button>
@@ -524,9 +529,9 @@ async function saveTags() {
       <!-- Lead Tags (Owner and Admin only) -->
       <div v-if="canManageSettings()" class="settings-card">
         <div class="card-header">
-          <h2 class="card-title">Теги лидов</h2>
+          <h2 class="card-title">{{ t("settings.leadTags") }}</h2>
           <p class="card-desc">
-            Теги для организации лидов в этом пространстве
+            {{ t("settings.leadTagsDesc") }}
           </p>
         </div>
 
@@ -544,17 +549,23 @@ async function saveTags() {
             <input
               v-model="newTag"
               class="tag-input"
-              placeholder="Добавить тег..."
+              :placeholder="t('settings.addTag')"
               @keydown.enter.prevent="addTag"
             />
-            <ui-button variant="outline" @click="addTag">Добавить</ui-button>
+            <ui-button variant="outline" @click="addTag">{{
+              t("common.add")
+            }}</ui-button>
           </div>
         </div>
 
         <div class="form-footer form-footer--tags">
-          <span v-if="tagsSaved" class="saved-hint">Сохранено</span>
+          <span v-if="tagsSaved" class="saved-hint">{{
+            t("settings.tagSaved")
+          }}</span>
           <ui-button :disabled="isSavingTags" @click="saveTags">
-            {{ isSavingTags ? "Сохранение..." : "Сохранить теги" }}
+            {{
+              isSavingTags ? t("settings.tagSaving") : t("settings.saveTags")
+            }}
           </ui-button>
         </div>
       </div>

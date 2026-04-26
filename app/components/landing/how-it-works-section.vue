@@ -2,8 +2,8 @@
   <section class="how-section">
     <ui-container :padding="[80, 15]">
       <div class="section-header">
-        <h2 class="section-title">Как это работает</h2>
-        <p class="section-subtitle">Четыре шага от настройки до первого клиента</p>
+        <h2 class="section-title">{{ t("landing.howItWorksTitle") }}</h2>
+        <p class="section-subtitle">{{ t("landing.howItWorksSubtitle") }}</p>
       </div>
       <div class="steps">
         <div v-for="(step, idx) in steps" :key="step.title" class="step">
@@ -20,24 +20,27 @@
 </template>
 
 <script setup lang="ts">
-const steps = [
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
+const steps = computed(() => [
   {
-    title: 'Настройте источники',
-    description: 'Выберите регионы, отрасли и типы бизнеса, которые вас интересуют',
+    title: t("landing.step1Title"),
+    description: t("landing.step1Desc"),
   },
   {
-    title: 'Система собирает лиды',
-    description: 'Taple ежедневно обходит 2ГИС, госреестры и открытые базы, нормализует и дедуплицирует данные',
+    title: t("landing.step2Title"),
+    description: t("landing.step2Desc"),
   },
   {
-    title: 'Оцените и отфильтруйте',
-    description: 'Используйте скоринг, теги и фильтры для отбора самых приоритетных контрагентов',
+    title: t("landing.step3Title"),
+    description: t("landing.step3Desc"),
   },
   {
-    title: 'Экспортируйте в свой инструмент',
-    description: 'Выгружайте готовую базу в Excel, подключайте CRM по API или синхронизируйте с 1С',
+    title: t("landing.step4Title"),
+    description: t("landing.step4Desc"),
   },
-]
+]);
 </script>
 
 <style scoped>
@@ -122,7 +125,9 @@ const steps = [
     grid-template-columns: repeat(2, 1fr);
     gap: 40px;
   }
-  .step__connector { display: none; }
+  .step__connector {
+    display: none;
+  }
 }
 
 @media (max-width: 560px) {

@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { ITariffCard } from "~/interfaces/landing.interfaces";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
 defineProps<{
-  card: ITariffCard
+  card: ITariffCard;
 }>();
 </script>
 <template>
@@ -20,7 +24,7 @@ defineProps<{
         <span class="feature__label">{{ feature }}</span>
       </li>
     </ul>
-    <ui-button variant="outline">Зарегистрироваться</ui-button>
+    <ui-button variant="outline">{{ t("landing.registerBtn") }}</ui-button>
   </article>
 </template>
 <style scoped>
@@ -55,7 +59,6 @@ defineProps<{
   font-size: 64px;
   font-weight: 700;
   color: var(--color-neutral-dd);
-
 }
 
 .pricing__time {
@@ -66,7 +69,7 @@ defineProps<{
 
 .features__item {
   display: flex;
-  gap: 8px
+  gap: 8px;
 }
 
 .feature__check-icon {

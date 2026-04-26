@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import Chart from "chart.js/auto";
 import type { PeriodActivity } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface Props {
   period7Days: PeriodActivity;
@@ -12,13 +15,17 @@ const props = defineProps<Props>();
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let chartInstance: Chart | null = null;
 
-const labels = ["Новые лиды", "Заметки", "Смены этапов"];
+const labels = computed(() => [
+  t("dashboard.newLeads"),
+  t("dashboard.notes"),
+  t("dashboard.stageChanges"),
+]);
 
 const chartData = computed(() => ({
-  labels,
+  labels: labels.value,
   datasets: [
     {
-      label: "Последние 7 дней",
+      label: t("dashboard.last7Days"),
       data: [
         props.period7Days.new_leads,
         props.period7Days.notes_added,
@@ -31,7 +38,7 @@ const chartData = computed(() => ({
       maxBarThickness: 34,
     },
     {
-      label: "Последние 30 дней",
+      label: t("dashboard.last30Days"),
       data: [
         props.period30Days.new_leads,
         props.period30Days.notes_added,

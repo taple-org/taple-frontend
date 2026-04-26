@@ -6,7 +6,9 @@ import UiButton from "~/components/ui/Button.vue";
 import UiBadge from "~/components/ui/Badge.vue";
 import UiContentSwitcher from "~/components/ui/ContentSwitcher.vue";
 import type { ContentSwitcherItem } from "~/components/ui/ContentSwitcher.vue";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 defineOptions({ inheritAttrs: false });
 
 interface Props {
@@ -24,11 +26,11 @@ const emit = defineEmits<Emits>();
 
 const open = defineModel<boolean>("open");
 
-const tabs: ContentSwitcherItem[] = [
-  { value: "info", label: "Информация" },
-  { value: "eval", label: "Оценка и данные" },
-  { value: "history", label: "История" },
-];
+const tabs = computed<ContentSwitcherItem[]>(() => [
+  { value: "info", label: t("lead.tabs.info") },
+  { value: "eval", label: t("lead.tabs.eval") },
+  { value: "history", label: t("lead.tabs.history") },
+]);
 
 const selectedTab = ref<string[]>(["info"]);
 const noteValue = ref<string>("");
@@ -50,11 +52,31 @@ const handleTake = () => {
 const scoreEntries = computed(() => {
   if (!props.lead) return [];
   return [
-    { label: "Соответствие", value: props.lead.fitScore ?? 0, color: "#298267" },
-    { label: "Приоритет", value: props.lead.priorityScore ?? 0, color: "#006FFD" },
-    { label: "Свежесть", value: props.lead.freshnessScore ?? 0, color: "#F4B400" },
-    { label: "Контактность", value: props.lead.contactabilityScore ?? 0, color: "#7B1FA2" },
-    { label: "Потенциал", value: props.lead.businessPotentialScore ?? 0, color: "#E65100" },
+    {
+      label: t("lead.score.fit"),
+      value: props.lead.fitScore ?? 0,
+      color: "#298267",
+    },
+    {
+      label: t("lead.score.priority"),
+      value: props.lead.priorityScore ?? 0,
+      color: "#006FFD",
+    },
+    {
+      label: t("lead.score.freshness"),
+      value: props.lead.freshnessScore ?? 0,
+      color: "#F4B400",
+    },
+    {
+      label: t("lead.score.contactability"),
+      value: props.lead.contactabilityScore ?? 0,
+      color: "#7B1FA2",
+    },
+    {
+      label: t("lead.score.potential"),
+      value: props.lead.businessPotentialScore ?? 0,
+      color: "#E65100",
+    },
   ].filter((s) => s.value > 0);
 });
 
@@ -67,12 +89,12 @@ const taxByYear = computed(() => {
     map[entry.year] = (map[entry.year] ?? 0) + total;
   }
   return Object.entries(map)
-      .map(([year, total]) => ({ year: Number(year), total }))
-      .sort((a, b) => a.year - b.year);
+    .map(([year, total]) => ({ year: Number(year), total }))
+    .sort((a, b) => a.year - b.year);
 });
 
 const maxTax = computed(() =>
-    taxByYear.value.reduce((m, e) => Math.max(m, e.total), 0)
+  taxByYear.value.reduce((m, e) => Math.max(m, e.total), 0),
 );
 
 const formatTax = (n: number) => {
@@ -87,7 +109,7 @@ const toggleBranch = (id: string) => {
 
 // Branches with congestion
 const branchesWithCongestion = computed(
-    () => props.lead?.branches?.filter((b: any) => b.congestion?.present) ?? []
+  () => props.lead?.branches?.filter((b: any) => b.congestion?.present) ?? [],
 );
 </script>
 
@@ -102,21 +124,34 @@ const branchesWithCongestion = computed(
             <div class="modal__header">
               <div class="modal__header-top">
                 <div class="modal__badges">
-                  <UiBadge variant="primary" size="sm">{{ lead.openStatus }}</UiBadge>
+                  <UiBadge variant="primary" size="sm">{{
+                    lead.openStatus
+                  }}</UiBadge>
                   <div class="modal__score">{{ lead.score }}</div>
                   <!-- Signals badges -->
-                  <span v-if="lead.signals?.hasDelivery" class="modal__signal-badge modal__signal-badge--delivery">
-                    Доставка
+                  <span
+                    v-if="lead.signals?.hasDelivery"
+                    class="modal__signal-badge modal__signal-badge--delivery"
+                  >
+                    {{ t("lead.delivery") }}
                   </span>
-                  <span v-if="lead.signals?.is24x7" class="modal__signal-badge modal__signal-badge--247">
-                    24/7
+                  <span
+                    v-if="lead.signals?.is24x7"
+                    class="modal__signal-badge modal__signal-badge--247"
+                  >
+                    {{ t("lead.247") }}
                   </span>
                 </div>
                 <div class="modal__header-right">
                   <div v-if="lead.signals?.rating" class="modal__rating">
                     <span class="modal__rating-star">★</span>
-                    <span class="modal__rating-val">{{ lead.signals.rating }}</span>
-                    <span v-if="lead.signals.reviewCount" class="modal__rating-count">
+                    <span class="modal__rating-val">{{
+                      lead.signals.rating
+                    }}</span>
+                    <span
+                      v-if="lead.signals.reviewCount"
+                      class="modal__rating-count"
+                    >
                       ({{ lead.signals.reviewCount.toLocaleString() }})
                     </span>
                   </div>
@@ -132,12 +167,18 @@ const branchesWithCongestion = computed(
               </div>
 
               <div v-if="lead.tags.length" class="modal__tags">
-                <span v-for="tag in lead.tags" :key="tag" class="modal__tag">{{ tag }}</span>
+                <span v-for="tag in lead.tags" :key="tag" class="modal__tag">{{
+                  tag
+                }}</span>
               </div>
             </div>
 
             <!-- Tabs -->
-            <UiContentSwitcher v-model="selectedTab" :items="tabs" class="modal__tabs" />
+            <UiContentSwitcher
+              v-model="selectedTab"
+              :items="tabs"
+              class="modal__tabs"
+            />
 
             <!-- Tab Content -->
             <div class="modal__content">
@@ -145,10 +186,19 @@ const branchesWithCongestion = computed(
               <div v-if="selectedTab[0] === 'info'" class="modal__tab-panel">
                 <div class="modal__columns">
                   <div class="modal__column">
-                    <div v-if="lead.contacts.length || lead.email" class="modal__section">
-                      <h3 class="modal__section-title">Контакты</h3>
+                    <div
+                      v-if="lead.contacts.length || lead.email"
+                      class="modal__section"
+                    >
+                      <h3 class="modal__section-title">
+                        {{ t("lead.contacts") }}
+                      </h3>
                       <div class="modal__section-content">
-                        <div v-for="contact in lead.contacts" :key="contact" class="modal__contact-row">
+                        <div
+                          v-for="contact in lead.contacts"
+                          :key="contact"
+                          class="modal__contact-row"
+                        >
                           <Icon name="other-icon-phone" mode="svg" :size="14" />
                           <span>{{ contact }}</span>
                         </div>
@@ -161,27 +211,45 @@ const branchesWithCongestion = computed(
 
                     <div v-if="lead.address" class="modal__section">
                       <div class="modal__section-header">
-                        <h3 class="modal__section-title">Локация</h3>
+                        <h3 class="modal__section-title">
+                          {{ t("lead.location") }}
+                        </h3>
                         <a href="#" class="modal__link" @click.prevent>
-                          Открыть в 2GIS
-                          <Icon name="other-icon-external" mode="svg" :size="8" />
+                          {{ t("lead.openIn2GIS") }}
+                          <Icon
+                            name="other-icon-external"
+                            mode="svg"
+                            :size="8"
+                          />
                         </a>
                       </div>
                       <div class="modal__section-content">
                         <p class="modal__text">{{ lead.address }}</p>
-                        <div v-if="lead.signals" class="modal__location-signals">
-                          <span v-if="lead.signals.nearestStationDistance" class="modal__loc-chip">
+                        <div
+                          v-if="lead.signals"
+                          class="modal__location-signals"
+                        >
+                          <span
+                            v-if="lead.signals.nearestStationDistance"
+                            class="modal__loc-chip"
+                          >
                             🚇 {{ lead.signals.nearestStationDistance }}м
                           </span>
-                          <span v-if="lead.signals.nearestParkingCount" class="modal__loc-chip">
-                            🅿️ {{ lead.signals.nearestParkingCount }} паркингов
+                          <span
+                            v-if="lead.signals.nearestParkingCount"
+                            class="modal__loc-chip"
+                          >
+                            🅿️ {{ lead.signals.nearestParkingCount }}
+                            {{ t("lead.parking") }}
                           </span>
                         </div>
                       </div>
                     </div>
 
                     <div v-if="lead.freshness" class="modal__section">
-                      <h3 class="modal__section-title">Свежесть</h3>
+                      <h3 class="modal__section-title">
+                        {{ t("lead.freshness") }}
+                      </h3>
                       <div class="modal__section-content">
                         <p class="modal__text">{{ lead.freshness }}</p>
                       </div>
@@ -189,12 +257,25 @@ const branchesWithCongestion = computed(
                   </div>
 
                   <div class="modal__column">
-                    <div v-if="lead.reasons.length" class="modal__section modal__section--full">
-                      <h3 class="modal__section-title">Сводка</h3>
+                    <div
+                      v-if="lead.reasons.length"
+                      class="modal__section modal__section--full"
+                    >
+                      <h3 class="modal__section-title">
+                        {{ t("lead.summary") }}
+                      </h3>
                       <div class="modal__section-content modal__summary">
-                        <div v-for="(reason, index) in lead.reasons" :key="index" class="modal__summary-row">
-                          <span class="modal__summary-label">{{ reason.split(":")[0] }}:</span>
-                          <span class="modal__summary-value">{{ reason.split(":")[1]?.trim() }}</span>
+                        <div
+                          v-for="(reason, index) in lead.reasons"
+                          :key="index"
+                          class="modal__summary-row"
+                        >
+                          <span class="modal__summary-label"
+                            >{{ reason.split(":")[0] }}:</span
+                          >
+                          <span class="modal__summary-value">{{
+                            reason.split(":")[1]?.trim()
+                          }}</span>
                         </div>
                       </div>
                     </div>
@@ -202,13 +283,13 @@ const branchesWithCongestion = computed(
                 </div>
 
                 <div class="modal__section">
-                  <h3 class="modal__section-title">Заметка</h3>
+                  <h3 class="modal__section-title">{{ t("lead.note") }}</h3>
                   <div class="modal__section-content">
                     <textarea
-                        v-model="noteValue"
-                        class="modal__textarea"
-                        placeholder="Короткая заметка (опционально)"
-                        rows="3"
+                      v-model="noteValue"
+                      class="modal__textarea"
+                      :placeholder="t('lead.notePlaceholder')"
+                      rows="3"
                     />
                   </div>
                 </div>
@@ -216,29 +297,43 @@ const branchesWithCongestion = computed(
 
               <!-- Evaluation Tab -->
               <div v-if="selectedTab[0] === 'eval'" class="modal__tab-panel">
-
                 <!-- Score bars -->
                 <div v-if="scoreEntries.length" class="modal__section">
-                  <h3 class="modal__section-title">Скоринг</h3>
+                  <h3 class="modal__section-title">{{ t("lead.scoring") }}</h3>
                   <div class="modal__section-content">
-                    <div v-for="s in scoreEntries" :key="s.label" class="modal__score-bar-row">
+                    <div
+                      v-for="s in scoreEntries"
+                      :key="s.label"
+                      class="modal__score-bar-row"
+                    >
                       <span class="modal__score-bar-label">{{ s.label }}</span>
                       <div class="modal__score-bar-track">
                         <div
-                            class="modal__score-bar-fill"
-                            :style="{ width: `${s.value * 100}%`, background: s.color }"
+                          class="modal__score-bar-fill"
+                          :style="{
+                            width: `${s.value * 100}%`,
+                            background: s.color,
+                          }"
                         />
                       </div>
-                      <span class="modal__score-bar-val">{{ Math.round(s.value * 100) }}%</span>
+                      <span class="modal__score-bar-val"
+                        >{{ Math.round(s.value * 100) }}%</span
+                      >
                     </div>
                   </div>
                 </div>
 
                 <!-- Fit Scores (legacy) -->
                 <div v-if="lead.fitScores.length" class="modal__section">
-                  <h3 class="modal__section-title">Оценки продуктов</h3>
+                  <h3 class="modal__section-title">
+                    {{ t("lead.productScores") }}
+                  </h3>
                   <div class="modal__section-content">
-                    <div v-for="score in lead.fitScores" :key="score.label" class="modal__score-row">
+                    <div
+                      v-for="score in lead.fitScores"
+                      :key="score.label"
+                      class="modal__score-row"
+                    >
                       <span class="modal__score-label">{{ score.label }}</span>
                       <span class="modal__score-value">{{ score.level }}</span>
                     </div>
@@ -247,14 +342,24 @@ const branchesWithCongestion = computed(
 
                 <!-- Tax payments chart -->
                 <div v-if="taxByYear.length" class="modal__section">
-                  <h3 class="modal__section-title">Налоговые выплаты (КГД)</h3>
+                  <h3 class="modal__section-title">
+                    {{ t("lead.taxPayments") }}
+                  </h3>
                   <div class="modal__tax-chart">
-                    <div v-for="entry in taxByYear" :key="entry.year" class="modal__tax-bar-col">
-                      <span class="modal__tax-bar-val">{{ formatTax(entry.total) }}</span>
+                    <div
+                      v-for="entry in taxByYear"
+                      :key="entry.year"
+                      class="modal__tax-bar-col"
+                    >
+                      <span class="modal__tax-bar-val">{{
+                        formatTax(entry.total)
+                      }}</span>
                       <div class="modal__tax-bar-track">
                         <div
-                            class="modal__tax-bar-fill"
-                            :style="{ height: `${maxTax > 0 ? (entry.total / maxTax) * 100 : 0}%` }"
+                          class="modal__tax-bar-fill"
+                          :style="{
+                            height: `${maxTax > 0 ? (entry.total / maxTax) * 100 : 0}%`,
+                          }"
                         />
                       </div>
                       <span class="modal__tax-bar-year">{{ entry.year }}</span>
@@ -264,21 +369,44 @@ const branchesWithCongestion = computed(
 
                 <!-- KGD SUR -->
                 <div v-if="lead.kgdSur?.vatRegistered" class="modal__section">
-                  <h3 class="modal__section-title">Налоговый режим</h3>
+                  <h3 class="modal__section-title">{{ t("lead.taxMode") }}</h3>
                   <div class="modal__section-content">
                     <p class="modal__text">{{ lead.kgdSur.taxMode }}</p>
-                    <div class="modal__kgd-row" v-if="lead.kgdSur.taxDebt !== null && lead.kgdSur.taxDebt !== undefined">
-                      <span class="modal__kgd-label">Задолженность:</span>
-                      <span
-                          class="modal__kgd-value"
-                          :class="lead.kgdSur.taxDebt < 0 ? 'modal__kgd-value--debt' : 'modal__kgd-value--ok'"
+                    <div
+                      class="modal__kgd-row"
+                      v-if="
+                        lead.kgdSur.taxDebt !== null &&
+                        lead.kgdSur.taxDebt !== undefined
+                      "
+                    >
+                      <span class="modal__kgd-label"
+                        >{{ t("lead.taxDebt") }}:</span
                       >
-                        {{ lead.kgdSur.taxDebt < 0 ? `${Math.abs(lead.kgdSur.taxDebt).toLocaleString()} ₸` : "Нет" }}
+                      <span
+                        class="modal__kgd-value"
+                        :class="
+                          lead.kgdSur.taxDebt < 0
+                            ? 'modal__kgd-value--debt'
+                            : 'modal__kgd-value--ok'
+                        "
+                      >
+                        {{
+                          lead.kgdSur.taxDebt < 0
+                            ? `${Math.abs(lead.kgdSur.taxDebt).toLocaleString()} ₸`
+                            : t("lead.noDebt")
+                        }}
                       </span>
                     </div>
-                    <div class="modal__kgd-row" v-if="lead.kgdSur.vatRegistered !== null">
-                      <span class="modal__kgd-label">НДС:</span>
-                      <span class="modal__kgd-value">{{ lead.kgdSur.vatRegistered ? "Зарегистрирован" : "Не зарегистрирован" }}</span>
+                    <div
+                      class="modal__kgd-row"
+                      v-if="lead.kgdSur.vatRegistered !== null"
+                    >
+                      <span class="modal__kgd-label">{{ t("lead.vat") }}:</span>
+                      <span class="modal__kgd-value">{{
+                        lead.kgdSur.vatRegistered
+                          ? t("lead.vatRegistered")
+                          : t("lead.vatNotRegistered")
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -286,52 +414,91 @@ const branchesWithCongestion = computed(
                 <!-- Branches -->
                 <div v-if="lead.branches.length" class="modal__section">
                   <h3 class="modal__section-title">
-                    Филиалы ({{ lead.branches.length }})
+                    {{ t("lead.branches") }} ({{ lead.branches.length }})
                   </h3>
                   <div class="modal__section-content">
                     <div
-                        v-for="branch in lead.branches"
-                        :key="branch.id"
-                        class="modal__branch"
+                      v-for="branch in lead.branches"
+                      :key="branch.id"
+                      class="modal__branch"
                     >
                       <div
-                          class="modal__branch-header"
-                          :class="{ 'modal__branch-header--clickable': branch.congestion?.present }"
-                          @click="branch.congestion?.present ? toggleBranch(branch.id) : undefined"
+                        class="modal__branch-header"
+                        :class="{
+                          'modal__branch-header--clickable':
+                            branch.congestion?.present,
+                        }"
+                        @click="
+                          branch.congestion?.present
+                            ? toggleBranch(branch.id)
+                            : undefined
+                        "
                       >
-                        <span class="modal__branch-name">{{ branch.name || "Без названия" }}</span>
+                        <span class="modal__branch-name">{{
+                          branch.name || t("lead.unnamed")
+                        }}</span>
                         <div class="modal__branch-right">
                           <span
-                              :class="[
+                            :class="[
                               'modal__branch-status',
-                              branch.isActive ? 'modal__branch-status--active' : 'modal__branch-status--inactive',
+                              branch.isActive
+                                ? 'modal__branch-status--active'
+                                : 'modal__branch-status--inactive',
                             ]"
                           >
-                            {{ branch.isActive ? "Активен" : "Неактивен" }}
+                            {{
+                              branch.isActive
+                                ? t("lead.active")
+                                : t("lead.inactive")
+                            }}
                           </span>
-                          <span v-if="branch.congestion?.present" class="modal__branch-cong-icon">
+                          <span
+                            v-if="branch.congestion?.present"
+                            class="modal__branch-cong-icon"
+                          >
                             {{ expandedBranchId === branch.id ? "▲" : "▼" }}
                             📊
                           </span>
                         </div>
                       </div>
 
-                      <p v-if="branch.fullAddress" class="modal__branch-address">
+                      <p
+                        v-if="branch.fullAddress"
+                        class="modal__branch-address"
+                      >
                         {{ branch.fullAddress }}
                       </p>
 
                       <div
-                          v-if="branch.rating != null || branch.reviewCount != null"
-                          class="modal__branch-signals"
+                        v-if="
+                          branch.rating != null || branch.reviewCount != null
+                        "
+                        class="modal__branch-signals"
                       >
-                        <span v-if="branch.rating != null" class="modal__branch-signal">⭐ {{ branch.rating }}</span>
-                        <span v-if="branch.reviewCount != null" class="modal__branch-signal">💬 {{ branch.reviewCount }}</span>
+                        <span
+                          v-if="branch.rating != null"
+                          class="modal__branch-signal"
+                          >⭐ {{ branch.rating }}</span
+                        >
+                        <span
+                          v-if="branch.reviewCount != null"
+                          class="modal__branch-signal"
+                          >💬 {{ branch.reviewCount }}</span
+                        >
                       </div>
 
                       <!-- Congestion heatmap (expandable) -->
                       <Transition name="cong-expand">
-                        <div v-if="branch.congestion?.present && expandedBranchId === branch.id" class="modal__branch-heatmap">
-                          <dashboard-leads-congestion-heatmap :congestion="branch.congestion" />
+                        <div
+                          v-if="
+                            branch.congestion?.present &&
+                            expandedBranchId === branch.id
+                          "
+                          class="modal__branch-heatmap"
+                        >
+                          <dashboard-leads-congestion-heatmap
+                            :congestion="branch.congestion"
+                          />
                         </div>
                       </Transition>
                     </div>
@@ -342,18 +509,26 @@ const branchesWithCongestion = computed(
               <!-- History Tab -->
               <div v-if="selectedTab[0] === 'history'" class="modal__tab-panel">
                 <div class="modal__empty">
-                  <p>История доступна после первого взаимодействия с лидом</p>
+                  <p>{{ t("lead.historyEmpty") }}</p>
                 </div>
               </div>
             </div>
 
             <!-- Footer -->
             <div class="modal__footer">
-              <UiButton variant="error" class="modal__btn" @click="handlePostpone">
-                Отложить
+              <UiButton
+                variant="error"
+                class="modal__btn"
+                @click="handlePostpone"
+              >
+                {{ t("lead.postpone") }}
               </UiButton>
-              <UiButton variant="primary" class="modal__btn" @click="handleTake">
-                Взять в работу
+              <UiButton
+                variant="primary"
+                class="modal__btn"
+                @click="handleTake"
+              >
+                {{ t("lead.take") }}
               </UiButton>
             </div>
           </Dialog.Content>
@@ -370,8 +545,12 @@ const branchesWithCongestion = computed(
   z-index: 100;
   background: rgba(0, 0, 0, 0.5);
 }
-.modal-backdrop[data-state="open"] { animation: fadeIn 200ms ease; }
-.modal-backdrop[data-state="closed"] { animation: fadeOut 150ms ease; }
+.modal-backdrop[data-state="open"] {
+  animation: fadeIn 200ms ease;
+}
+.modal-backdrop[data-state="closed"] {
+  animation: fadeOut 150ms ease;
+}
 
 .modal-positioner {
   position: fixed;
@@ -397,13 +576,49 @@ const branchesWithCongestion = computed(
   pointer-events: all;
   contain: layout style;
 }
-.modal[data-state="open"] { animation: slideUp 300ms ease; }
-.modal[data-state="closed"] { animation: slideDown 200ms ease; }
+.modal[data-state="open"] {
+  animation: slideUp 300ms ease;
+}
+.modal[data-state="closed"] {
+  animation: slideDown 200ms ease;
+}
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideDown { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); } }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
 
 /* Header */
 .modal__header {
@@ -448,8 +663,14 @@ const branchesWithCongestion = computed(
   font-size: 9px;
   font-weight: 600;
 }
-.modal__signal-badge--delivery { background: #E8F5E9; color: #298267; }
-.modal__signal-badge--247 { background: #EDE7F6; color: #5E35B1; }
+.modal__signal-badge--delivery {
+  background: #e8f5e9;
+  color: #298267;
+}
+.modal__signal-badge--247 {
+  background: #ede7f6;
+  color: #5e35b1;
+}
 
 .modal__rating {
   display: flex;
@@ -457,9 +678,17 @@ const branchesWithCongestion = computed(
   gap: 3px;
   font-size: 11px;
 }
-.modal__rating-star { color: #F4B400; }
-.modal__rating-val { font-weight: 700; color: #1F2024; }
-.modal__rating-count { color: #71727A; font-weight: 400; }
+.modal__rating-star {
+  color: #f4b400;
+}
+.modal__rating-val {
+  font-weight: 700;
+  color: #1f2024;
+}
+.modal__rating-count {
+  color: #71727a;
+  font-weight: 400;
+}
 
 .modal__close {
   background: none;
@@ -471,13 +700,37 @@ const branchesWithCongestion = computed(
   color: #494a50;
   padding: 4px;
 }
-.modal__close:hover { color: #1f2024; }
+.modal__close:hover {
+  color: #1f2024;
+}
 
-.modal__title-section { display: flex; flex-direction: column; gap: 0; }
-.modal__title { margin: 0; font-size: 16px; font-weight: 700; color: #1f2024; line-height: normal; font-family: var(--font-base); }
-.modal__subtitle { margin: 0; font-size: 12px; font-weight: 400; color: #71727a; line-height: 16px; letter-spacing: 0.12px; }
+.modal__title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.modal__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2024;
+  line-height: normal;
+  font-family: var(--font-base);
+}
+.modal__subtitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: #71727a;
+  line-height: 16px;
+  letter-spacing: 0.12px;
+}
 
-.modal__tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.modal__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
 .modal__tag {
   display: inline-flex;
   align-items: center;
@@ -493,7 +746,9 @@ const branchesWithCongestion = computed(
 }
 
 /* Tabs */
-.modal__tabs { margin: 0 25px; }
+.modal__tabs {
+  margin: 0 25px;
+}
 
 /* Content */
 .modal__content {
@@ -502,9 +757,21 @@ const branchesWithCongestion = computed(
   padding: 15px 25px;
   min-height: 0;
 }
-.modal__tab-panel { display: flex; flex-direction: column; gap: 10px; }
-.modal__columns { display: flex; gap: 10px; }
-.modal__column { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.modal__tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.modal__columns {
+  display: flex;
+  gap: 10px;
+}
+.modal__column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
 /* Sections */
 .modal__section {
@@ -515,48 +782,122 @@ const branchesWithCongestion = computed(
   flex-direction: column;
   gap: 3px;
 }
-.modal__section--full { height: 100%; }
-.modal__section-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.modal__section-title { margin: 0; font-size: 10px; font-weight: 500; color: #8f9098; text-transform: uppercase; letter-spacing: 0.4px; line-height: 13px; }
-.modal__section-content { display: flex; flex-direction: column; gap: 5px; }
+.modal__section--full {
+  height: 100%;
+}
+.modal__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.modal__section-title {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 500;
+  color: #8f9098;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 13px;
+}
+.modal__section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
 .modal__link {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 5px; font-weight: 500; color: #8f9098;
-  text-decoration: none; border-bottom: 0.5px solid #8f9098;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 5px;
+  font-weight: 500;
+  color: #8f9098;
+  text-decoration: none;
+  border-bottom: 0.5px solid #8f9098;
 }
-.modal__link:hover { color: #494a50; border-bottom-color: #494a50; }
+.modal__link:hover {
+  color: #494a50;
+  border-bottom-color: #494a50;
+}
 
-.modal__text { margin: 0; font-size: 8px; font-weight: 500; color: #71727a; line-height: normal; }
+.modal__text {
+  margin: 0;
+  font-size: 8px;
+  font-weight: 500;
+  color: #71727a;
+  line-height: normal;
+}
 
 /* Location signals */
-.modal__location-signals { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
+.modal__location-signals {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}
 .modal__loc-chip {
-  padding: 2px 6px; border-radius: 8px;
-  background: #F5F5F5; color: #494A50;
-  font-size: 8px; font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  color: #494a50;
+  font-size: 8px;
+  font-weight: 500;
 }
 
 /* Contacts */
-.modal__contact-row { display: flex; align-items: center; gap: 5px; font-size: 8px; font-weight: 500; color: #494a50; }
-.modal__contact-row :deep(svg) { color: #494a50; flex-shrink: 0; }
+.modal__contact-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8px;
+  font-weight: 500;
+  color: #494a50;
+}
+.modal__contact-row :deep(svg) {
+  color: #494a50;
+  flex-shrink: 0;
+}
 
 /* Summary */
-.modal__summary { gap: 5px; }
-.modal__summary-row { display: flex; align-items: center; gap: 5px; font-size: 8px; }
-.modal__summary-label { font-weight: 500; color: #1f2024; }
-.modal__summary-value { font-weight: 700; color: #1f2024; }
+.modal__summary {
+  gap: 5px;
+}
+.modal__summary-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8px;
+}
+.modal__summary-label {
+  font-weight: 500;
+  color: #1f2024;
+}
+.modal__summary-value {
+  font-weight: 700;
+  color: #1f2024;
+}
 
 /* Textarea */
 .modal__textarea {
-  width: 100%; padding: 12px 16px;
-  border: 1px solid #e8e9f1; border-radius: 12px;
-  font-family: var(--font-base); font-size: 10px;
-  color: #1f2024; resize: vertical;
-  background: #ffffff; box-sizing: border-box;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e8e9f1;
+  border-radius: 12px;
+  font-family: var(--font-base);
+  font-size: 10px;
+  color: #1f2024;
+  resize: vertical;
+  background: #ffffff;
+  box-sizing: border-box;
 }
-.modal__textarea::placeholder { color: #8f9098; }
-.modal__textarea:focus { outline: none; border-color: #006ffd; }
+.modal__textarea::placeholder {
+  color: #8f9098;
+}
+.modal__textarea:focus {
+  outline: none;
+  border-color: #006ffd;
+}
 
 /* Score bars */
 .modal__score-bar-row {
@@ -569,12 +910,12 @@ const branchesWithCongestion = computed(
   width: 80px;
   flex-shrink: 0;
   font-weight: 500;
-  color: #494A50;
+  color: #494a50;
 }
 .modal__score-bar-track {
   flex: 1;
   height: 6px;
-  background: #F0F1F6;
+  background: #f0f1f6;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -587,7 +928,7 @@ const branchesWithCongestion = computed(
   width: 30px;
   text-align: right;
   font-weight: 700;
-  color: #1F2024;
+  color: #1f2024;
 }
 
 /* Tax chart */
@@ -612,13 +953,13 @@ const branchesWithCongestion = computed(
 .modal__tax-bar-val {
   font-size: 7px;
   font-weight: 600;
-  color: #494A50;
+  color: #494a50;
   white-space: nowrap;
 }
 .modal__tax-bar-track {
   flex: 1;
   width: 100%;
-  background: #F0F1F6;
+  background: #f0f1f6;
   border-radius: 4px 4px 0 0;
   display: flex;
   align-items: flex-end;
@@ -626,7 +967,7 @@ const branchesWithCongestion = computed(
 }
 .modal__tax-bar-fill {
   width: 100%;
-  background: linear-gradient(180deg, #006FFD 0%, #4DA3FF 100%);
+  background: linear-gradient(180deg, #006ffd 0%, #4da3ff 100%);
   border-radius: 4px 4px 0 0;
   transition: height 0.5s ease;
   min-height: 2px;
@@ -634,7 +975,7 @@ const branchesWithCongestion = computed(
 .modal__tax-bar-year {
   font-size: 8px;
   font-weight: 500;
-  color: #8F9098;
+  color: #8f9098;
 }
 
 /* KGD */
@@ -645,15 +986,36 @@ const branchesWithCongestion = computed(
   font-size: 9px;
   margin-top: 3px;
 }
-.modal__kgd-label { color: #71727A; font-weight: 500; }
-.modal__kgd-value { font-weight: 700; color: #1F2024; }
-.modal__kgd-value--debt { color: #E53935; }
-.modal__kgd-value--ok { color: #298267; }
+.modal__kgd-label {
+  color: #71727a;
+  font-weight: 500;
+}
+.modal__kgd-value {
+  font-weight: 700;
+  color: #1f2024;
+}
+.modal__kgd-value--debt {
+  color: #e53935;
+}
+.modal__kgd-value--ok {
+  color: #298267;
+}
 
 /* Scores */
-.modal__score-row { display: flex; align-items: center; justify-content: space-between; font-size: 8px; }
-.modal__score-label { font-weight: 500; color: #1f2024; }
-.modal__score-value { font-weight: 700; color: #006ffd; }
+.modal__score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 8px;
+}
+.modal__score-label {
+  font-weight: 500;
+  color: #1f2024;
+}
+.modal__score-value {
+  font-weight: 700;
+  color: #006ffd;
+}
 
 /* Branches */
 .modal__branch {
@@ -664,46 +1026,135 @@ const branchesWithCongestion = computed(
   flex-direction: column;
   gap: 4px;
 }
-.modal__branch-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.modal__branch-header--clickable { cursor: pointer; user-select: none; }
-.modal__branch-header--clickable:hover .modal__branch-name { color: #006FFD; }
-.modal__branch-right { display: flex; align-items: center; gap: 5px; }
+.modal__branch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.modal__branch-header--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+.modal__branch-header--clickable:hover .modal__branch-name {
+  color: #006ffd;
+}
+.modal__branch-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 .modal__branch-name {
-  font-size: 8px; font-weight: 600; color: #494a50;
-  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 8px;
+  font-weight: 600;
+  color: #494a50;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.15s;
 }
 .modal__branch-status {
-  padding: 2px 6px; border-radius: 3px;
-  font-size: 6px; font-weight: 600; white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 6px;
+  font-weight: 600;
+  white-space: nowrap;
 }
-.modal__branch-status--active { background: rgba(41, 130, 103, 0.15); color: #298267; }
-.modal__branch-status--inactive { background: rgba(244, 67, 54, 0.15); color: #f44336; }
-.modal__branch-cong-icon { font-size: 9px; color: #8F9098; }
-.modal__branch-address { margin: 0; font-size: 8px; font-weight: 400; color: #71727a; }
-.modal__branch-signals { display: flex; gap: 10px; }
-.modal__branch-signal { font-size: 8px; font-weight: 500; color: #494a50; }
-.modal__branch-heatmap { padding: 8px 4px 4px; }
+.modal__branch-status--active {
+  background: rgba(41, 130, 103, 0.15);
+  color: #298267;
+}
+.modal__branch-status--inactive {
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+}
+.modal__branch-cong-icon {
+  font-size: 9px;
+  color: #8f9098;
+}
+.modal__branch-address {
+  margin: 0;
+  font-size: 8px;
+  font-weight: 400;
+  color: #71727a;
+}
+.modal__branch-signals {
+  display: flex;
+  gap: 10px;
+}
+.modal__branch-signal {
+  font-size: 8px;
+  font-weight: 500;
+  color: #494a50;
+}
+.modal__branch-heatmap {
+  padding: 8px 4px 4px;
+}
 
 /* Heatmap expand transition */
-.cong-expand-enter-active { transition: all 0.25s ease; }
-.cong-expand-leave-active { transition: all 0.2s ease; }
-.cong-expand-enter-from, .cong-expand-leave-to { opacity: 0; transform: translateY(-6px); }
+.cong-expand-enter-active {
+  transition: all 0.25s ease;
+}
+.cong-expand-leave-active {
+  transition: all 0.2s ease;
+}
+.cong-expand-enter-from,
+.cong-expand-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
 
 /* Empty */
-.modal__empty { text-align: center; padding: 40px 20px; }
-.modal__empty p { margin: 0; font-size: 14px; font-weight: 400; color: #71727a; }
+.modal__empty {
+  text-align: center;
+  padding: 40px 20px;
+}
+.modal__empty p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  color: #71727a;
+}
 
 /* Footer */
-.modal__footer { display: flex; gap: 0; padding: 0 25px 25px; }
-.modal__btn { flex: 1; font-size: 10px; font-weight: 500; padding: 10px 8px; border-radius: 0; }
-.modal__btn:first-child { border-top-left-radius: 100px; border-bottom-left-radius: 100px; }
-.modal__btn:last-child { border-top-right-radius: 100px; border-bottom-right-radius: 100px; }
+.modal__footer {
+  display: flex;
+  gap: 0;
+  padding: 0 25px 25px;
+}
+.modal__btn {
+  flex: 1;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 10px 8px;
+  border-radius: 0;
+}
+.modal__btn:first-child {
+  border-top-left-radius: 100px;
+  border-bottom-left-radius: 100px;
+}
+.modal__btn:last-child {
+  border-top-right-radius: 100px;
+  border-bottom-right-radius: 100px;
+}
 
 @media (max-width: 768px) {
-  .modal { width: 95%; max-height: 95vh; }
-  .modal__columns { flex-direction: column; }
-  .modal__header, .modal__content, .modal__footer { padding-left: 20px; padding-right: 20px; }
-  .modal__footer { padding-bottom: 20px; }
+  .modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+  .modal__columns {
+    flex-direction: column;
+  }
+  .modal__header,
+  .modal__content,
+  .modal__footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .modal__footer {
+    padding-bottom: 20px;
+  }
 }
 </style>

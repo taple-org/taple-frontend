@@ -2,11 +2,15 @@
   <section class="features-section">
     <ui-container :padding="[80, 15]">
       <div class="section-header">
-        <h2 class="section-title">Возможности платформы</h2>
-        <p class="section-subtitle">Полный набор инструментов для B2B-проспектинга</p>
+        <h2 class="section-title">{{ t("landing.featuresTitle") }}</h2>
+        <p class="section-subtitle">{{ t("landing.featuresSubtitle") }}</p>
       </div>
       <div class="features-grid">
-        <div v-for="feature in features" :key="feature.title" class="feature-card">
+        <div
+          v-for="feature in features"
+          :key="feature.title"
+          class="feature-card"
+        >
           <div class="feature-card__icon">
             <Icon :name="`my-icon:${feature.icon}`" class="feature-card__svg" />
           </div>
@@ -21,38 +25,41 @@
 </template>
 
 <script setup lang="ts">
-const features = [
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
+const features = computed(() => [
   {
-    icon: 'search',
-    title: 'Автопоиск из открытых источников',
-    description: '2ГИС, госреестры ЕГРЮЛ/ЕГРИП, открытые базы данных — сбор автоматический без ручного труда',
+    icon: "search",
+    title: t("landing.feature1Title"),
+    description: t("landing.feature1Desc"),
   },
   {
-    icon: 'energy',
-    title: 'Скоринг и приоритизация',
-    description: 'Алгоритм оценивает каждого лида по релевантности и выводит самых перспективных наверх',
+    icon: "energy",
+    title: t("landing.feature2Title"),
+    description: t("landing.feature2Desc"),
   },
   {
-    icon: 'categories',
-    title: 'Теги и воронки продаж',
-    description: 'Организуйте лиды по статусам, назначайте теги и ведите контрагентов через воронку',
+    icon: "categories",
+    title: t("landing.feature3Title"),
+    description: t("landing.feature3Desc"),
   },
   {
-    icon: 'profile',
-    title: 'Командный доступ с ролями',
-    description: 'Добавляйте участников, настраивайте права и работайте с базой лидов совместно',
+    icon: "profile",
+    title: t("landing.feature4Title"),
+    description: t("landing.feature4Desc"),
   },
   {
-    icon: 'settings',
-    title: 'API-интеграция',
-    description: 'Подключайте Taple к своей CRM или ERP через REST API с документацией и примерами',
+    icon: "settings",
+    title: t("landing.feature5Title"),
+    description: t("landing.feature5Desc"),
   },
   {
-    icon: 'inbox',
-    title: 'История изменений',
-    description: 'Полный лог всех действий с лидами — кто, когда и что изменил, без потери данных',
+    icon: "inbox",
+    title: t("landing.feature6Title"),
+    description: t("landing.feature6Desc"),
   },
-]
+]);
 </script>
 
 <style scoped>
@@ -91,12 +98,15 @@ const features = [
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .feature-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary) 8%, transparent);
+  box-shadow: 0 4px 16px
+    color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
 .feature-card__icon {
@@ -130,10 +140,14 @@ const features = [
 }
 
 @media (max-width: 900px) {
-  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 560px) {
-  .features-grid { grid-template-columns: 1fr; }
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

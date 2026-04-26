@@ -1,13 +1,13 @@
 <template>
   <aside class="sidebar">
     <div class="nav-group">
-      <span class="nav-group-label">Аккаунт</span>
+      <span class="nav-group-label">{{ t("settings.account") }}</span>
       <NuxtLink
-          v-for="item in accountLinks"
-          :key="item.to"
-          :to="item.to"
-          class="nav-item"
-          :class="{ active: isActive(item.to) }"
+        v-for="item in accountLinks"
+        :key="item.to"
+        :to="item.to"
+        class="nav-item"
+        :class="{ active: isActive(item.to) }"
       >
         <Icon :name="`my-icon:${item.icon}`" class="nav-icon" />
         {{ item.label }}
@@ -17,13 +17,13 @@
     <div class="divider" />
 
     <div class="nav-group">
-      <span class="nav-group-label">Настройки</span>
+      <span class="nav-group-label">{{ t("settings.settings") }}</span>
       <NuxtLink
-          v-for="item in settingsLinks"
-          :key="item.to"
-          :to="item.to"
-          class="nav-item"
-          :class="{ active: isActive(item.to) }"
+        v-for="item in settingsLinks"
+        :key="item.to"
+        :to="item.to"
+        class="nav-item"
+        :class="{ active: isActive(item.to) }"
       >
         <Icon :name="`my-icon:${item.icon}`" class="nav-icon" />
         {{ item.label }}
@@ -33,20 +33,31 @@
 </template>
 
 <script setup lang="ts">
-const route = useRoute()
+import { useI18n } from "vue-i18n";
 
-const accountLinks = [
-  { to: '/settings/profile',  label: 'Профиль',       icon: "profile" },
-  { to: '/settings/security', label: 'Безопасность',  icon: "settings" },
-]
+const { t } = useI18n();
+const route = useRoute();
 
-const settingsLinks = [
-  { to: '/settings/notifications', label: 'Уведомления', icon: "inbox" },
-  { to: '/settings/subscription',  label: 'Подписка',    icon: "star-filled" },
-]
+const accountLinks = computed(() => [
+  { to: "/settings/profile", label: t("nav.profile"), icon: "profile" },
+  { to: "/settings/security", label: t("nav.security"), icon: "settings" },
+]);
+
+const settingsLinks = computed(() => [
+  {
+    to: "/settings/notifications",
+    label: t("settings.notifications.title"),
+    icon: "inbox",
+  },
+  {
+    to: "/settings/subscription",
+    label: t("subscription.currentPlan"),
+    icon: "star-filled",
+  },
+]);
 
 function isActive(path: string) {
-  return route.path === path
+  return route.path === path;
 }
 </script>
 
@@ -85,7 +96,9 @@ function isActive(path: string) {
   font-size: 14px;
   font-weight: 400;
   color: var(--color-neutral-dm);
-  transition: background var(--transition-base), color var(--transition-base);
+  transition:
+    background var(--transition-base),
+    color var(--transition-base);
   cursor: pointer;
 }
 

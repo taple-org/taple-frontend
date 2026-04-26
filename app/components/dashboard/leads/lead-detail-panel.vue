@@ -43,12 +43,14 @@ const open = computed({
   },
 });
 
-const tabs: ContentSwitcherItem[] = [
-  { value: "info", label: "Информация" },
-  { value: "notes", label: "Заметки" },
-  { value: "tasks", label: "Задачи" },
-  { value: "history", label: "История" },
-];
+const { t } = useI18n();
+
+const tabs = computed<ContentSwitcherItem[]>(() => [
+  { value: "info", label: t("leads.info") },
+  { value: "notes", label: t("leads.notes") },
+  { value: "tasks", label: t("leads.tasks") },
+  { value: "history", label: t("leads.history") },
+]);
 
 const selectedTab = ref<string[]>(["info"]);
 const newNoteText = ref("");
@@ -216,28 +218,28 @@ const scores = computed(() => {
   return [
     {
       key: "priority",
-      label: "Приоритет",
+      label: t("leads.priority"),
       val: fmtScore(l.priority_score),
       bg: "#EAF2FF",
       color: "#006FFD",
     },
     {
       key: "fit",
-      label: "Соответствие",
+      label: t("leads.fit"),
       val: fmtScore(l.fit_score),
       bg: "#E7F4E8",
       color: "#298267",
     },
     {
       key: "freshness",
-      label: "Свежесть",
+      label: t("leads.freshness"),
       val: fmtScore(l.freshness_score),
       bg: "#FFF4E5",
       color: "#FF8C00",
     },
     {
       key: "contact",
-      label: "Доступность",
+      label: t("leads.contactability"),
       val: fmtScore(l.contactability_score),
       bg: "#F3EAFF",
       color: "#9B59B6",
@@ -296,10 +298,10 @@ const scores = computed(() => {
                   lead.business_category_name_ru
                 }}</span>
                 <span v-if="lead.lead_bin_iin" class="ldp-bin"
-                  >БИН/ИИН: {{ lead.lead_bin_iin }}</span
+                  >{{ t("leads.binIIN") }}: {{ lead.lead_bin_iin }}</span
                 >
                 <span v-if="lead.responsible_member" class="ldp-member">
-                  Ответственный:
+                  {{ t("leads.responsible") }}:
                   <strong>
                     {{
                       lead.responsible_member?.user_full_name ??
@@ -331,7 +333,9 @@ const scores = computed(() => {
                       "
                       class="ldp-section"
                     >
-                      <h4 class="ldp-section__label">Контакты</h4>
+                      <h4 class="ldp-section__label">
+                        {{ t("leads.contacts") }}
+                      </h4>
                       <ul class="ldp-contact-list">
                         <li
                           v-for="c in phones"
@@ -381,7 +385,9 @@ const scores = computed(() => {
                     </section>
 
                     <section v-if="lead.addresses?.length" class="ldp-section">
-                      <h4 class="ldp-section__label">Адреса</h4>
+                      <h4 class="ldp-section__label">
+                        {{ t("leads.addresses") }}
+                      </h4>
                       <ul class="ldp-address-list">
                         <li
                           v-for="addr in lead.addresses"
@@ -403,20 +409,26 @@ const scores = computed(() => {
                     </section>
 
                     <section class="ldp-section">
-                      <h4 class="ldp-section__label">Даты</h4>
+                      <h4 class="ldp-section__label">{{ t("leads.dates") }}</h4>
                       <div class="ldp-date-grid">
-                        <span class="ldp-date-key">Создан</span>
+                        <span class="ldp-date-key">{{
+                          t("leads.created")
+                        }}</span>
                         <span class="ldp-date-val">{{
                           formatDate(lead.created_at)
                         }}</span>
                         <template v-if="lead.snoozed_until">
-                          <span class="ldp-date-key">Отложен до</span>
+                          <span class="ldp-date-key">{{
+                            t("leads.snoozedUntil")
+                          }}</span>
                           <span class="ldp-date-val">{{
                             formatDate(lead.snoozed_until)
                           }}</span>
                         </template>
                         <template v-if="lead.hidden_until">
-                          <span class="ldp-date-key">Скрыт до</span>
+                          <span class="ldp-date-key">{{
+                            t("leads.hiddenUntil")
+                          }}</span>
                           <span class="ldp-date-val">{{
                             formatDate(lead.hidden_until)
                           }}</span>
@@ -428,13 +440,17 @@ const scores = computed(() => {
                   <!-- Right col: signals + branches -->
                   <div class="ldp-col">
                     <section v-if="lead.signals" class="ldp-section">
-                      <h4 class="ldp-section__label">Сигналы</h4>
+                      <h4 class="ldp-section__label">
+                        {{ t("leads.signals") }}
+                      </h4>
                       <div class="ldp-signals-grid">
                         <div
                           v-if="lead.signals.rating != null"
                           class="ldp-signal-chip"
                         >
-                          <span class="ldp-signal-key">Рейтинг</span>
+                          <span class="ldp-signal-key">{{
+                            t("leads.rating")
+                          }}</span>
                           <span class="ldp-signal-val"
                             >⭐ {{ lead.signals.rating }}</span
                           >
@@ -443,7 +459,9 @@ const scores = computed(() => {
                           v-if="lead.signals.review_count != null"
                           class="ldp-signal-chip"
                         >
-                          <span class="ldp-signal-key">Отзывы</span>
+                          <span class="ldp-signal-key">{{
+                            t("leads.reviews")
+                          }}</span>
                           <span class="ldp-signal-val">{{
                             lead.signals.review_count
                           }}</span>
@@ -452,7 +470,9 @@ const scores = computed(() => {
                           v-if="lead.signals.branch_count != null"
                           class="ldp-signal-chip"
                         >
-                          <span class="ldp-signal-key">Филиалы</span>
+                          <span class="ldp-signal-key">{{
+                            t("leads.branches")
+                          }}</span>
                           <span class="ldp-signal-val">{{
                             lead.signals.branch_count
                           }}</span>
@@ -461,9 +481,13 @@ const scores = computed(() => {
                           v-if="lead.signals.has_delivery != null"
                           class="ldp-signal-chip"
                         >
-                          <span class="ldp-signal-key">Доставка</span>
+                          <span class="ldp-signal-key">{{
+                            t("leads.delivery")
+                          }}</span>
                           <span class="ldp-signal-val">{{
-                            lead.signals.has_delivery ? "Да" : "Нет"
+                            lead.signals.has_delivery
+                              ? t("leads.deliveryYes")
+                              : t("leads.deliveryNo")
                           }}</span>
                         </div>
                         <div
@@ -472,7 +496,9 @@ const scores = computed(() => {
                         >
                           <span class="ldp-signal-key">24/7</span>
                           <span class="ldp-signal-val">{{
-                            lead.signals?.is_24x7 ? "Да" : "Нет"
+                            lead.signals?.is_24x7
+                              ? t("leads.deliveryYes")
+                              : t("leads.deliveryNo")
                           }}</span>
                         </div>
                       </div>
@@ -480,7 +506,7 @@ const scores = computed(() => {
 
                     <section v-if="lead.branches?.length" class="ldp-section">
                       <h4 class="ldp-section__label">
-                        Филиалы ({{ lead.branches.length }})
+                        {{ t("leads.branches") }} ({{ lead.branches.length }})
                       </h4>
                       <ul class="ldp-branch-list">
                         <li
@@ -490,7 +516,7 @@ const scores = computed(() => {
                         >
                           <div class="ldp-branch__header">
                             <span class="ldp-branch__addr">{{
-                              b.full_address ?? "Адрес не указан"
+                              b.full_address ?? t("leads.addressNotSpecified")
                             }}</span>
                             <span
                               class="ldp-branch__status"
@@ -500,7 +526,11 @@ const scores = computed(() => {
                                   : 'ldp-branch__status--off'
                               "
                             >
-                              {{ b.is_active ? "Активен" : "Неактивен" }}
+                              {{
+                                b.is_active
+                                  ? t("leads.active")
+                                  : t("leads.inactive")
+                              }}
                             </span>
                           </div>
                           <div v-if="b.signals" class="ldp-branch__sigs">
@@ -535,7 +565,7 @@ const scores = computed(() => {
                     class="ldp-add-btn"
                     @click="isAddingNote = true"
                   >
-                    + Добавить заметку
+                    + {{ t("leads.addNote") }}
                   </button>
                 </div>
 
@@ -543,7 +573,7 @@ const scores = computed(() => {
                   <textarea
                     v-model="newNoteText"
                     class="ldp-textarea"
-                    placeholder="Введите заметку..."
+                    :placeholder="t('leads.enterNote')"
                     rows="4"
                     autofocus
                   />
@@ -554,20 +584,22 @@ const scores = computed(() => {
                         isAddingNote = false;
                         newNoteText = '';
                       "
-                      >Отмена</ui-button
+                      >{{ t("common.cancel") }}</ui-button
                     >
-                    <ui-button variant="primary" @click="submitNote"
-                      >Сохранить</ui-button
-                    >
+                    <ui-button variant="primary" @click="submitNote">{{
+                      t("common.save")
+                    }}</ui-button>
                   </div>
                 </div>
 
-                <div v-if="isLoadingNotes" class="ldp-empty">Загрузка...</div>
+                <div v-if="isLoadingNotes" class="ldp-empty">
+                  {{ t("common.loading") }}
+                </div>
                 <div
                   v-else-if="notes.length === 0 && !isAddingNote"
                   class="ldp-empty"
                 >
-                  Заметок пока нет
+                  {{ t("leads.noNotes") }}
                 </div>
 
                 <ul v-else class="ldp-notes">
@@ -589,13 +621,15 @@ const scores = computed(() => {
               <div v-if="selectedTab[0] === 'tasks'" class="ldp-panel">
                 <div class="ldp-tab-action-row">
                   <button class="ldp-add-btn" @click="handleAddTaskClick">
-                    + Добавить задачу
+                    + {{ t("leads.addTask") }}
                   </button>
                 </div>
 
-                <div v-if="isLoadingTasks" class="ldp-empty">Загрузка...</div>
+                <div v-if="isLoadingTasks" class="ldp-empty">
+                  {{ t("common.loading") }}
+                </div>
                 <div v-else-if="tasks.length === 0" class="ldp-empty">
-                  Задач пока нет
+                  {{ t("leads.noTasks") }}
                 </div>
 
                 <ul v-else class="ldp-tasks">
@@ -631,7 +665,7 @@ const scores = computed(() => {
               <!-- HISTORY -->
               <div v-if="selectedTab[0] === 'history'" class="ldp-panel">
                 <div v-if="!lead.activity_history?.length" class="ldp-empty">
-                  История появится после первого взаимодействия с лидом
+                  {{ t("leads.noHistory") }}
                 </div>
 
                 <ul v-else class="ldp-timeline">
@@ -661,7 +695,7 @@ const scores = computed(() => {
 
           <!-- Fallback (shouldn't normally show) -->
           <div v-else class="ldp-empty-modal">
-            <p>Данные лида недоступны</p>
+            <p>{{ t("leads.leadUnavailable") }}</p>
           </div>
         </Dialog.Content>
       </Dialog.Positioner>
@@ -677,21 +711,22 @@ const scores = computed(() => {
         key="confirm"
         class="take-to-work-modal"
       >
-        <h3 class="take-to-work-modal__title">Взять лид в работу?</h3>
+        <h3 class="take-to-work-modal__title">{{ t("leads.takeToWork") }}</h3>
         <p class="take-to-work-modal__desc">
-          Чтобы создать задачу, лид должен быть в работе. Взять лида в работу
-          сейчас?
+          {{ t("leads.takeToWorkDesc") }}
         </p>
         <div class="take-to-work-modal__actions">
-          <ui-button variant="outline" @click="closeTaskModal"
-            >Отмена</ui-button
-          >
+          <ui-button variant="outline" @click="closeTaskModal">{{
+            t("common.cancel")
+          }}</ui-button>
           <ui-button
             variant="primary"
             :disabled="isTakingToWork"
             @click="handleTakeToWorkConfirm"
           >
-            {{ isTakingToWork ? "Обработка..." : "Да, взять в работу" }}
+            {{
+              isTakingToWork ? t("common.processing") : t("leads.yesTakeToWork")
+            }}
           </ui-button>
         </div>
       </div>

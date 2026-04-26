@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import Chart from "chart.js/auto";
 import { formatStageLabel } from "~/utils/formatStageLabel";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface FunnelItem {
   stage: string;
@@ -29,9 +32,11 @@ const chartData = computed(() => ({
   labels: props.data.map((item) => formatStageLabel(item.stage, item.label_ru)),
   datasets: [
     {
-      label: "Количество лидов",
+      label: t("dashboard.leadsCount"),
       data: props.data.map((item) => item.count),
-      backgroundColor: props.data.map((_, idx) => palette[idx % palette.length]),
+      backgroundColor: props.data.map(
+        (_, idx) => palette[idx % palette.length],
+      ),
       borderColor: "rgba(108, 156, 255, 0.95)",
       borderWidth: 1,
       borderRadius: 10,
@@ -56,7 +61,8 @@ const chartOptions = {
       cornerRadius: 10,
       padding: 12,
       callbacks: {
-        label: (context: { parsed: { y: number } }) => ` ${context.parsed.y} лидов`,
+        label: (context: { parsed: { y: number } }) =>
+          ` ${context.parsed.y} ${t("dashboard.leadsShort")}`,
       },
     },
   },

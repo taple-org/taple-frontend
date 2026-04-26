@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import {TenantLeadStage} from "~/api/generated/api";
-import {STAGE_OPTIONS, SORT_OPTIONS} from "~/stores/leads.store";
-import type {LeadFilters} from "~/stores/leads.store";
+import { TenantLeadStage } from "~/api/generated/api";
+import { STAGE_OPTIONS, SORT_OPTIONS } from "~/stores/leads.store";
+import type { LeadFilters } from "~/stores/leads.store";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   modelValue: LeadFilters;
@@ -15,42 +18,42 @@ const emit = defineEmits<{
   reset: [];
 }>();
 
-const localFilters = ref<LeadFilters>({...props.modelValue});
+const localFilters = ref<LeadFilters>({ ...props.modelValue });
 const localSearch = ref(props.searchQuery);
 
 watch(
-    () => props.modelValue,
-    (val) => {
-      localFilters.value = {...val};
-    },
-    {deep: true},
+  () => props.modelValue,
+  (val) => {
+    localFilters.value = { ...val };
+  },
+  { deep: true },
 );
 
 watch(
-    () => props.searchQuery,
-    (val) => {
-      localSearch.value = val;
-    },
+  () => props.searchQuery,
+  (val) => {
+    localSearch.value = val;
+  },
 );
 
 const hasActiveFilters = computed(() =>
-    Object.values(localFilters.value).some((v) => v != null && v !== ""),
+  Object.values(localFilters.value).some((v) => v != null && v !== ""),
 );
 
-const stageOptions = [
-  {value: "", label: "Все этапы"},
+const stageOptions = computed(() => [
+  { value: "", label: t("leads.allStages") },
   ...STAGE_OPTIONS,
-];
+]);
 
-const sortByOptions = [
-  {value: "", label: "По умолчанию"},
+const sortByOptions = computed(() => [
+  { value: "", label: t("leads.defaultSort") },
   ...SORT_OPTIONS,
-];
+]);
 
-const sortDirOptions = [
-  {value: "desc", label: "По убыванию"},
-  {value: "asc", label: "По возрастанию"},
-];
+const sortDirOptions = computed(() => [
+  { value: "desc", label: t("leads.descending") },
+  { value: "asc", label: t("leads.ascending") },
+]);
 
 const stageModel = computed<string>({
   get: () => localFilters.value.stage ?? "",
@@ -78,7 +81,7 @@ const sortDirModel = computed<string>({
 });
 
 const handleApply = () => {
-  emit("update:modelValue", {...localFilters.value});
+  emit("update:modelValue", { ...localFilters.value });
   emit("update:searchQuery", localSearch.value);
   emit("apply");
 };
@@ -100,40 +103,46 @@ const onKeydown = (e: KeyboardEvent) => {
   <div class="leads-filter-bar">
     <div class="leads-filter-bar__row">
       <ui-form-field
-          v-model="localSearch"
-          class="leads-filter-bar__search"
-          type="text"
-          icon-left="my-icon-search"
-          placeholder="Поиск по названию / адресу"
-          @keydown="onKeydown"
+        v-model="localSearch"
+        class="leads-filter-bar__search"
+        type="text"
+        icon-left="my-icon-search"
+        :placeholder="t('leads.searchByNameAddress')"
+        @keydown="onKeydown"
       />
 
-      <ui-button variant="primary" @click="handleApply">Найти</ui-button>
+      <ui-button variant="primary" @click="handleApply">{{
+        t("common.search")
+      }}</ui-button>
 
-      <ui-button v-if="hasActiveFilters || localSearch" variant="outline" @click="handleReset">
-        Сбросить
+      <ui-button
+        v-if="hasActiveFilters || localSearch"
+        variant="outline"
+        @click="handleReset"
+      >
+        {{ t("common.reset") }}
       </ui-button>
     </div>
 
     <div class="leads-filter-bar__selectors">
       <ui-form-field
-          type="select"
-          v-model="stageModel"
-          class="leads-filter-bar__select"
-          :options="stageOptions"
+        type="select"
+        v-model="stageModel"
+        class="leads-filter-bar__select"
+        :options="stageOptions"
       />
 
       <ui-form-field
-          type="select"
-          v-model="sortByModel"
-          class="leads-filter-bar__select"
-          :options="sortByOptions"
+        type="select"
+        v-model="sortByModel"
+        class="leads-filter-bar__select"
+        :options="sortByOptions"
       />
 
       <ui-fields-select-field
-          v-model="sortDirModel"
-          class="leads-filter-bar__select"
-          :options="sortDirOptions"
+        v-model="sortDirModel"
+        class="leads-filter-bar__select"
+        :options="sortDirOptions"
       />
     </div>
   </div>

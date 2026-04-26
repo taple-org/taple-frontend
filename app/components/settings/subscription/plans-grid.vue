@@ -1,8 +1,8 @@
 <template>
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Доступные планы</h2>
-      <p class="card-desc">Выберите план, который подходит вашему бизнесу</p>
+      <h2 class="card-title">{{ t("subscription.availablePlans") }}</h2>
+      <p class="card-desc">{{ t("subscription.selectPlanDesc") }}</p>
     </div>
 
     <div class="plans-grid">
@@ -15,17 +15,25 @@
           'plan-card--popular': plan.popular,
         }"
       >
-        <div v-if="plan.popular" class="plan-popular-badge">Популярный</div>
+        <div v-if="plan.popular" class="plan-popular-badge">
+          {{ t("subscription.popular") }}
+        </div>
         <div class="plan-card__header">
           <h3 class="plan-card__name">{{ plan.name }}</h3>
           <p class="plan-card__desc">{{ plan.description }}</p>
         </div>
         <div class="plan-card__price">
           <span class="plan-card__amount">${{ plan.price }}</span>
-          <span class="plan-card__period"> / мес</span>
+          <span class="plan-card__period">
+            {{ t("subscription.perMonthShort") }}</span
+          >
         </div>
         <ul class="plan-card__features">
-          <li v-for="feature in plan.features" :key="feature" class="plan-card__feature">
+          <li
+            v-for="feature in plan.features"
+            :key="feature"
+            class="plan-card__feature"
+          >
             <Icon name="my-icon:check" class="feature__icon" />
             <span>{{ feature }}</span>
           </li>
@@ -36,7 +44,11 @@
           class="plan-card__cta"
           @click="selectPlan(plan)"
         >
-          {{ plan.id === currentPlanId ? 'Текущий план' : 'Выбрать план' }}
+          {{
+            plan.id === currentPlanId
+              ? t("subscription.currentPlanBtn")
+              : t("subscription.selectPlanBtn")
+          }}
         </ui-button>
       </div>
     </div>
@@ -44,45 +56,64 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
 interface Plan {
-  id: string
-  name: string
-  description: string
-  price: number
-  features: string[]
-  popular?: boolean
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  features: string[];
+  popular?: boolean;
 }
 
-const currentPlanId = 'pro'
+const currentPlanId = "pro";
 
-const availablePlans: Plan[] = [
+const availablePlans = computed<Plan[]>(() => [
   {
-    id: 'starter',
-    name: 'Starter',
-    description: 'Для индивидуальных специалистов',
+    id: "starter",
+    name: "Starter",
+    description: t("subscription.starterDesc"),
     price: 9,
-    features: ['1 000 запросов / мес', '1 рабочее пространство', '1 участник', 'Email-поддержка'],
+    features: [
+      t("subscription.starterFeature1"),
+      t("subscription.starterFeature2"),
+      t("subscription.starterFeature3"),
+      t("subscription.starterFeature4"),
+    ],
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    description: 'Для небольших команд',
+    id: "pro",
+    name: "Pro",
+    description: t("subscription.proDesc"),
     price: 29,
-    features: ['10 000 запросов / мес', '5 рабочих пространств', '10 участников', 'Приоритетная поддержка'],
+    features: [
+      t("subscription.proFeature1"),
+      t("subscription.proFeature2"),
+      t("subscription.proFeature3"),
+      t("subscription.proFeature4"),
+    ],
     popular: true,
   },
   {
-    id: 'business',
-    name: 'Business',
-    description: 'Для растущего бизнеса',
+    id: "business",
+    name: "Business",
+    description: t("subscription.businessDesc"),
     price: 79,
-    features: ['Безлимитные запросы', 'Неограниченные пространства', 'Неограниченные участники', 'Выделенный менеджер'],
+    features: [
+      t("subscription.businessFeature1"),
+      t("subscription.businessFeature2"),
+      t("subscription.businessFeature3"),
+      t("subscription.businessFeature4"),
+    ],
   },
-]
+]);
 
 function selectPlan(plan: Plan) {
   // TODO: navigate to checkout / upgrade flow
-  console.log('Switching to plan:', plan.id)
+  console.log("Switching to plan:", plan.id);
 }
 </script>
 
@@ -124,12 +155,15 @@ function selectPlan(plan: Plan) {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .plan-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  box-shadow: 0 4px 16px
+    color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 
 .plan-card--current {
@@ -210,6 +244,8 @@ function selectPlan(plan: Plan) {
 }
 
 @media (max-width: 700px) {
-  .plans-grid { grid-template-columns: 1fr; }
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

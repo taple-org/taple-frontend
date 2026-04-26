@@ -1,19 +1,20 @@
 <script lang="ts" setup>
 import { useOTP } from "~/composables/useOTP";
-import type {ConfirmActionsType} from "~/interfaces/auth/modal";
-import styles from '~/components/auth/form/index.module.css'
-const emit = defineEmits<{ "navigate": [actions: ConfirmActionsType] }>();
+import type { ConfirmActionsType } from "~/interfaces/auth/modal";
+import styles from "~/components/auth/form/index.module.css";
+import { useI18n } from "vue-i18n";
+const emit = defineEmits<{ navigate: [actions: ConfirmActionsType] }>();
 const authStore = useAuthStore();
+const { t } = useI18n();
 
-const {resend, verify, countdown, otp} = useOTP(
-    60,
-    async ({valueAsString}) => {
-      const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString)
-      if (ok) emit('navigate', 'success')
-    },
-    () => authStore.resendOtp(authStore.pendingEmail)
+const { resend, verify, countdown, otp } = useOTP(
+  60,
+  async ({ valueAsString }) => {
+    const ok = await authStore.verifyOtp(authStore.pendingEmail, valueAsString);
+    if (ok) emit("navigate", "success");
+  },
+  () => authStore.resendOtp(authStore.pendingEmail),
 );
-
 </script>
 
 <template>
@@ -25,14 +26,17 @@ const {resend, verify, countdown, otp} = useOTP(
     />
 
     <p v-if="countdown > 0" class="otp-form__timer">
-      <strong>{{ countdown }}</strong> секунд
+      <strong>{{ countdown }}</strong> {{ t("auth.seconds") }}
     </p>
-    <span v-else class="otp-form-refresh" @click.prevent="resend">Отправить код снова</span>
-    <ui-button variant="outline"
-               type="button"
-               @click="emit('navigate', 'close')"
-     >
-      Закрыть
+    <span v-else class="otp-form-refresh" @click.prevent="resend">{{
+      t("auth.resendCode")
+    }}</span>
+    <ui-button
+      variant="outline"
+      type="button"
+      @click="emit('navigate', 'close')"
+    >
+      {{ t("auth.close") }}
     </ui-button>
   </form>
 </template>

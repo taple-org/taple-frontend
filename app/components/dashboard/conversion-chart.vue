@@ -2,6 +2,9 @@
 import Chart from "chart.js/auto";
 import type { StageConversionItem } from "~/api/generated/api";
 import { formatStageLabel } from "~/utils/formatStageLabel";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface Props {
   conversions: StageConversionItem[];
@@ -20,12 +23,13 @@ const toRatePercent = (value?: number | null) => {
 
 const chartData = computed(() => ({
   labels: props.conversions.map(
-    (item) => `${formatStageLabel(item.from_stage)} -> ${formatStageLabel(item.to_stage)}`,
+    (item) =>
+      `${formatStageLabel(item.from_stage)} -> ${formatStageLabel(item.to_stage)}`,
   ),
   datasets: [
     {
       type: "bar" as const,
-      label: "Количество переходов",
+      label: t("dashboard.transitionsCount"),
       data: props.conversions.map((item) => item.count),
       backgroundColor: "rgba(108, 156, 255, 0.46)",
       borderColor: "rgba(108, 156, 255, 0.92)",
@@ -37,7 +41,7 @@ const chartData = computed(() => ({
     },
     {
       type: "line" as const,
-      label: "Конверсия, %",
+      label: t("dashboard.conversionPercent"),
       data: props.conversions.map((item) => toRatePercent(item.rate)),
       borderColor: "rgba(58, 192, 160, 0.9)",
       backgroundColor: "rgba(58, 192, 160, 0.2)",
