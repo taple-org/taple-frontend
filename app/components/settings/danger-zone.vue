@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useNotification } from "~/composables/useNotification";
 import { useAuthStore } from "~/stores/auth.store";
+import { useI18n } from "vue-i18n";
 
-const requiredText = "удалить аккаунт";
+const { t } = useI18n();
+const requiredText = t("dangerZone.deleteConfirmText");
 
 const { $apiClient } = useNuxtApp();
 const notification = useNotification();
@@ -24,19 +26,19 @@ function openDeleteModal() {
 async function confirmDelete() {
   confirmError.value = "";
   if (confirmText.value !== requiredText) {
-    confirmError.value = "Текст не совпадает";
+    confirmError.value = t("dangerZone.textMismatch");
     return;
   }
   isDeleting.value = true;
   try {
     await $apiClient.api.deleteAccountApiV1AuthAccountDelete();
-    notification.success("Успех", "Аккаунт удален");
+    notification.success(t("common.success"), t("dangerZone.accountDeleted"));
     showDeleteModal.value = false;
     await authStore.signOut();
     await navigateTo("/auth/login");
   } catch (error) {
     console.error("Failed to delete account:", error);
-    notification.error("Ошибка", "Не удалось удалить аккаунт");
+    notification.error(t("common.error"), t("dangerZone.deleteError"));
   } finally {
     isDeleting.value = false;
   }
@@ -46,13 +48,16 @@ async function confirmDeactivate() {
   isDeactivating.value = true;
   try {
     await $apiClient.api.deactivateAccountApiV1AuthAccountDeactivatePost();
-    notification.success("Успех", "Аккаунт деактивирован");
+    notification.success(
+      t("common.success"),
+      t("dangerZone.accountDeactivated"),
+    );
     showDeactivateModal.value = false;
     await authStore.signOut();
     await navigateTo("/auth/login");
   } catch (error) {
     console.error("Failed to deactivate account:", error);
-    notification.error("Ошибка", "Не удалось деактивировать аккаунт");
+    notification.error(t("common.error"), t("dangerZone.deactivateError"));
   } finally {
     isDeactivating.value = false;
   }
@@ -62,20 +67,19 @@ async function confirmDeactivate() {
 <template>
   <div class="settings-card danger-card">
     <div class="card-header">
-      <h2 class="card-title">Опасная зона</h2>
-      <p class="card-desc">Эти действия необратимы. Будьте внимательны</p>
+      <h2 class="card-title">{{ t("dangerZone.title") }}</h2>
+      <p class="card-desc">{{ t("dangerZone.desc") }}</p>
     </div>
 
     <div class="danger-item">
       <div class="danger-info">
-        <div class="danger-name">Деактивировать аккаунт</div>
+        <div class="danger-name">{{ t("dangerZone.deactivateTitle") }}</div>
         <div class="danger-desc">
-          Аккаунт будет временно скрыт. Вы сможете восстановить его в течение 30
-          дней
+          {{ t("dangerZone.deactivateDesc") }}
         </div>
       </div>
       <ui-button variant="outline" @click="showDeactivateModal = true">
-        Деактивировать
+        {{ t("dangerZone.deactivateBtn") }}
       </ui-button>
     </div>
 
@@ -83,40 +87,44 @@ async function confirmDeactivate() {
 
     <div class="danger-item">
       <div class="danger-info">
-        <div class="danger-name">Удалить аккаунт</div>
+        <div class="danger-name">{{ t("dangerZone.deleteTitle") }}</div>
         <div class="danger-desc">
-          Все данные — профиль, история, контент — будут удалены безвозвратно
+          {{ t("dangerZone.deleteDesc") }}
         </div>
       </div>
       <ui-button variant="error" @click="openDeleteModal">
-        Удалить аккаунт
+        {{ t("dangerZone.deleteBtn") }}
       </ui-button>
     </div>
   </div>
 
   <ui-modal
     v-model:open="showDeactivateModal"
-    title="Деактивировать аккаунт?"
-    description="Аккаунт будет скрыт. Вы сможете восстановить его в течение 30 дней после входа."
+    :title="t('dangerZone.deactivateModalTitle')"
+    :description="t('dangerZone.deactivateModalDesc')"
   >
     <template #footer>
-      <ui-button variant="outline" @click="showDeactivateModal = false"
-        >Отмена</ui-button
-      >
+      <ui-button variant="outline" @click="showDeactivateModal = false">{{
+        t("common.cancel")
+      }}</ui-button>
       <ui-button
         variant="error"
         :disabled="isDeactivating"
         @click="confirmDeactivate"
       >
-        {{ isDeactivating ? "Деактивация..." : "Да, деактивировать" }}
+        {{
+          isDeactivating
+            ? t("dangerZone.deactivating")
+            : t("dangerZone.confirmDeactivate")
+        }}
       </ui-button>
     </template>
   </ui-modal>
 
   <ui-modal
     v-model:open="showDeleteModal"
-    title="Удалить аккаунт?"
-    description="Это действие необратимо. Все ваши данные будут удалены без возможности восстановления."
+    :title="t('dangerZone.deleteModalTitle')"
+    :description="t('dangerZone.deleteModalDesc')"
   >
     <div class="confirm-body">
       <div class="modal-icon">
@@ -127,22 +135,24 @@ async function confirmDeactivate() {
         type="text"
         v-model="confirmText"
         :error="confirmError"
-        :label="`Введите «${requiredText}» для подтверждения`"
-        :placeholder="requiredText"
+        :label="t('dangerZone.confirmLabel', { text: requiredText })"
+        :placeholder="t('dangerZone.deleteConfirmText')"
         autocomplete="off"
       />
     </div>
 
     <template #footer>
-      <ui-button variant="outline" @click="showDeleteModal = false"
-        >Отмена</ui-button
-      >
+      <ui-button variant="outline" @click="showDeleteModal = false">{{
+        t("common.cancel")
+      }}</ui-button>
       <ui-button
         variant="error"
         :disabled="isDeleting || confirmText !== requiredText"
         @click="confirmDelete"
       >
-        {{ isDeleting ? "Удаление..." : "Да, удалить аккаунт" }}
+        {{
+          isDeleting ? t("dangerZone.deleting") : t("dangerZone.confirmDelete")
+        }}
       </ui-button>
     </template>
   </ui-modal>

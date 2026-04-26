@@ -1,22 +1,33 @@
 <script setup lang="ts">
-import { useAuthModalController } from '~/composables/modals/useAuthModalController';
+import { useAuthModalController } from "~/composables/modals/useAuthModalController";
+import { useI18n } from "vue-i18n";
 
-const { open } = useAuthModalController()
+const { open } = useAuthModalController();
+const { t } = useI18n();
 </script>
 
 <template>
   <section class="hero">
     <ui-container class="hero__inner" :padding="[80, 15]">
       <div class="hero__text-content">
-        <h1 class="hero__title">Находите клиентов <span class="hero__title-accent">первыми</span></h1>
-        <p class="hero__subtitle">Свежие бизнес-лиды из 2ГИС, госреестров и открытых баз — автоматически, каждый день</p>
+        <h1 class="hero__title">
+          {{ t("landing.heroTitle") }}
+          <span class="hero__title-accent">{{
+            t("landing.heroTitleAccent")
+          }}</span>
+        </h1>
+        <p class="hero__subtitle">{{ t("landing.heroSubtitle") }}</p>
       </div>
       <div class="hero__buttons">
         <ui-button class="hero__btn" @click="open('register')">
-          Начать бесплатно
+          {{ t("landing.startFree") }}
         </ui-button>
-        <ui-button class="hero__btn" variant="outline" @click="$router.push('/contacts')">
-          Связаться с нами
+        <ui-button
+          class="hero__btn"
+          variant="outline"
+          @click="$router.push('/contacts')"
+        >
+          {{ t("landing.contactUs") }}
         </ui-button>
       </div>
     </ui-container>
@@ -25,7 +36,11 @@ const { open } = useAuthModalController()
 
 <style scoped>
 .hero {
-  background: linear-gradient(135deg, var(--color-highlight-l) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-highlight-l) 0%,
+    var(--color-secondary) 100%
+  );
   border-bottom: 1px solid var(--color-neutral-lm);
 }
 

@@ -1,5 +1,6 @@
 import type { NavSection, TemplateLink } from "~/interfaces/link.interfaces";
 
+// Translation keys for footer - actual translations in i18n/locales/*.json
 type IAppFooterLinks = {
   Nav: NavSection[];
   Brand: TemplateLink[];
@@ -8,28 +9,28 @@ type IAppFooterLinks = {
 const AppFooterLinks: IAppFooterLinks = {
   Nav: [
     [
-      "Features",
+      "footer.features",
       [
-        { to: "#", label: "Core features" },
-        { to: "#", label: "Pro experience" },
-        { to: "#", label: "Integrations" },
+        { to: "#", label: "footer.coreFeatures" },
+        { to: "#", label: "footer.proExperience" },
+        { to: "#", label: "footer.integrations" },
       ],
     ],
     [
-      "Learn more",
+      "footer.learnMore",
       [
-        { to: "#", label: "Blog" },
-        { to: "#", label: "Case studies" },
-        { to: "#", label: "Customer stories" },
-        { to: "#", label: "Best practices" },
+        { to: "#", label: "footer.blog" },
+        { to: "#", label: "footer.caseStudies" },
+        { to: "#", label: "footer.customerStories" },
+        { to: "#", label: "footer.bestPractices" },
       ],
     ],
     [
-      "Support",
+      "footer.support",
       [
-        { to: "#", label: "Contact" },
-        { to: "#", label: "Support" },
-        { to: "#", label: "Legal" },
+        { to: "#", label: "footer.contact" },
+        { to: "#", label: "footer.support" },
+        { to: "#", label: "footer.legal" },
       ],
     ],
   ],
@@ -41,5 +42,5 @@ const AppFooterLinks: IAppFooterLinks = {
 } as const;
 
 export default {
-  footer: AppFooterLinks
-}
+  footer: AppFooterLinks,
+};

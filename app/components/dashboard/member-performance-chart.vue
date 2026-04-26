@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import Chart from "chart.js/auto";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface MemberPerformance {
   member_id: string;
@@ -141,7 +144,9 @@ onUnmounted(() => {
 
 <template>
   <div class="member-performance-chart">
-    <h3 class="member-performance-chart__title">Эффективность команды</h3>
+    <h3 class="member-performance-chart__title">
+      {{ t("dashboard.charts.memberPerformance") }}
+    </h3>
     <div class="member-performance-chart__container">
       <canvas ref="canvasRef" />
     </div>

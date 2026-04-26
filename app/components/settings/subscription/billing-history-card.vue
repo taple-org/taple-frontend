@@ -1,17 +1,17 @@
 <template>
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">История платежей</h2>
-      <p class="card-desc">Все транзакции за последние 12 месяцев</p>
+      <h2 class="card-title">{{ t("subscription.billingHistory") }}</h2>
+      <p class="card-desc">{{ t("subscription.billingHistoryDesc") }}</p>
     </div>
 
     <table class="billing-table">
       <thead>
         <tr>
-          <th>Дата</th>
-          <th>Описание</th>
-          <th>Сумма</th>
-          <th>Статус</th>
+          <th>{{ t("subscription.date") }}</th>
+          <th>{{ t("subscription.description") }}</th>
+          <th>{{ t("subscription.amount") }}</th>
+          <th>{{ t("subscription.status") }}</th>
           <th></th>
         </tr>
       </thead>
@@ -21,13 +21,16 @@
           <td class="billing-desc">{{ invoice.description }}</td>
           <td class="billing-amount">${{ invoice.amount }}</td>
           <td>
-            <span class="billing-status" :class="`billing-status--${invoice.status}`">
+            <span
+              class="billing-status"
+              :class="`billing-status--${invoice.status}`"
+            >
               {{ statusLabel(invoice.status) }}
             </span>
           </td>
           <td class="billing-actions">
             <button class="btn-link" @click="downloadInvoice(invoice.id)">
-              Скачать
+              {{ t("subscription.download") }}
             </button>
           </td>
         </tr>
@@ -37,28 +40,60 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
 interface Invoice {
-  id: string
-  date: string
-  description: string
-  amount: number
-  status: 'paid' | 'pending' | 'failed'
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  status: "paid" | "pending" | "failed";
 }
 
 const billingHistory = ref<Invoice[]>([
-  { id: 'inv_001', date: '1 мая 2025',     description: 'Pro — май 2025',     amount: 29, status: 'paid' },
-  { id: 'inv_002', date: '1 апр 2025',    description: 'Pro — апрель 2025',  amount: 29, status: 'paid' },
-  { id: 'inv_003', date: '1 мар 2025',    description: 'Pro — март 2025',    amount: 29, status: 'paid' },
-  { id: 'inv_004', date: '1 фев 2025',    description: 'Pro — февраль 2025', amount: 29, status: 'paid' },
-])
+  {
+    id: "inv_001",
+    date: "1 мая 2025",
+    description: "Pro — май 2025",
+    amount: 29,
+    status: "paid",
+  },
+  {
+    id: "inv_002",
+    date: "1 апр 2025",
+    description: "Pro — апрель 2025",
+    amount: 29,
+    status: "paid",
+  },
+  {
+    id: "inv_003",
+    date: "1 мар 2025",
+    description: "Pro — март 2025",
+    amount: 29,
+    status: "paid",
+  },
+  {
+    id: "inv_004",
+    date: "1 фев 2025",
+    description: "Pro — февраль 2025",
+    amount: 29,
+    status: "paid",
+  },
+]);
 
-function statusLabel(s: Invoice['status']) {
-  return { paid: 'Оплачен', pending: 'В обработке', failed: 'Ошибка' }[s]
+function statusLabel(s: Invoice["status"]) {
+  return {
+    paid: t("subscription.paid"),
+    pending: t("subscription.pending"),
+    failed: t("subscription.failed"),
+  }[s];
 }
 
 function downloadInvoice(id: string) {
   // TODO: window.open(`/api/billing/invoices/${id}/pdf`)
-  console.log('Downloading invoice:', id)
+  console.log("Downloading invoice:", id);
 }
 </script>
 
@@ -134,9 +169,18 @@ function downloadInvoice(id: string) {
   border-radius: 100px;
 }
 
-.billing-status--paid    { background: var(--color-success-l); color: var(--color-success); }
-.billing-status--pending { background: var(--color-warning-l); color: #7a4a0a; }
-.billing-status--failed  { background: var(--color-error-l);   color: var(--color-error); }
+.billing-status--paid {
+  background: var(--color-success-l);
+  color: var(--color-success);
+}
+.billing-status--pending {
+  background: var(--color-warning-l);
+  color: #7a4a0a;
+}
+.billing-status--failed {
+  background: var(--color-error-l);
+  color: var(--color-error);
+}
 
 .billing-actions {
   text-align: right;

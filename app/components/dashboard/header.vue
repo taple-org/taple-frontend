@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuthModalController } from "~/composables/modals/useAuthModalController";
 import type { TenantRead } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
 
 const route = useRoute();
 const { $apiClient } = useNuxtApp();
@@ -33,20 +34,31 @@ watch(
   { immediate: true },
 );
 
+const { t } = useI18n();
+
 const tabs = computed(() => [
-  { label: "Дэшбоард", to: `/workspaces/${workspaceId.value}/dashboard` },
-  { label: "Лиды", to: `/workspaces/${workspaceId.value}/dashboard/leads` },
   {
-    label: "Воронка",
+    label: t("dashboard.dashboard"),
+    to: `/workspaces/${workspaceId.value}/dashboard`,
+  },
+  {
+    label: t("dashboard.leads"),
+    to: `/workspaces/${workspaceId.value}/dashboard/leads`,
+  },
+  {
+    label: t("dashboard.pipeline"),
     to: `/workspaces/${workspaceId.value}/dashboard/pipeline`,
   },
   {
-    label: "Мониторинг",
+    label: t("dashboard.monitoring"),
     to: `/workspaces/${workspaceId.value}/dashboard/monitoring`,
   },
-  { label: "Задачи", to: `/workspaces/${workspaceId.value}/dashboard/tasks` },
   {
-    label: "Настройки",
+    label: t("dashboard.tasks"),
+    to: `/workspaces/${workspaceId.value}/dashboard/tasks`,
+  },
+  {
+    label: t("dashboard.settings"),
     to: `/workspaces/${workspaceId.value}/dashboard/settings`,
   },
 ]);
@@ -65,7 +77,7 @@ const isActive = (to: string) => {
     <div class="dashboard-header__brand">
       <h1 class="dashboard-header__logo" @click="$router.push('/')">TAPLE</h1>
       <span v-if="workspace?.name" class="dashboard-header__workspace">{{
-        workspace.name?? "helloaasdfasd"
+        workspace.name ?? "helloaasdfasd"
       }}</span>
     </div>
 
@@ -85,11 +97,11 @@ const isActive = (to: string) => {
     <div class="dashboard-header__profile">
       <client-only>
         <ui-button v-if="!isAuthenticated" @click="controller.open('login')">
-          Войти
+          {{ t("auth.login") }}
         </ui-button>
         <app-header-profile v-else />
         <template #fallback>
-          <ui-button disabled>Войти</ui-button>
+          <ui-button disabled>{{ t("auth.login") }}</ui-button>
         </template>
       </client-only>
     </div>

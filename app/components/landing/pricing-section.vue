@@ -2,67 +2,60 @@
 import { useAuthModalController } from "~/composables/modals/useAuthModalController";
 
 const { open } = useAuthModalController();
+const { t } = useI18n();
 
 const tenantPrice = 9;
 const tenantCount = ref(1);
 
 const totalPrice = computed(() => tenantPrice * tenantCount.value);
 
-const benefits = [
+const benefits = computed(() => [
   {
     icon: "database",
-    title: "Безлимитная база лидов",
-    description:
-      "Доступ к свежим бизнес-контактам из 2ГИС, госреестров и открытых источников",
+    title: t("landing.unlimitedLeads"),
+    description: t("landing.unlimitedLeadsDesc"),
   },
   {
     icon: "refresh",
-    title: "Автоматический сбор",
-    description:
-      "Ежедневное обновление данных без ручного труда — экономьте время",
+    title: t("landing.autoCollection"),
+    description: t("landing.autoCollectionDesc"),
   },
   {
     icon: "filter",
-    title: "Умные фильтры",
-    description:
-      "Сегментация по отрасли, региону, размеру компании и другим критериям",
+    title: t("landing.smartFilters"),
+    description: t("landing.smartFiltersDesc"),
   },
   {
     icon: "external-link",
-    title: "Экспорт данных",
-    description:
-      "Выгрузка в CSV, Excel или интеграция через API в ваши системы",
+    title: t("landing.dataExport"),
+    description: t("landing.dataExportDesc"),
   },
   {
     icon: "users",
-    title: "Командная работа",
-    description:
-      "Приглашайте коллег, распределяйте лиды и отслеживайте прогресс",
+    title: t("landing.teamWork"),
+    description: t("landing.teamWorkDesc"),
   },
   {
     icon: "support",
-    title: "Поддержка 24/7",
-    description: "Помощь в настройке и ответы на вопросы в любое время",
+    title: t("landing.support24"),
+    description: t("landing.support24Desc"),
   },
-];
+]);
 
-const faqItems = [
+const faqItems = computed(() => [
   {
-    question: "Что такое рабочее пространство (tenant)?",
-    answer:
-      "Это отдельная изолированная среда для вашей команды с собственными настройками, лидами и участниками. Каждая компания или проект может иметь своё пространство.",
+    question: t("landing.whatIsTenant"),
+    answer: t("landing.whatIsTenantAnswer"),
   },
   {
-    question: "Можно ли изменить количество пространств?",
-    answer:
-      "Да, вы можете добавлять или удалять рабочие пространства в любое время. Счёт автоматически скорректируется пропорционально.",
+    question: t("landing.canChangeTenantCount"),
+    answer: t("landing.canChangeTenantCountAnswer"),
   },
   {
-    question: "Есть ли ограничение на количество пользователей?",
-    answer:
-      "Нет, в каждое рабочее пространство можно пригласить неограниченное количество участников команды без дополнительной платы.",
+    question: t("landing.userLimit"),
+    answer: t("landing.userLimitAnswer"),
   },
-];
+]);
 </script>
 
 <template>
@@ -70,33 +63,32 @@ const faqItems = [
     <ui-container :padding="[80, 15]">
       <!-- Hero -->
       <div class="pricing-hero">
-        <h2 class="pricing-hero__title">Простая и прозрачная цена</h2>
+        <h2 class="pricing-hero__title">{{ t("landing.pricingTitle") }}</h2>
         <p class="pricing-hero__subtitle">
-          Платите только за рабочие пространства, которые используете
+          {{ t("landing.pricingSubtitle") }}
         </p>
       </div>
 
       <!-- Pricing Card -->
       <div class="pricing-card">
         <div class="pricing-card__header">
-          <div class="pricing-card__badge">Единый тариф</div>
-          <h3 class="pricing-card__title">На рабочее пространство</h3>
+          <div class="pricing-card__badge">{{ t("landing.singlePlan") }}</div>
+          <h3 class="pricing-card__title">{{ t("landing.perWorkspace") }}</h3>
         </div>
 
         <div class="pricing-card__price">
           <span class="pricing-card__amount">${{ tenantPrice }}</span>
-          <span class="pricing-card__period">/ месяц</span>
+          <span class="pricing-card__period">{{ t("landing.perMonth") }}</span>
         </div>
 
         <p class="pricing-card__description">
-          Полный доступ ко всем функциям платформы для одного рабочего
-          пространства
+          {{ t("landing.fullAccess") }}
         </p>
 
         <!-- Calculator -->
         <div class="pricing-calculator">
           <label class="pricing-calculator__label">
-            Рассчитайте стоимость для вашей команды:
+            {{ t("landing.calculateCost") }}
           </label>
           <div class="pricing-calculator__controls">
             <div class="tenant-control">
@@ -111,10 +103,10 @@ const faqItems = [
               <span class="tenant-control__label">
                 {{
                   tenantCount === 1
-                    ? "пространство"
+                    ? t("landing.workspace")
                     : tenantCount < 5
-                      ? "пространства"
-                      : "пространств"
+                      ? t("landing.workspaces2to4")
+                      : t("landing.workspaces5plus")
                 }}
               </span>
               <button class="tenant-control__btn" @click="tenantCount++">
@@ -122,27 +114,29 @@ const faqItems = [
               </button>
             </div>
             <div class="pricing-calculator__total">
-              <span class="pricing-calculator__total-label">Итого:</span>
+              <span class="pricing-calculator__total-label">{{
+                t("landing.total")
+              }}</span>
               <span class="pricing-calculator__total-price"
-                >${{ totalPrice }}/мес</span
+                >${{ totalPrice }}{{ t("landing.perMonthShort") }}</span
               >
             </div>
           </div>
         </div>
 
         <ui-button class="pricing-card__cta" @click="open('register')">
-          Начать бесплатно
+          {{ t("landing.startFree") }}
         </ui-button>
 
         <p class="pricing-card__note">
-          14 дней пробного периода без привязки карты
+          {{ t("landing.trialPeriod") }}
         </p>
       </div>
 
       <!-- Benefits -->
       <div class="benefits-section">
         <h3 class="benefits-section__title">
-          Что включено в каждое пространство
+          {{ t("landing.whatsIncluded") }}
         </h3>
         <div class="benefits-grid">
           <div
@@ -164,36 +158,37 @@ const faqItems = [
 
       <!-- Use Cases -->
       <div class="use-cases">
-        <h3 class="use-cases__title">Для кого это выгодно</h3>
+        <h3 class="use-cases__title">{{ t("landing.whoBenefits") }}</h3>
         <div class="use-cases__grid">
           <div class="use-case-card">
             <div class="use-case-card__icon">
               <Icon name="my-icon:user" class="use-case-card__svg" />
             </div>
-            <h4 class="use-case-card__title">Фрилансеры и агентства</h4>
+            <h4 class="use-case-card__title">{{ t("landing.freelancers") }}</h4>
             <p class="use-case-card__desc">
-              Находите клиентов для разных проектов в отдельных пространствах.
-              Один проект — $9, три проекта — $27.
+              {{ t("landing.freelancersDesc") }}
             </p>
           </div>
           <div class="use-case-card">
             <div class="use-case-card__icon">
               <Icon name="my-icon:office-building" class="use-case-card__svg" />
             </div>
-            <h4 class="use-case-card__title">Малый и средний бизнес</h4>
+            <h4 class="use-case-card__title">
+              {{ t("landing.smallBusiness") }}
+            </h4>
             <p class="use-case-card__desc">
-              Отдельные пространства для разных отделов: продажи, маркетинг, HR.
-              Удобное разделение данных и задач.
+              {{ t("landing.smallBusinessDesc") }}
             </p>
           </div>
           <div class="use-case-card">
             <div class="use-case-card__icon">
               <Icon name="my-icon:briefcase" class="use-case-card__svg" />
             </div>
-            <h4 class="use-case-card__title">Крупные компании</h4>
+            <h4 class="use-case-card__title">
+              {{ t("landing.largeCompanies") }}
+            </h4>
             <p class="use-case-card__desc">
-              Масштабируйтесь без ограничений. Каждое подразделение получает
-              изолированную среду с единой оплатой.
+              {{ t("landing.largeCompaniesDesc") }}
             </p>
           </div>
         </div>
@@ -201,7 +196,7 @@ const faqItems = [
 
       <!-- FAQ -->
       <div class="faq-section">
-        <h3 class="faq-section__title">Частые вопросы</h3>
+        <h3 class="faq-section__title">{{ t("landing.faq") }}</h3>
         <div class="faq-list">
           <div v-for="item in faqItems" :key="item.question" class="faq-item">
             <h4 class="faq-item__question">{{ item.question }}</h4>
@@ -212,12 +207,12 @@ const faqItems = [
 
       <!-- CTA -->
       <div class="pricing-cta">
-        <h3 class="pricing-cta__title">Готовы начать?</h3>
+        <h3 class="pricing-cta__title">{{ t("landing.readyToStart") }}</h3>
         <p class="pricing-cta__desc">
-          Попробуйте все функции бесплатно в течение 14 дней
+          {{ t("landing.tryFree") }}
         </p>
         <ui-button class="pricing-cta__btn" @click="open('register')">
-          Создать аккаунт
+          {{ t("landing.createAccount") }}
         </ui-button>
       </div>
     </ui-container>

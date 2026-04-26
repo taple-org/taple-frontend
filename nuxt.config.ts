@@ -8,7 +8,25 @@ export default defineNuxtConfig({
       backendKey: "",
     },
   },
-  modules: ["@pinia/nuxt", "@regle/nuxt", "@nuxt/icon", "@nuxt/eslint"],
+  modules: [
+    "@pinia/nuxt",
+    "@regle/nuxt",
+    "@nuxt/icon",
+    "@nuxt/eslint",
+    "@nuxtjs/i18n",
+  ],
+
+  i18n: {
+    defaultLocale: "en",
+    locales: [
+      { code: "en", name: "English", file: "en.json" },
+      { code: "ru", name: "Русский", file: "ru.json" },
+      { code: "kk", name: "Қазақша", file: "kk.json" },
+    ],
+    langDir: "locales",
+    strategy: "no_prefix",
+    detectBrowserLanguage: false,
+  },
 
   eslint: {
     config: {
@@ -23,7 +41,7 @@ export default defineNuxtConfig({
         prefix: "my-icon",
         dir: "./app/assets/icons",
         recursive: true,
-        normalizeIconName: true
+        normalizeIconName: true,
       },
     ],
   },
@@ -50,7 +68,7 @@ export default defineNuxtConfig({
         "@ark-ui/vue/avatar",
         "@ark-ui/vue/file-upload",
         "@ark-ui/vue/switch",
-        "@ark-ui/vue/date-picker"
+        "@ark-ui/vue/date-picker",
       ],
     },
   },

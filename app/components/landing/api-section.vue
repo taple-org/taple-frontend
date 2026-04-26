@@ -2,14 +2,21 @@
   <section class="api-section">
     <ui-container :padding="[80, 15]">
       <div class="section-header">
-        <h2 class="section-title">REST API для разработчиков</h2>
-        <p class="section-subtitle">Встраивайте Taple в свои продукты без ограничений</p>
+        <h2 class="section-title">{{ t("landing.apiTitle") }}</h2>
+        <p class="section-subtitle">{{ t("landing.apiSubtitle") }}</p>
       </div>
 
       <div class="api-grid">
-        <div v-for="feature in apiFeatures" :key="feature.title" class="api-feature-card">
+        <div
+          v-for="feature in apiFeatures"
+          :key="feature.title"
+          class="api-feature-card"
+        >
           <div class="api-feature-card__icon">
-            <Icon :name="`my-icon:${feature.icon}`" class="api-feature-card__svg" />
+            <Icon
+              :name="`my-icon:${feature.icon}`"
+              class="api-feature-card__svg"
+            />
           </div>
           <h3 class="api-feature-card__title">{{ feature.title }}</h3>
           <p class="api-feature-card__desc">{{ feature.description }}</p>
@@ -18,21 +25,25 @@
 
       <div class="api-demo">
         <div class="api-demo__copy">
-          <h3 class="api-demo__title">Простая интеграция</h3>
-          <p class="api-demo__desc">Один запрос — и свежие лиды из базы Taple уже в вашем приложении. Авторизация по Bearer-токену, ответ в JSON.</p>
+          <h3 class="api-demo__title">{{ t("landing.apiDemoTitle") }}</h3>
+          <p class="api-demo__desc">{{ t("landing.apiDemoDesc") }}</p>
           <ul class="api-demo__features">
-            <li>Полная документация в Swagger</li>
-            <li>Примеры на Python, JS, PHP</li>
-            <li>Rate limits и квоты по плану</li>
-            <li>Webhooks для событий в реальном времени</li>
+            <li>{{ t("landing.apiFeature1") }}</li>
+            <li>{{ t("landing.apiFeature2") }}</li>
+            <li>{{ t("landing.apiFeature3") }}</li>
+            <li>{{ t("landing.apiFeature4") }}</li>
           </ul>
         </div>
         <div class="api-demo__code">
           <div class="code-block">
             <div class="code-block__header">
               <span class="code-block__label">GET /api/v1/leads</span>
-              <button class="code-block__copy" @click="copyCode" :class="{ copied }">
-                {{ copied ? 'Скопировано!' : 'Копировать' }}
+              <button
+                class="code-block__copy"
+                @click="copyCode"
+                :class="{ copied }"
+              >
+                {{ copied ? t("landing.copied") : t("landing.copy") }}
               </button>
             </div>
             <pre class="code-block__body"><code>{{ codeExample }}</code></pre>
@@ -41,16 +52,21 @@
       </div>
 
       <div class="api-cta">
-        <h3 class="api-cta__title">Готовы начать?</h3>
-        <p class="api-cta__desc">Зарегистрируйтесь и получите API-ключ бесплатно</p>
-        <NuxtLink to="/contacts" class="api-cta__btn">Получить доступ</NuxtLink>
+        <h3 class="api-cta__title">{{ t("landing.apiCtaTitle") }}</h3>
+        <p class="api-cta__desc">{{ t("landing.apiCtaDesc") }}</p>
+        <NuxtLink to="/contacts" class="api-cta__btn">{{
+          t("landing.apiCtaBtn")
+        }}</NuxtLink>
       </div>
     </ui-container>
   </section>
 </template>
 
 <script setup lang="ts">
-const copied = ref(false)
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+
+const copied = ref(false);
 
 const codeExample = `curl -X GET "https://api.taple.ru/v1/leads" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
@@ -59,36 +75,38 @@ const codeExample = `curl -X GET "https://api.taple.ru/v1/leads" \\
     "city": "Москва",
     "industry": "retail",
     "limit": 50
-  }'`
+  }'`;
 
 function copyCode() {
-  navigator.clipboard.writeText(codeExample)
-  copied.value = true
-  setTimeout(() => { copied.value = false }, 2000)
+  navigator.clipboard.writeText(codeExample);
+  copied.value = true;
+  setTimeout(() => {
+    copied.value = false;
+  }, 2000);
 }
 
-const apiFeatures = [
+const apiFeatures = computed(() => [
   {
-    icon: 'lock',
-    title: 'Безопасная авторизация',
-    description: 'Bearer-токены с гибким управлением правами доступа и ротацией ключей',
+    icon: "lock",
+    title: t("landing.apiCard1Title"),
+    description: t("landing.apiCard1Desc"),
   },
   {
-    icon: 'energy',
-    title: 'Высокая производительность',
-    description: 'До 10 000 запросов в минуту, ответ менее 200 мс на 95-м перцентиле',
+    icon: "energy",
+    title: t("landing.apiCard2Title"),
+    description: t("landing.apiCard2Desc"),
   },
   {
-    icon: 'settings',
-    title: 'Webhooks',
-    description: 'Получайте уведомления в реальном времени о новых лидах и изменениях в базе',
+    icon: "settings",
+    title: t("landing.apiCard3Title"),
+    description: t("landing.apiCard3Desc"),
   },
   {
-    icon: 'inbox',
-    title: 'SDKs и примеры',
-    description: 'Готовые библиотеки для Python, Node.js, PHP и подробная документация',
+    icon: "inbox",
+    title: t("landing.apiCard4Title"),
+    description: t("landing.apiCard4Desc"),
   },
-]
+]);
 </script>
 
 <style scoped>
@@ -199,7 +217,7 @@ const apiFeatures = [
 }
 
 .api-demo__features li::before {
-  content: '✓';
+  content: "✓";
   position: absolute;
   left: 0;
   color: var(--color-success);
@@ -241,7 +259,9 @@ const apiFeatures = [
   padding: 3px 10px;
   cursor: pointer;
   font-family: var(--font-base);
-  transition: color var(--transition-base), border-color var(--transition-base);
+  transition:
+    color var(--transition-base),
+    border-color var(--transition-base);
 }
 
 .code-block__copy:hover,
@@ -257,7 +277,7 @@ const apiFeatures = [
 }
 
 .code-block__body code {
-  font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-family: "Fira Code", "Cascadia Code", "Consolas", monospace;
   font-size: 13px;
   color: #cdd6f4;
   line-height: 1.7;
@@ -303,12 +323,21 @@ const apiFeatures = [
 }
 
 @media (max-width: 900px) {
-  .api-grid { grid-template-columns: repeat(2, 1fr); }
-  .api-demo { flex-direction: column; }
-  .api-demo__code { flex: none; width: 100%; }
+  .api-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .api-demo {
+    flex-direction: column;
+  }
+  .api-demo__code {
+    flex: none;
+    width: 100%;
+  }
 }
 
 @media (max-width: 560px) {
-  .api-grid { grid-template-columns: 1fr; }
+  .api-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

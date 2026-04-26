@@ -8,6 +8,9 @@ import {
   type TaskCompletePayload,
   type TaskUpdatePayload,
 } from "./model";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   close: [];
@@ -29,9 +32,8 @@ const dueDate = ref("");
 const assignedToMemberId = ref("");
 const taskType = ref(TASK_TYPE_OPTIONS[0]!.value);
 
-const { options: memberOptions, pending: membersPending } = useWorkspaceMemberOptions(
-  computed(() => workspaceId),
-);
+const { options: memberOptions, pending: membersPending } =
+  useWorkspaceMemberOptions(computed(() => workspaceId));
 
 watch(
   () => task,
@@ -67,68 +69,91 @@ function handleComplete() {
 <template>
   <ui-modal
     :open="open"
-    title="Редактирование задачи"
-    description="Обновите описание, срок или добавьте результат перед завершением"
+    :title="t('tasks.editTask')"
+    :description="t('tasks.editTaskDesc')"
     @update:open="!$event && emit('close')"
   >
     <div v-if="task" class="task-detail">
       <div class="task-detail__meta">
         <div>
           <strong>{{ task.lead_name }}</strong>
-          <span>{{ task.assigned_to_full_name || task.assigned_to_email || "Не назначено" }}</span>
+          <span>{{
+            task.assigned_to_full_name ||
+            task.assigned_to_email ||
+            t("tasks.unassigned")
+          }}</span>
         </div>
         <ui-badge size="sm">{{ task.status }}</ui-badge>
       </div>
 
       <div class="task-detail__group">
-        <label class="task-detail__label">Заголовок</label>
-        <ui-form-field v-model="title" type="text" placeholder="Название задачи" />
+        <label class="task-detail__label">{{ t("tasks.title") }}</label>
+        <ui-form-field
+          v-model="title"
+          type="text"
+          :placeholder="t('tasks.taskNamePlaceholder')"
+        />
       </div>
 
       <div class="task-detail__grid">
         <div class="task-detail__group">
-          <label class="task-detail__label">Тип задачи</label>
-          <ui-form-field v-model="taskType" type="select" :options="TASK_TYPE_OPTIONS" placeholder="Тип задачи" />
+          <label class="task-detail__label">{{ t("tasks.taskType") }}</label>
+          <ui-form-field
+            v-model="taskType"
+            type="select"
+            :options="TASK_TYPE_OPTIONS"
+            :placeholder="t('tasks.taskType')"
+          />
         </div>
 
         <div class="task-detail__group">
-          <label class="task-detail__label">Срок</label>
-          <ui-form-field v-model="dueDate" type="date" placeholder="Выберите дату" />
+          <label class="task-detail__label">{{ t("tasks.dueDate") }}</label>
+          <ui-form-field
+            v-model="dueDate"
+            type="date"
+            :placeholder="t('tasks.selectDate')"
+          />
         </div>
 
         <div class="task-detail__group">
-          <label class="task-detail__label">Ответственный</label>
+          <label class="task-detail__label">{{ t("tasks.assignee") }}</label>
           <ui-form-field
             v-model="assignedToMemberId"
             type="select"
             :options="memberOptions"
             :disabled="membersPending"
-            placeholder="Выберите участника"
+            :placeholder="t('tasks.selectMember')"
           />
         </div>
       </div>
 
       <div class="task-detail__group">
-        <label class="task-detail__label">Описание</label>
-        <textarea v-model="description" class="task-detail__textarea" placeholder="Описание задачи" />
+        <label class="task-detail__label">{{ t("tasks.description") }}</label>
+        <textarea
+          v-model="description"
+          class="task-detail__textarea"
+          :placeholder="t('tasks.description')"
+        />
       </div>
 
       <div class="task-detail__group">
-        <label class="task-detail__label">Результат</label>
+        <label class="task-detail__label">{{ t("tasks.result") }}</label>
         <textarea
           v-model="result"
           class="task-detail__textarea"
-          placeholder="Что было сделано, итог звонка, договоренности..."
+          :placeholder="t('tasks.resultPlaceholder')"
         />
       </div>
 
       <div class="task-detail__footer">
-        <ui-button variant="outline" @click="emit('close')">Закрыть</ui-button>
+        <ui-button variant="outline" @click="emit('close')">{{
+          t("common.close")
+        }}</ui-button>
         <ui-button variant="outline" :disabled="pending" @click="handleSave">
-          Сохранить
+          {{ t("common.save") }}
         </ui-button>
         <ui-button :disabled="pending" @click="handleComplete">
-          Завершить задачу
+          {{ t("tasks.completeTask") }}
         </ui-button>
       </div>
     </div>

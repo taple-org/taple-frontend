@@ -2,8 +2,8 @@
   <!-- Current plan -->
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Текущий план</h2>
-      <p class="card-desc">Управляйте подпиской и способом оплаты</p>
+      <h2 class="card-title">{{ $t("subscription.currentPlan") }}</h2>
+      <p class="card-desc">{{ $t("subscription.manageSubscription") }}</p>
     </div>
 
     <div class="current-plan">
@@ -14,16 +14,20 @@
         </div>
         <div class="plan-meta">
           <span class="plan-price">
-            ${{ currentPlan.price }}<span class="plan-price__period"> / месяц</span>
+            ${{ currentPlan.price
+            }}<span class="plan-price__period">
+              {{ $t("subscription.perMonth") }}</span
+            >
           </span>
           <span class="plan-renewal">
-            Следующее списание: <strong>{{ currentPlan.renewalDate }}</strong>
+            {{ $t("subscription.nextBilling") }}
+            <strong>{{ currentPlan.renewalDate }}</strong>
           </span>
         </div>
       </div>
       <div class="plan-actions">
         <ui-button variant="outline" @click="cancelSubscription">
-          Отменить подписку
+          {{ $t("subscription.cancel") }}
         </ui-button>
       </div>
     </div>
@@ -48,8 +52,8 @@
   <!-- Available plans -->
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Доступные планы</h2>
-      <p class="card-desc">Выберите план, который подходит вашему бизнесу</p>
+      <h2 class="card-title">{{ $t("subscription.availablePlans") }}</h2>
+      <p class="card-desc">{{ $t("subscription.choosePlan") }}</p>
     </div>
 
     <div class="plans-grid">
@@ -62,17 +66,25 @@
           'plan-card--popular': plan.popular,
         }"
       >
-        <div v-if="plan.popular" class="plan-popular-badge">Популярный</div>
+        <div v-if="plan.popular" class="plan-popular-badge">
+          {{ $t("subscription.popular") }}
+        </div>
         <div class="plan-card__header">
           <h3 class="plan-card__name">{{ plan.name }}</h3>
           <p class="plan-card__desc">{{ plan.description }}</p>
         </div>
         <div class="plan-card__price">
           <span class="plan-card__amount">${{ plan.price }}</span>
-          <span class="plan-card__period"> / мес</span>
+          <span class="plan-card__period">
+            {{ $t("subscription.perMonthShort") }}</span
+          >
         </div>
         <ul class="plan-card__features">
-          <li v-for="feature in plan.features" :key="feature" class="plan-card__feature">
+          <li
+            v-for="feature in plan.features"
+            :key="feature"
+            class="plan-card__feature"
+          >
             <Icon name="my-icon:check" class="feature__icon" />
             <span>{{ feature }}</span>
           </li>
@@ -83,7 +95,11 @@
           class="plan-card__cta"
           @click="selectPlan(plan)"
         >
-          {{ plan.id === currentPlan.id ? 'Текущий план' : 'Выбрать план' }}
+          {{
+            plan.id === currentPlan.id
+              ? $t("subscription.currentPlanBtn")
+              : $t("subscription.selectPlan")
+          }}
         </ui-button>
       </div>
     </div>
@@ -92,8 +108,8 @@
   <!-- Payment method -->
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">Способ оплаты</h2>
-      <p class="card-desc">Карта, привязанная к вашей подписке</p>
+      <h2 class="card-title">{{ $t("subscription.paymentMethod") }}</h2>
+      <p class="card-desc">{{ $t("subscription.paymentMethodDesc") }}</p>
     </div>
 
     <div class="payment-row">
@@ -102,11 +118,17 @@
       </div>
       <div class="payment-info">
         <div class="payment-name">•••• •••• •••• {{ paymentMethod.last4 }}</div>
-        <div class="payment-expiry">Истекает {{ paymentMethod.expiry }}</div>
+        <div class="payment-expiry">
+          {{ $t("subscription.expires") }} {{ paymentMethod.expiry }}
+        </div>
       </div>
       <div class="payment-actions">
-        <button class="btn-link" @click="updateCard">Обновить</button>
-        <button class="btn-link btn-link-danger" @click="removeCard">Удалить</button>
+        <button class="btn-link" @click="updateCard">
+          {{ $t("subscription.update") }}
+        </button>
+        <button class="btn-link btn-link-danger" @click="removeCard">
+          {{ $t("subscription.remove") }}
+        </button>
       </div>
     </div>
   </div>
@@ -114,17 +136,17 @@
   <!-- Billing history -->
   <div class="settings-card">
     <div class="card-header">
-      <h2 class="card-title">История платежей</h2>
-      <p class="card-desc">Все транзакции за последние 12 месяцев</p>
+      <h2 class="card-title">{{ $t("subscription.billingHistory") }}</h2>
+      <p class="card-desc">{{ $t("subscription.billingHistoryDesc") }}</p>
     </div>
 
     <table class="billing-table">
       <thead>
         <tr>
-          <th>Дата</th>
-          <th>Описание</th>
-          <th>Сумма</th>
-          <th>Статус</th>
+          <th>{{ $t("subscription.date") }}</th>
+          <th>{{ $t("subscription.description") }}</th>
+          <th>{{ $t("subscription.amount") }}</th>
+          <th>{{ $t("subscription.status") }}</th>
           <th></th>
         </tr>
       </thead>
@@ -134,13 +156,16 @@
           <td class="billing-desc">{{ invoice.description }}</td>
           <td class="billing-amount">${{ invoice.amount }}</td>
           <td>
-            <span class="billing-status" :class="`billing-status--${invoice.status}`">
+            <span
+              class="billing-status"
+              :class="`billing-status--${invoice.status}`"
+            >
               {{ statusLabel(invoice.status) }}
             </span>
           </td>
           <td class="billing-actions">
             <button class="btn-link" @click="downloadInvoice(invoice.id)">
-              Скачать
+              {{ $t("subscription.download") }}
             </button>
           </td>
         </tr>
@@ -150,81 +175,131 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n();
+
 interface Plan {
-  id: string
-  name: string
-  description: string
-  price: number
-  features: string[]
-  popular?: boolean
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  features: string[];
+  popular?: boolean;
 }
 
 interface Invoice {
-  id: string
-  date: string
-  description: string
-  amount: number
-  status: 'paid' | 'pending' | 'failed'
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  status: "paid" | "pending" | "failed";
 }
 
 const currentPlan = reactive({
-  id: 'pro',
-  name: 'Pro',
+  id: "pro",
+  name: "Pro",
   price: 29,
-  renewalDate: '1 июня 2025',
-})
+  renewalDate: "1 июня 2025",
+});
 
-const usageItems = [
-  { label: 'Запросы API', used: '7 240', total: '10 000', percent: 72 },
-  { label: 'Рабочие пространства', used: '3', total: '5', percent: 60 },
-  { label: 'Участники', used: '8', total: '10', percent: 80 },
-]
-
-const availablePlans: Plan[] = [
+const usageItems = computed(() => [
   {
-    id: 'starter',
-    name: 'Starter',
-    description: 'Для индивидуальных специалистов',
+    label: t("subscription.apiRequests"),
+    used: "7 240",
+    total: "10 000",
+    percent: 72,
+  },
+  { label: t("subscription.workspaces"), used: "3", total: "5", percent: 60 },
+  { label: t("subscription.members"), used: "8", total: "10", percent: 80 },
+]);
+
+const availablePlans = computed<Plan[]>(() => [
+  {
+    id: "starter",
+    name: "Starter",
+    description: t("subscription.starterDesc"),
     price: 9,
-    features: ['1 000 запросов / мес', '1 рабочее пространство', '1 участник', 'Email-поддержка'],
+    features: [
+      t("subscription.starterFeature1"),
+      t("subscription.starterFeature2"),
+      t("subscription.starterFeature3"),
+      t("subscription.starterFeature4"),
+    ],
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    description: 'Для небольших команд',
+    id: "pro",
+    name: "Pro",
+    description: t("subscription.proDesc"),
     price: 29,
-    features: ['10 000 запросов / мес', '5 рабочих пространств', '10 участников', 'Приоритетная поддержка'],
+    features: [
+      t("subscription.proFeature1"),
+      t("subscription.proFeature2"),
+      t("subscription.proFeature3"),
+      t("subscription.proFeature4"),
+    ],
     popular: true,
   },
   {
-    id: 'business',
-    name: 'Business',
-    description: 'Для растущего бизнеса',
+    id: "business",
+    name: "Business",
+    description: t("subscription.businessDesc"),
     price: 79,
-    features: ['Безлимитные запросы', 'Неограниченные пространства', 'Неограниченные участники', 'Выделенный менеджер'],
+    features: [
+      t("subscription.businessFeature1"),
+      t("subscription.businessFeature2"),
+      t("subscription.businessFeature3"),
+      t("subscription.businessFeature4"),
+    ],
   },
-]
+]);
 
-const paymentMethod = reactive({ last4: '4242', expiry: '09/27' })
+const paymentMethod = reactive({ last4: "4242", expiry: "09/27" });
 
 const billingHistory = ref<Invoice[]>([
-  { id: 'inv_001', date: '1 мая 2025',    description: 'Pro — май 2025',    amount: 29, status: 'paid' },
-  { id: 'inv_002', date: '1 апр 2025',   description: 'Pro — апрель 2025', amount: 29, status: 'paid' },
-  { id: 'inv_003', date: '1 мар 2025',   description: 'Pro — март 2025',   amount: 29, status: 'paid' },
-  { id: 'inv_004', date: '1 фев 2025',   description: 'Pro — февраль 2025',amount: 29, status: 'paid' },
-])
+  {
+    id: "inv_001",
+    date: "1 мая 2025",
+    description: "Pro — май 2025",
+    amount: 29,
+    status: "paid",
+  },
+  {
+    id: "inv_002",
+    date: "1 апр 2025",
+    description: "Pro — апрель 2025",
+    amount: 29,
+    status: "paid",
+  },
+  {
+    id: "inv_003",
+    date: "1 мар 2025",
+    description: "Pro — март 2025",
+    amount: 29,
+    status: "paid",
+  },
+  {
+    id: "inv_004",
+    date: "1 фев 2025",
+    description: "Pro — февраль 2025",
+    amount: 29,
+    status: "paid",
+  },
+]);
 
-function statusLabel(s: Invoice['status']) {
-  return { paid: 'Оплачен', pending: 'В обработке', failed: 'Ошибка' }[s]
+function statusLabel(s: Invoice["status"]) {
+  return {
+    paid: t("subscription.paid"),
+    pending: t("subscription.pending"),
+    failed: t("subscription.failed"),
+  }[s];
 }
 
 function selectPlan(plan: Plan) {
   // TODO: navigate to checkout or upgrade flow
-  console.log('Switching to plan:', plan.id)
+  console.log("Switching to plan:", plan.id);
 }
 
 function cancelSubscription() {
-  if (confirm('Отменить подписку? Доступ сохранится до конца оплаченного периода.')) {
+  if (confirm(t("subscription.cancelConfirm"))) {
     // TODO: await $fetch('/api/billing/cancel', { method: 'POST' })
   }
 }
@@ -234,14 +309,14 @@ function updateCard() {
 }
 
 function removeCard() {
-  if (confirm('Удалить способ оплаты? Подписка будет отменена.')) {
+  if (confirm(t("subscription.removeCardConfirm"))) {
     // TODO: await $fetch('/api/billing/payment-method', { method: 'DELETE' })
   }
 }
 
 function downloadInvoice(id: string) {
   // TODO: window.open(`/api/billing/invoices/${id}/pdf`)
-  console.log('Downloading invoice:', id)
+  console.log("Downloading invoice:", id);
 }
 </script>
 
@@ -392,12 +467,15 @@ function downloadInvoice(id: string) {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .plan-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  box-shadow: 0 4px 16px
+    color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 
 .plan-card--current {

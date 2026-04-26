@@ -2,12 +2,15 @@
 import { WorkspaceMakeFormModal } from "#components";
 import { useAuthModalController } from "~/composables/modals/useAuthModalController";
 import type { TemplateLink } from "~/interfaces/link.interfaces";
+import { useI18n } from "vue-i18n";
 
-const links: TemplateLink[] = [
-  { to: "/contacts", label: "Контакты" },
+const { t } = useI18n();
+
+const links = computed<TemplateLink[]>(() => [
+  { to: "/contacts", label: t("nav.contacts") },
   { to: "/api", label: "API" },
-  { to: "/tariffs", label: "Тарифы" },
-];
+  { to: "/tariffs", label: t("nav.pricing") },
+]);
 const { open } = useAuthModalController();
 const { isAuthenticated } = storeToRefs(useAuthStore());
 </script>
@@ -19,11 +22,11 @@ const { isAuthenticated } = storeToRefs(useAuthStore());
         <app-header-links :links />
         <client-only>
           <ui-button v-if="!isAuthenticated" @click="open('login')">
-            Войти
+            {{ t("auth.login") }}
           </ui-button>
           <app-header-profile v-else />
           <template #fallback>
-            <ui-button disabled>Войти</ui-button>
+            <ui-button disabled>{{ t("auth.login") }}</ui-button>
           </template>
         </client-only>
       </section>

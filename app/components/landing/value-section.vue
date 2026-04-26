@@ -2,8 +2,8 @@
   <section class="value-section">
     <ui-container :padding="[80, 15]">
       <div class="section-header">
-        <h2 class="section-title">Почему Taple</h2>
-        <p class="section-subtitle">Всё, что нужно для системного поиска новых клиентов</p>
+        <h2 class="section-title">{{ t("landing.valueTitle") }}</h2>
+        <p class="section-subtitle">{{ t("landing.valueSubtitle") }}</p>
       </div>
       <div class="value-grid">
         <div v-for="card in cards" :key="card.title" class="value-card">
@@ -19,28 +19,32 @@
 </template>
 
 <script setup lang="ts">
-const cards = [
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+
+const cards = computed(() => [
   {
-    icon: 'inbox',
-    title: 'Свежие данные',
-    description: 'База обновляется ежедневно — вы получаете актуальные контрагенты раньше конкурентов',
+    icon: "inbox",
+    title: t("landing.valueCard1Title"),
+    description: t("landing.valueCard1Desc"),
   },
   {
-    icon: 'filter',
-    title: 'Умная фильтрация',
-    description: 'Отбирайте лиды по отрасли, городу, размеру компании и любым другим параметрам',
+    icon: "filter",
+    title: t("landing.valueCard2Title"),
+    description: t("landing.valueCard2Desc"),
   },
   {
-    icon: 'check',
-    title: 'Без дублей',
-    description: 'Нормализация и дедупликация на входе — каждый лид учитывается ровно один раз',
+    icon: "check",
+    title: t("landing.valueCard3Title"),
+    description: t("landing.valueCard3Desc"),
   },
   {
-    icon: 'send',
-    title: 'Готово к экспорту',
-    description: 'Выгружайте в Excel, CRM или 1С одним кликом — без лишних шагов и ручной работы',
+    icon: "send",
+    title: t("landing.valueCard4Title"),
+    description: t("landing.valueCard4Desc"),
   },
-]
+]);
 </script>
 
 <style scoped>
@@ -78,12 +82,15 @@ const cards = [
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+  transition:
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
 }
 
 .value-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 8%, transparent);
+  box-shadow: 0 4px 20px
+    color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
 .value-card__icon {
@@ -115,10 +122,14 @@ const cards = [
 }
 
 @media (max-width: 900px) {
-  .value-grid { grid-template-columns: repeat(2, 1fr); }
+  .value-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 560px) {
-  .value-grid { grid-template-columns: 1fr; }
+  .value-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -5,6 +5,9 @@ import type {
 } from "~/api/generated/api";
 import { TenantLeadStage } from "~/api/generated/api";
 import { STAGE_LABELS, STAGE_OPTIONS } from "~/stores/leads.store";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps<{
   lead: TenantLeadListItem;
@@ -70,11 +73,11 @@ const onOutsideClick = (e: MouseEvent) => {
   }
 };
 
-const snoozePresets = [
-  { label: "На 1 день", hours: 24 },
-  { label: "На 3 дня", hours: 72 },
-  { label: "На неделю", hours: 168 },
-];
+const snoozePresets = computed(() => [
+  { label: t("leads.snooze1Day"), hours: 24 },
+  { label: t("leads.snooze3Days"), hours: 72 },
+  { label: t("leads.snooze1Week"), hours: 168 },
+]);
 
 const handleSnoozePreset = (hours: number) => {
   const until = new Date(Date.now() + hours * 60 * 60 * 1000)
@@ -104,22 +107,24 @@ const handleSnoozePreset = (hours: number) => {
       <!-- Main menu -->
       <template v-if="!subMenu">
         <button class="lead-actions__item" @click="handleTakeToWork">
-          Взять в работу
+          {{ t("leads.takeToWorkBtn") }}
         </button>
         <button class="lead-actions__item" @click="subMenu = 'snooze'">
-          Отложить
+          {{ t("leads.snooze") }}
         </button>
         <button class="lead-actions__item" @click="subMenu = 'assign'">
-          Назначить
+          {{ t("leads.assign") }}
           <Icon name="my-icon-arrow-right" mode="svg" :size="10" />
         </button>
-        <button class="lead-actions__item" @click="handleHide">Скрыть</button>
+        <button class="lead-actions__item" @click="handleHide">
+          {{ t("leads.hide") }}
+        </button>
         <div class="lead-actions__divider" />
         <button
           class="lead-actions__item lead-actions__item--danger"
           @click="handleDelete"
         >
-          Удалить
+          {{ t("common.delete") }}
         </button>
       </template>
 
@@ -127,7 +132,7 @@ const handleSnoozePreset = (hours: number) => {
       <template v-else-if="subMenu === 'snooze'">
         <button class="lead-actions__back" @click="subMenu = null">
           <Icon name="my-icon-arrow-left" mode="svg" :size="10" />
-          Отложить
+          {{ t("leads.snooze") }}
         </button>
         <div class="lead-actions__divider" />
         <button
@@ -140,13 +145,16 @@ const handleSnoozePreset = (hours: number) => {
         </button>
         <div class="lead-actions__divider" />
         <div class="lead-actions__comment-block">
-          <UiDatePicker v-model="snoozeDate" placeholder="Выберите дату" />
+          <UiDatePicker
+            v-model="snoozeDate"
+            :placeholder="t('leads.selectDate')"
+          />
           <button
             class="lead-actions__confirm-btn"
             :disabled="!snoozeDate"
             @click="handleSnooze"
           >
-            Отложить
+            {{ t("leads.snooze") }}
           </button>
         </div>
       </template>
@@ -155,7 +163,7 @@ const handleSnoozePreset = (hours: number) => {
       <template v-else-if="subMenu === 'assign'">
         <button class="lead-actions__back" @click="subMenu = null">
           <Icon name="my-icon-arrow-left" mode="svg" :size="10" />
-          Назначить
+          {{ t("leads.assign") }}
         </button>
         <div class="lead-actions__divider" />
         <div v-if="members.length === 0" class="lead-actions__empty">
