@@ -82,6 +82,25 @@ watch(query, (value) => {
 
 const canSubmit = computed(() => !!selectedLead.value && title.value.trim());
 
+// Map stage codes to translated labels
+const getStageLabel = (stageCode?: string): string => {
+  if (!stageCode) return "—";
+  const keyMap: Record<string, string> = {
+    new: "leads.new",
+    in_progress: "leads.inProgress",
+    won: "leads.won",
+    lost: "leads.lost",
+    hidden: "leads.hidden",
+    snoozed: "leads.snoozed",
+    negotiation: "leads.negotiation",
+    first_contact: "leads.firstContact",
+    contract: "leads.contract",
+    monitoring: "leads.monitoring",
+  };
+  const key = keyMap[stageCode];
+  return key ? t(key) : stageCode;
+};
+
 function handleSubmit() {
   if (!selectedLead.value || !title.value.trim()) return;
 
@@ -147,7 +166,7 @@ function handleSubmit() {
               @click="selectedLead = lead"
             >
               <strong>{{ lead.lead_name }}</strong>
-              <span>{{ lead.stage_code }}</span>
+              <span>{{ getStageLabel(lead.stage_code) }}</span>
             </button>
           </li>
         </ul>

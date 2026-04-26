@@ -145,8 +145,12 @@ onUnmounted(() => {
 <template>
   <div class="activity-chart">
     <div class="activity-chart__header">
-      <h3 class="activity-chart__title">Активность за период</h3>
-      <p class="activity-chart__subtitle">Сравнение 7 и 30 последних дней</p>
+      <h3 class="activity-chart__title">
+        {{ t("dashboard.charts.activityTitle") }}
+      </h3>
+      <p class="activity-chart__subtitle">
+        {{ t("dashboard.charts.activitySubtitle") }}
+      </p>
     </div>
     <div class="activity-chart__container">
       <canvas ref="canvasRef" />

@@ -160,19 +160,32 @@ const activityColor = (type: string) =>
 
 // ── Activity history description formatter ────────────────────────────────
 const getActivityDescription = (item: any): string => {
-  const actor = item.actor?.full_name ?? "Система";
+  const actor = item.actor?.full_name ?? t("leads.activity.system");
 
   switch (item.type) {
     case "stage_change":
-      return `${actor} переместил(а) лид: ${item.from_stage} → ${item.to_stage}`;
+      return t("leads.activity.stageChange", {
+        actor,
+        from: item.from_stage,
+        to: item.to_stage,
+      });
     case "note_added":
-      return `${actor} добавил(а) заметку: ${item.note_text ?? ""}`;
+      return t("leads.activity.noteAdded", {
+        actor,
+        text: item.note_text ?? "",
+      });
     case "task_created":
-      return `${actor} создал(а) задачу: ${item.task_title}`;
+      return t("leads.activity.taskCreated", {
+        actor,
+        title: item.task_title,
+      });
     case "member_assigned":
-      return `${actor} назначил(а) ответственного: ${item.assigned_member_name ?? ""}`;
+      return t("leads.activity.memberAssigned", {
+        actor,
+        member: item.assigned_member_name ?? "",
+      });
     default:
-      return `${actor} выполнил(а) действие`;
+      return t("leads.activity.default", { actor });
   }
 };
 

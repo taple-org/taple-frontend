@@ -9,6 +9,9 @@ import DashboardConversionChart from "~/components/dashboard/conversion-chart.vu
 import DashboardTimeInStageChart from "~/components/dashboard/time-in-stage-chart.vue";
 import DashboardMembersDistributionCard from "~/components/dashboard/members-distribution-card.vue";
 import { extractApiClientError } from "~/utils/extractApiClientError";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 definePageMeta({
   layout: "dashboard",
@@ -16,9 +19,8 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Дэшборд рабочего пространства — Taple",
-  description:
-    "Обзор статистики и ключевых показателей рабочего пространства в Taple.",
+  title: t("dashboard.statistics.metaTitle"),
+  description: t("dashboard.statistics.metaDescription"),
   robots: "noindex, nofollow",
 });
 
@@ -38,7 +40,9 @@ const fallbackPeriod: PeriodActivity = {
 };
 
 const period7Days = computed(() => stats.value?.last_7_days || fallbackPeriod);
-const period30Days = computed(() => stats.value?.last_30_days || fallbackPeriod);
+const period30Days = computed(
+  () => stats.value?.last_30_days || fallbackPeriod,
+);
 const conversions = computed(() => stats.value?.conversions || []);
 const avgTimeInStage = computed(() => stats.value?.avg_time_in_stage || []);
 
@@ -47,25 +51,28 @@ const statsCards = computed(() => {
 
   return [
     {
-      title: "Всего лидов",
+      title: t("dashboard.stats.totalLeads"),
       value: stats.value.total_leads,
       icon: "my-icon-users",
       trend: "neutral" as const,
     },
     {
-      title: "Открытые задачи",
+      title: t("dashboard.stats.openTasks"),
       value: stats.value.tasks?.open || 0,
       icon: "my-icon-outline-clipboard-list",
-      trend: (stats.value.tasks?.open || 0) > 0 ? ("down" as const) : ("up" as const),
+      trend:
+        (stats.value.tasks?.open || 0) > 0
+          ? ("down" as const)
+          : ("up" as const),
     },
     {
-      title: "Завершенные задачи",
+      title: t("dashboard.stats.completedTasks"),
       value: stats.value.tasks?.completed || 0,
       icon: "my-icon-check",
       trend: "up" as const,
     },
     {
-      title: "Средний Fit Score",
+      title: t("dashboard.stats.avgFitScore"),
       value:
         typeof stats.value.avg_fit_score === "number"
           ? String(Math.round(stats.value.avg_fit_score * 100)) + "%"
@@ -74,7 +81,7 @@ const statsCards = computed(() => {
       trend: "neutral" as const,
     },
     {
-      title: "Средний Priority Score",
+      title: t("dashboard.stats.avgPriorityScore"),
       value:
         typeof stats.value.avg_priority_score === "number"
           ? stats.value.avg_priority_score.toFixed(2)
@@ -87,13 +94,14 @@ const statsCards = computed(() => {
 
 const formattedUpdatedAt = computed(() => {
   if (!lastUpdatedAt.value) return "";
-  return new Intl.DateTimeFormat("ru-RU", {
+  const dateStr = new Intl.DateTimeFormat("ru-RU", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   }).format(lastUpdatedAt.value);
+  return t("dashboard.statistics.updatedAt", { date: dateStr });
 });
 
 const hasMemberPerformance = computed(
@@ -118,7 +126,7 @@ async function fetchStats() {
   } catch (error) {
     const apiError = extractApiClientError(error);
     errorMessage.value =
-      apiError?.message || "Не удалось загрузить статистику дэшборда";
+      apiError?.message || t("dashboard.statistics.errorMessage");
   } finally {
     isLoading.value = false;
   }
@@ -132,12 +140,14 @@ onMounted(fetchStats);
     <div class="dashboard-page">
       <header class="dashboard-page__hero">
         <div class="dashboard-page__hero-copy">
-          <h1 class="dashboard-page__title">Статистика рабочего пространства</h1>
+          <h1 class="dashboard-page__title">
+            {{ t("dashboard.statistics.title") }}
+          </h1>
         </div>
 
         <div class="dashboard-page__hero-actions">
           <span v-if="formattedUpdatedAt" class="dashboard-page__updated-at">
-            Обновлено: {{ formattedUpdatedAt }}
+            {{ formattedUpdatedAt }}
           </span>
           <ui-button
             variant="outline"
@@ -145,31 +155,41 @@ onMounted(fetchStats);
             :disabled="isLoading"
             @click="fetchStats"
           >
-            Обновить
+            {{ t("dashboard.statistics.refresh") }}
           </ui-button>
         </div>
       </header>
 
       <section v-if="errorMessage" class="dashboard-page__error">
         <div class="dashboard-page__error-icon">
-          <Icon name="my-icon-outline-exclamation-circle" mode="svg" :size="18" />
+          <Icon
+            name="my-icon-outline-exclamation-circle"
+            mode="svg"
+            :size="18"
+          />
         </div>
         <div class="dashboard-page__error-copy">
-          <h2>Ошибка загрузки статистики</h2>
+          <h2>{{ t("dashboard.statistics.errorTitle") }}</h2>
           <p>{{ errorMessage }}</p>
         </div>
-        <ui-button variant="primary" @click="fetchStats">Повторить</ui-button>
+        <ui-button variant="primary" @click="fetchStats">{{
+          t("dashboard.statistics.retry")
+        }}</ui-button>
       </section>
 
       <section v-else-if="isLoading" class="dashboard-page__skeleton">
-        <div class="dashboard-page__skeleton-grid dashboard-page__skeleton-grid--stats">
+        <div
+          class="dashboard-page__skeleton-grid dashboard-page__skeleton-grid--stats"
+        >
           <div
             v-for="item in 5"
             :key="'stats-skeleton-' + item"
             class="dashboard-page__skeleton-card"
           />
         </div>
-        <div class="dashboard-page__skeleton-grid dashboard-page__skeleton-grid--charts">
+        <div
+          class="dashboard-page__skeleton-grid dashboard-page__skeleton-grid--charts"
+        >
           <div class="dashboard-page__skeleton-chart" />
           <div class="dashboard-page__skeleton-chart" />
         </div>

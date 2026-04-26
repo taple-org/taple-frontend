@@ -153,7 +153,9 @@ onUnmounted(() => {
 
 <template>
   <div class="conversion-chart">
-    <h3 class="conversion-chart__title">Переходы и конверсия между этапами</h3>
+    <h3 class="conversion-chart__title">
+      {{ t("dashboard.charts.conversionTitle") }}
+    </h3>
     <div class="conversion-chart__container">
       <canvas ref="canvasRef" />
     </div>

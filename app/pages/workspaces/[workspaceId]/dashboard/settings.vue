@@ -244,13 +244,13 @@ async function inviteMember() {
       workspaceId.value,
       request,
     );
-    notification.success("Успех", "Приглашение отправлено");
+    notification.success(t("common.success"), t("settings.inviteSuccess"));
     inviteEmail.value = "";
     // Refresh members list
     await fetchMembers();
   } catch (error) {
     console.error("Failed to invite member:", error);
-    notification.error("Ошибка", "Не удалось отправить приглашение");
+    notification.error(t("common.error"), t("settings.inviteError"));
   } finally {
     isInviting.value = false;
   }
@@ -261,7 +261,7 @@ async function removeMember(userId: string, role: MemberRole) {
 
   // Don't allow removing yourself through this function
   if (isCurrentUser(userId)) {
-    notification.error("Ошибка", "Используйте кнопку 'Покинуть пространство'");
+    notification.error(t("common.error"), t("settings.removeYourselfError"));
     return;
   }
 
@@ -271,10 +271,13 @@ async function removeMember(userId: string, role: MemberRole) {
       userId,
     );
     members.value = members.value.filter((m) => m.userId !== userId);
-    notification.success("Успех", "Участник удален");
+    notification.success(
+      t("common.success"),
+      t("settings.removeMemberSuccess"),
+    );
   } catch (error) {
     console.error("Failed to remove member:", error);
-    notification.error("Ошибка", "Не удалось удалить участника");
+    notification.error(t("common.error"), t("settings.removeMemberError"));
   }
 }
 
@@ -291,11 +294,11 @@ async function updateMemberRole(userId: string, newRole: TenantUserRole) {
       userId,
       payload,
     );
-    notification.success("Успех", "Роль участника обновлена");
+    notification.success(t("common.success"), t("settings.roleUpdated"));
     await fetchMembers();
   } catch (error) {
     console.error("Failed to update member role:", error);
-    notification.error("Ошибка", "Не удалось обновить роль участника");
+    notification.error(t("common.error"), t("settings.roleUpdateError"));
     await fetchMembers();
   }
 }
@@ -307,12 +310,12 @@ async function leaveWorkspace() {
     await $apiClient.api.leaveTenantApiV1TenantsTenantIdLeavePost(
       workspaceId.value,
     );
-    notification.success("Успех", "Вы покинули рабочее пространство");
+    notification.success(t("common.success"), t("settings.leaveSuccess"));
     // Redirect to workspaces list
     await router.push("/");
   } catch (error) {
     console.error("Failed to leave workspace:", error);
-    notification.error("Ошибка", "Не удалось покинуть рабочее пространство");
+    notification.error(t("common.error"), t("settings.leaveError"));
   }
 }
 
@@ -341,18 +344,13 @@ function initials(m: Member) {
 }
 
 const roleLabel: Record<MemberRole, string> = {
-  Owner: "Владелец",
-  Admin: "Администратор",
-  Member: "Участник",
+  Owner: t("settings.owner"),
+  Admin: t("settings.admin"),
+  Member: t("settings.member"),
 };
 
 // ── Lead Tags ───────────────────────────────────────────────────
-const tags = ref<string[]>([
-  "Горячий лид",
-  "В работе",
-  "Ожидание",
-  "Потенциал",
-]);
+const tags = ref<string[]>([]);
 const newTag = ref("");
 const isSavingTags = ref(false);
 const tagsSaved = ref(false);
@@ -388,37 +386,37 @@ async function saveTags() {
   <ui-container :padding="[20, 15, 20]" class="settings-container">
     <div class="ws-settings">
       <div class="page-header">
-        <h1 class="page-title">Настройки пространства</h1>
-        <p class="page-desc">
-          Управляйте профилем, участниками и настройками рабочего пространства
-        </p>
+        <h1 class="page-title">{{ t("settings.pageTitle") }}</h1>
+        <p class="page-desc">{{ t("settings.pageDescription") }}</p>
       </div>
 
       <!-- Workspace Profile (Owner and Admin only) -->
       <div v-if="canManageSettings()" class="settings-card">
         <div class="card-header">
-          <h2 class="card-title">Профиль пространства</h2>
-          <p class="card-desc">Название отображается в шапке и ссылках</p>
+          <h2 class="card-title">{{ t("settings.profileCardTitle") }}</h2>
+          <p class="card-desc">{{ t("settings.profileCardDesc") }}</p>
         </div>
 
         <form class="name-form" @submit.prevent="saveWorkspaceName">
           <ui-form-field
             type="text"
             v-model="workspaceName"
-            label="Название"
-            placeholder="Название рабочего пространства"
+            :label="t('settings.nameLabel')"
+            :placeholder="t('settings.workspaceNamePlaceholder')"
             :disabled="isLoadingWorkspace"
           />
           <div class="form-footer">
-            <span v-if="isLoadingWorkspace" class="saved-hint"
-              >Загрузка...</span
-            >
-            <span v-else-if="nameSaved" class="saved-hint">Сохранено</span>
+            <span v-if="isLoadingWorkspace" class="saved-hint">{{
+              t("common.loading")
+            }}</span>
+            <span v-else-if="nameSaved" class="saved-hint">{{
+              t("settings.saved")
+            }}</span>
             <ui-button
               type="submit"
               :disabled="isSavingName || isLoadingWorkspace"
             >
-              {{ isSavingName ? "Сохранение..." : "Сохранить" }}
+              {{ isSavingName ? t("settings.saving") : t("common.save") }}
             </ui-button>
           </div>
         </form>
@@ -427,8 +425,8 @@ async function saveTags() {
       <!-- Members -->
       <div class="settings-card">
         <div class="card-header">
-          <h2 class="card-title">Участники</h2>
-          <p class="card-desc">Управляйте доступом к рабочему пространству</p>
+          <h2 class="card-title">{{ t("settings.membersCardTitle") }}</h2>
+          <p class="card-desc">{{ t("settings.membersCardDesc") }}</p>
         </div>
 
         <div v-if="canInvite()" class="invite-section">
@@ -437,33 +435,35 @@ async function saveTags() {
               type="email"
               v-model="inviteEmail"
               placeholder="email@company.com"
-              label="Email для приглашения"
+              :label="t('settings.inviteEmailLabel')"
               class="invite-input"
             />
             <ui-button
               :disabled="isInviting || !inviteEmail"
               @click="inviteMember"
             >
-              {{ isInviting ? "Отправка..." : "Пригласить" }}
+              {{
+                isInviting ? t("settings.inviting") : t("settings.inviteButton")
+              }}
             </ui-button>
           </div>
         </div>
 
         <div class="member-list">
           <div v-if="isLoadingMembers" class="member-loading">
-            Загрузка участников...
+            {{ t("settings.loadingMembers") }}
           </div>
           <div v-else-if="members.length === 0" class="member-empty">
-            Нет участников
+            {{ t("settings.noMembers") }}
           </div>
           <div v-for="member in members" :key="member.id" class="member-row">
             <div class="member-avatar">{{ initials(member) }}</div>
             <div class="member-info">
               <div class="member-name">
                 {{ member.firstName }} {{ member.lastName }}
-                <span v-if="isCurrentUser(member.userId)" class="member-you"
-                  >(Вы)</span
-                >
+                <span v-if="isCurrentUser(member.userId)" class="member-you">{{
+                  t("settings.you")
+                }}</span>
               </div>
               <div class="member-email">{{ member.email }}</div>
             </div>
@@ -506,7 +506,7 @@ async function saveTags() {
               class="btn-leave"
               @click="leaveWorkspace"
             >
-              Покинуть
+              {{ t("settings.leaveButton") }}
             </ui-button>
 
             <!-- Remove button (Owner/Admin only) -->

@@ -125,7 +125,7 @@ onUnmounted(() => {
 
 <template>
   <div class="funnel-chart">
-    <h3 class="funnel-chart__title">Воронка лидов</h3>
+    <h3 class="funnel-chart__title">{{ t("dashboard.charts.funnelTitle") }}</h3>
     <div class="funnel-chart__container">
       <canvas ref="canvasRef" />
     </div>

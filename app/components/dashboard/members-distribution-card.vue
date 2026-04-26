@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { MemberLeadsStats } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 interface Props {
   members: MemberLeadsStats[];
@@ -9,7 +12,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const sortedMembers = computed(() =>
-  [...props.members].sort((left, right) => right.leads_count - left.leads_count),
+  [...props.members].sort(
+    (left, right) => right.leads_count - left.leads_count,
+  ),
 );
 
 const maxLeads = computed(() =>
@@ -28,8 +33,12 @@ const getWidth = (count: number) => {
 <template>
   <section class="members-card">
     <div class="members-card__head">
-      <h3 class="members-card__title">Распределение лидов по команде</h3>
-      <span class="members-card__meta">Всего лидов: {{ totalLeads }}</span>
+      <h3 class="members-card__title">
+        {{ t("dashboard.charts.membersDistribution") }}
+      </h3>
+      <span class="members-card__meta">{{
+        t("dashboard.charts.totalLeads", { count: totalLeads })
+      }}</span>
     </div>
 
     <div v-if="sortedMembers.length" class="members-card__list">
@@ -40,13 +49,18 @@ const getWidth = (count: number) => {
       >
         <span class="members-card__name">{{ member.full_name }}</span>
         <div class="members-card__bar-track">
-          <div class="members-card__bar" :style="{ width: getWidth(member.leads_count) }" />
+          <div
+            class="members-card__bar"
+            :style="{ width: getWidth(member.leads_count) }"
+          />
         </div>
         <span class="members-card__count">{{ member.leads_count }}</span>
       </div>
     </div>
 
-    <p v-else class="members-card__empty">Нет данных по распределению лидов</p>
+    <p v-else class="members-card__empty">
+      {{ t("dashboard.charts.noDistributionData") }}
+    </p>
   </section>
 </template>
 
