@@ -2,15 +2,13 @@
   <div class="notifications-page">
     <div class="page-header">
       <h1 class="page-title">Уведомления</h1>
-      <p class="page-desc">Настройте, как и когда вы хотите получать уведомления</p>
+      <p class="page-desc">Настройка уведомлений временно недоступна</p>
     </div>
-
-    <settings-notifications-form />
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'settings' })
+definePageMeta({ layout: "settings" });
 </script>
 
 <style scoped>

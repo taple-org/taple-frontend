@@ -5,10 +5,7 @@
       <p class="page-desc">{{ t("settings.profileDesc") }}</p>
     </div>
 
-    <settings-avatar-upload />
     <settings-profile-form />
-    <settings-email-section />
-    <settings-phone-section />
   </div>
 </template>
 
