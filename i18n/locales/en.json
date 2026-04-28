@@ -23,7 +23,14 @@
     "processing": "Processing...",
     "or": "or",
     "search": "Search",
-    "reset": "Reset"
+    "reset": "Reset",
+    "shortMon": "Mon",
+    "shortTue": "Tue",
+    "shortWed": "Wed",
+    "shortThu": "Thu",
+    "shortFri": "Fri",
+    "shortSat": "Sat",
+    "shortSun": "Sun"
   },
   "leads": {
     "new": "New",
@@ -402,7 +409,7 @@
     "largeCompanies": "Large companies",
     "largeCompaniesDesc": "Scale without limits. Each department gets an isolated environment with unified billing.",
     "faq": "FAQ",
-    "whatIsTenant": "What is a workspace (tenant)?",
+    "whatIsTenant": "What is a workspace ?",
     "whatIsTenantAnswer": "This is a separate isolated environment for your team with its own settings, leads and members. Each company or project can have its own space.",
     "canChangeTenantCount": "Can I change the number of workspaces?",
     "canChangeTenantCountAnswer": "Yes, you can add or remove workspaces at any time. The bill will be automatically adjusted proportionally.",
@@ -721,5 +728,15 @@
     "deleteError": "Failed to delete account",
     "accountDeactivated": "Account deactivated",
     "deactivateError": "Failed to deactivate account"
+  },
+  "congestion": {
+    "avgLoad": "Avg load",
+    "peak": "Peak",
+    "evening": "evening",
+    "weekend": "weekend",
+    "hoursInPeak": "hours in peak",
+    "quiet": "Quiet",
+    "busy": "Busy",
+    "level": "level"
   }
 }
