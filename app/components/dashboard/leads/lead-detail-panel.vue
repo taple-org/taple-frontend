@@ -556,11 +556,11 @@ const scores = computed(() => {
                           </div>
                           <!-- Congestion heatmap (visit frequency) -->
                           <div
-                            v-if="b.congestion?.present"
+                            v-if="b.signals?.congestion?.present"
                             class="ldp-branch__congestion"
                           >
                             <dashboard-leads-congestion-heatmap
-                              :congestion="b.congestion"
+                              :congestion="b.signals.congestion"
                             />
                           </div>
                         </li>
