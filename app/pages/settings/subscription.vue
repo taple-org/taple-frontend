@@ -2,18 +2,13 @@
   <div class="subscription-page">
     <div class="page-header">
       <h1 class="page-title">Подписка</h1>
-      <p class="page-desc">Управляйте планом, оплатой и историей транзакций</p>
+      <p class="page-desc">Управление подпиской временно недоступно</p>
     </div>
-
-    <settings-subscription-current-plan-card />
-    <settings-subscription-plans-grid />
-    <settings-subscription-payment-method-card />
-    <settings-subscription-billing-history-card />
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'settings' })
+definePageMeta({ layout: "settings" });
 </script>
 
 <style scoped>

@@ -13,22 +13,6 @@
         {{ item.label }}
       </NuxtLink>
     </div>
-
-    <div class="divider" />
-
-    <div class="nav-group">
-      <span class="nav-group-label">{{ t("settings.settings") }}</span>
-      <NuxtLink
-        v-for="item in settingsLinks"
-        :key="item.to"
-        :to="item.to"
-        class="nav-item"
-        :class="{ active: isActive(item.to) }"
-      >
-        <Icon :name="`my-icon:${item.icon}`" class="nav-icon" />
-        {{ item.label }}
-      </NuxtLink>
-    </div>
   </aside>
 </template>
 
@@ -41,19 +25,6 @@ const route = useRoute();
 const accountLinks = computed(() => [
   { to: "/settings/profile", label: t("nav.profile"), icon: "profile" },
   { to: "/settings/security", label: t("nav.security"), icon: "settings" },
-]);
-
-const settingsLinks = computed(() => [
-  {
-    to: "/settings/notifications",
-    label: t("settings.notifications.title"),
-    icon: "inbox",
-  },
-  {
-    to: "/settings/subscription",
-    label: t("subscription.currentPlan"),
-    icon: "star-filled",
-  },
 ]);
 
 function isActive(path: string) {

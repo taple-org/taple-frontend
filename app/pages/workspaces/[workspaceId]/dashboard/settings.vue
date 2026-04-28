@@ -348,38 +348,6 @@ const roleLabel: Record<MemberRole, string> = {
   Admin: t("settings.admin"),
   Member: t("settings.member"),
 };
-
-// ── Lead Tags ───────────────────────────────────────────────────
-const tags = ref<string[]>([]);
-const newTag = ref("");
-const isSavingTags = ref(false);
-const tagsSaved = ref(false);
-
-function addTag() {
-  const t = newTag.value.trim();
-  if (!t || tags.value.includes(t)) return;
-  tags.value.push(t);
-  newTag.value = "";
-}
-
-function removeTag(tag: string) {
-  tags.value = tags.value.filter((t) => t !== tag);
-}
-
-async function saveTags() {
-  isSavingTags.value = true;
-  tagsSaved.value = false;
-  try {
-    // TODO: await $apiClient.updateTenantTags(workspaceId.value, tags.value)
-    await new Promise((r) => setTimeout(r, 400));
-    tagsSaved.value = true;
-    setTimeout(() => {
-      tagsSaved.value = false;
-    }, 3000);
-  } finally {
-    isSavingTags.value = false;
-  }
-}
 </script>
 
 <template>
@@ -523,50 +491,6 @@ async function saveTags() {
               <Icon name="my-icon:close" class="btn-remove__icon" />
             </button>
           </div>
-        </div>
-      </div>
-
-      <!-- Lead Tags (Owner and Admin only) -->
-      <div v-if="canManageSettings()" class="settings-card">
-        <div class="card-header">
-          <h2 class="card-title">{{ t("settings.leadTags") }}</h2>
-          <p class="card-desc">
-            {{ t("settings.leadTagsDesc") }}
-          </p>
-        </div>
-
-        <div class="tags-wrap">
-          <div class="tag-chips">
-            <span v-for="tag in tags" :key="tag" class="tag-chip">
-              {{ tag }}
-              <button class="tag-chip__remove" @click="removeTag(tag)">
-                <Icon name="my-icon:close" class="tag-chip__icon" />
-              </button>
-            </span>
-          </div>
-
-          <div class="tag-add-row">
-            <input
-              v-model="newTag"
-              class="tag-input"
-              :placeholder="t('settings.addTag')"
-              @keydown.enter.prevent="addTag"
-            />
-            <ui-button variant="outline" @click="addTag">{{
-              t("common.add")
-            }}</ui-button>
-          </div>
-        </div>
-
-        <div class="form-footer form-footer--tags">
-          <span v-if="tagsSaved" class="saved-hint">{{
-            t("settings.tagSaved")
-          }}</span>
-          <ui-button :disabled="isSavingTags" @click="saveTags">
-            {{
-              isSavingTags ? t("settings.tagSaving") : t("settings.saveTags")
-            }}
-          </ui-button>
         </div>
       </div>
     </div>
@@ -760,80 +684,6 @@ async function saveTags() {
   height: 14px;
 }
 
-/* ── Tags ────────────────────────────────── */
-.tags-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.tag-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tag-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--color-highlight-l);
-  color: var(--color-primary);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 100px;
-}
-
-.tag-chip__remove {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-primary);
-  display: flex;
-  align-items: center;
-  padding: 0;
-  opacity: 0.6;
-  transition: opacity var(--transition-base);
-}
-
-.tag-chip__remove:hover {
-  opacity: 1;
-}
-
-.tag-chip__icon {
-  width: 12px;
-  height: 12px;
-}
-
-.tag-add-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.tag-input {
-  flex: 1;
-  max-width: 280px;
-  padding: 9px 12px;
-  border: 1px solid var(--color-neutral-lm);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: var(--font-base);
-  color: var(--color-neutral-dd);
-  background: var(--color-white);
-  outline: none;
-  transition:
-    border-color var(--transition-base),
-    box-shadow var(--transition-base);
-}
-
-.tag-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--color-primary) 12%, transparent);
-}
-
 /* ── Form footer ─────────────────────────── */
 .form-footer {
   display: flex;
@@ -841,11 +691,6 @@ async function saveTags() {
   align-items: center;
   gap: 12px;
   margin-top: 14px;
-}
-
-.form-footer--tags {
-  border-top: 1px solid var(--color-neutral-ll);
-  padding-top: 14px;
 }
 
 .saved-hint {
