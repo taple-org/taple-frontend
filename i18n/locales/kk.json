@@ -23,7 +23,14 @@
     "processing": "Өңдеу...",
     "or": "немесе",
     "search": "Іздеу",
-    "reset": "Қалпына келтіру"
+    "reset": "Қалпына келтіру",
+    "shortMon": "Дс",
+    "shortTue": "Сс",
+    "shortWed": "Ср",
+    "shortThu": "Бс",
+    "shortFri": "Жм",
+    "shortSat": "Сб",
+    "shortSun": "Жс"
   },
   "leads": {
     "new": "Жаңа",
@@ -709,5 +716,15 @@
     "deleteError": "Аккаунтты жою сәтсіз",
     "accountDeactivated": "Аккаунт деактивтелді",
     "deactivateError": "Аккаунтты деактивтеу сәтсіз"
+  },
+  "congestion": {
+    "avgLoad": "Орташа жүктеме",
+    "peak": "Пик",
+    "evening": "кеш",
+    "weekend": "демалыс күндері",
+    "hoursInPeak": "сағат пикте",
+    "quiet": "Тыныш",
+    "busy": "Жүктелген",
+    "level": "деңгей"
   }
 }

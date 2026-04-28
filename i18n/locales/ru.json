@@ -23,7 +23,14 @@
     "processing": "Обработка...",
     "or": "или",
     "search": "Поиск",
-    "reset": "Сброс"
+    "reset": "Сброс",
+    "shortMon": "Пн",
+    "shortTue": "Вт",
+    "shortWed": "Ср",
+    "shortThu": "Чт",
+    "shortFri": "Пт",
+    "shortSat": "Сб",
+    "shortSun": "Вс"
   },
   "leads": {
     "new": "Новый",
@@ -713,5 +720,15 @@
     "deleteError": "Не удалось удалить аккаунт",
     "accountDeactivated": "Аккаунт деактивирован",
     "deactivateError": "Не удалось деактивировать аккаунт"
+  },
+  "congestion": {
+    "avgLoad": "Средняя загруженность",
+    "peak": "Пик",
+    "evening": "вечер",
+    "weekend": "выходные",
+    "hoursInPeak": "часов в пик",
+    "quiet": "Спокойно",
+    "busy": "Загружено",
+    "level": "уровень"
   }
 }
