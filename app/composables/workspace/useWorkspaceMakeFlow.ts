@@ -1,6 +1,6 @@
 import { useSteps } from "@ark-ui/vue/steps";
 import config, { type Keys } from "~/configs/workspace.modal.config";
-import { useWorkspaceForm } from "./useWorkspaceFormScope";
+import { resetWorkspaceFormState } from "./useWorkspaceFormScope";
 
 export type WorkspaceMakeFlowStatus = "idle" | "loading" | "success" | "error";
 interface UseWorkspaceMakeFlowProps {
@@ -15,26 +15,13 @@ export const useWorkspaceMakeFlow = defineStore("workspace-make-flow", ({}) => {
   const currentKey = computed(() => items[steps.value.value]?.[0]! as Keys);
   const current = computed(() => config[currentKey.value]);
   const onResolve = ref<(() => void) | null>(null);
-  const { toNext, handleSubmit } = useWorkspaceForm({
-    current: currentKey,
-    next: steps.value.goToNextStep,
-    beforeSubmit: () => {
-      status.value = 'loading'
-    },
-    catchError: () => {
-      status.value = 'error'
-    },
-    resolve: () => {
-      status.value = 'success'
-      onResolve.value && onResolve.value()
-    }
-  });
 
   watch(isOpen, (open) => {
     if (!open) {
       setTimeout(() => {
         steps.value.setStep(0);
         status.value = "idle";
+        resetWorkspaceFormState();
       }, 300);
     }
   });
@@ -47,5 +34,30 @@ export const useWorkspaceMakeFlow = defineStore("workspace-make-flow", ({}) => {
     isOpen.value = false;
   }
 
-  return {status, isOpen, open, close, steps, toNext, handleSubmit, current, items };
+  function onSubmitStart() {
+    status.value = "loading";
+  }
+
+  function onSubmitError() {
+    status.value = "error";
+  }
+
+  function onSubmitSuccess() {
+    status.value = "success";
+    onResolve.value && onResolve.value();
+  }
+
+  return {
+    status,
+    isOpen,
+    open,
+    close,
+    steps,
+    current,
+    currentKey,
+    items,
+    onSubmitStart,
+    onSubmitError,
+    onSubmitSuccess,
+  };
 });
