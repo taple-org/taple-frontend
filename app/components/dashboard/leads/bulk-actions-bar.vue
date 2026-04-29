@@ -61,7 +61,7 @@ const handleAssign = () => {
       >
 
       <button class="bulk-bar__clear" @click="emit('clearSelection')">
-        <Icon name="other-icon-close" mode="svg" :size="10" />
+        <Icon name="my-icon-close" mode="svg" :size="10" />
         {{ t("leads.clearSelection") }}
       </button>
     </div>

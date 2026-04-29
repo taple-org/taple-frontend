@@ -49,6 +49,7 @@
     "shortSun": "Жс"
   },
   "leads": {
+    "selected": "Тандалды",
     "new": "Жаңа",
     "inProgress": "Жұмыс барысында",
     "won": "Жеңілді",
@@ -133,6 +134,7 @@
     "completeTaskError": "Тапсырманы орындау сәтсіз",
     "selectStage": "Кезеңді таңдау",
     "selectAssignee": "Жауапты таңдау",
+    "clearSelection": "Таңдауды тазарту",
     "move": "Жылжыту",
     "exportSuccess": "Экспорт басталды",
     "exportError": "Лидтерді экспорттау сәтсіз",
