@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 defineProps<{
   loading?: boolean;
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   postpone: [];
@@ -17,7 +20,7 @@ const emit = defineEmits<{
       :disabled="loading"
       @click.stop="emit('postpone')"
     >
-      Отложить
+      {{ t("leads.postpone") }}
     </button>
 
     <span class="lead-card__divider" aria-hidden="true" />
@@ -28,7 +31,7 @@ const emit = defineEmits<{
       :disabled="loading"
       @click.stop="emit('take')"
     >
-      Взять в работу
+      {{ t("leads.take") }}
     </button>
   </div>
 </template>

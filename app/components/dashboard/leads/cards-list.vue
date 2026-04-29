@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import DashboardLeadCard from "./lead-card.vue";
 import type { Lead } from "./types";
+import { useI18n } from "vue-i18n";
 
 defineProps<{
   leads: Lead[];
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   postpone: [leadId: string];
@@ -31,7 +33,7 @@ defineExpose({ triggerShake });
 </script>
 
 <template>
-  <section class="leads-cards-list" aria-label="Список лидов">
+  <section class="leads-cards-list" :aria-label="t('leads.listAriaLabel')">
     <TransitionGroup
         name="lead-card"
         tag="div"
@@ -62,7 +64,7 @@ defineExpose({ triggerShake });
         type="button"
         @click="emit('showMore')"
     >
-      Показать еще
+      {{ t("common.showMore") }}
       <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
     </button>
   </section>

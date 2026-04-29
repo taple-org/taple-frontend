@@ -21,7 +21,7 @@ export interface Congestion {
 }
 
 // ─── Branch ──────────────────────────────────────────────────────────────────
-export interface Branch {
+export interface LeadBranch {
   id: string;
   name: string;
   fullAddress: string;
@@ -87,7 +87,7 @@ export interface Lead {
   locationShort: string;
 
   // Scoring
-  fitScores: Array<{ label: string; level: string }>;
+  fitScores: LeadFit[];
   reasons: string[];
   freshness: string;
 
@@ -99,10 +99,17 @@ export interface Lead {
   businessPotentialScore?: number;
 
   // Branches
-  branches: Branch[];
+  branches: LeadBranch[];
 
   // NEW: signals, tax, KGD
   signals?: LeadSignals;
   taxPayments?: TaxPaymentYear[];
   kgdSur?: KgdSur;
 }
+
+export interface LeadFit {
+  label: string;
+  level: string;
+}
+
+export type Branch = LeadBranch;

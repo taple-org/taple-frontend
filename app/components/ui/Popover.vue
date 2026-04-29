@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { Popover } from '@ark-ui/vue/popover'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ inheritAttrs: false })
 
@@ -13,6 +14,7 @@ const props = defineProps<{
 }>()
 
 const open = defineModel<boolean>('open')
+const { t } = useI18n()
 
 const positioning = computed(() => ({
   placement: props.placement ?? 'bottom',
@@ -52,7 +54,7 @@ const positioning = computed(() => ({
             <slot name="footer" />
           </div>
 
-          <Popover.CloseTrigger v-if="$slots.close" class="popover-close" aria-label="Закрыть">
+          <Popover.CloseTrigger v-if="$slots.close" class="popover-close" :aria-label="t('common.close')">
             <slot name="close" />
           </Popover.CloseTrigger>
         </Popover.Content>

@@ -1,11 +1,16 @@
 import type { TenantLeadListItem } from '~/api/generated/api'
 import { TenantLeadStage } from '~/api/generated/api'
 import type { Lead, LeadBranch, LeadFit } from '~/components/dashboard/leads/types'
-import { STAGE_LABELS } from '~/stores/leads.store'
+import { getLeadStageLabel } from '~/stores/leads.store'
+import { getLocalizedField, type LocalizedRecord } from '~/utils/localized'
 
 const LIMIT = 5
 
-function mapToLead(item: TenantLeadListItem): Lead {
+function mapToLead(
+    item: TenantLeadListItem,
+    t: ReturnType<typeof useI18n>["t"],
+    locale: string,
+): Lead {
     const contacts = item.contacts ?? []
 
     const phones = contacts
@@ -22,31 +27,35 @@ function mapToLead(item: TenantLeadListItem): Lead {
 
     const fitScores: LeadFit[] = []
     if (item.signals?.rating != null)
-        fitScores.push({ label: 'Рейтинг', level: String(item.signals.rating) })
+        fitScores.push({ label: t("leads.rating"), level: String(item.signals.rating) })
     if (item.signals?.review_count != null)
-        fitScores.push({ label: 'Отзывы', level: String(item.signals.review_count) })
+        fitScores.push({ label: t("leads.reviews"), level: String(item.signals.review_count) })
     if (item.signals?.branch_count != null)
-        fitScores.push({ label: 'Филиалы', level: String(item.signals.branch_count) })
+        fitScores.push({ label: t("leads.branches"), level: String(item.signals.branch_count) })
 
-    const locationParts = [item.address_city_name_ru, item.address_district_name_ru].filter(Boolean)
+    const locationParts = [
+        getLocalizedField(item as unknown as LocalizedRecord, "address_city_name", locale),
+        getLocalizedField(item as unknown as LocalizedRecord, "address_district_name", locale),
+    ].filter(Boolean)
+    const categoryLabel = getLocalizedField(item as unknown as LocalizedRecord, "lead_business_category_name", locale)
     const branches: LeadBranch[] = (item.branches ?? []).map((b) => ({
         id: b.id,
-        name: b.name,
-        fullAddress: b.full_address,
+        name: b.name ?? "",
+        fullAddress: b.full_address ?? "",
         isActive: b.is_active,
-        rating: b.signals?.rating,
-        reviewCount: b.signals?.review_count,
+        rating: b.signals?.rating ?? 0,
+        reviewCount: b.signals?.review_count ?? 0,
     }))
 
     return {
         id: item.id,
         score,
         title: item.lead_name,
-        subtitle: item.lead_business_category_name_ru,
-        tags: [item.lead_business_category_name_ru],
+        subtitle: categoryLabel,
+        tags: categoryLabel ? [categoryLabel] : [],
         address: item.address_full ?? '',
         phone: phones[0] ?? '',
-        openStatus: STAGE_LABELS[item.stage_code] ?? item.stage_code,
+        openStatus: getLeadStageLabel(item.stage_code, t),
         contacts: phones,
         email: emails[0] ?? '',
         locationShort: locationParts.join(', '),
@@ -62,13 +71,14 @@ function mapToLead(item: TenantLeadListItem): Lead {
 export function useLeads(workspaceId: string) {
     const { $apiClient } = useNuxtApp()
     const notification = useNotification()
+    const { t, locale } = useI18n()
 
     const rawLeads = ref<TenantLeadListItem[]>([])
     const isLoading = ref(false)
     const isLoadingMore = ref(false)
     const hasMore = ref(true)
 
-    const leads = computed<Lead[]>(() => rawLeads.value.map(mapToLead))
+    const leads = computed<Lead[]>(() => rawLeads.value.map((item) => mapToLead(item, t, locale.value)))
 
     async function fetchLeads() {
         isLoading.value = true
@@ -80,7 +90,7 @@ export function useLeads(workspaceId: string) {
             rawLeads.value = resp.data.result
             hasMore.value = resp.data.result.length >= LIMIT
         } catch {
-            notification.error('Ошибка', 'Не удалось загрузить лиды')
+            notification.error(t("common.error"), t("leads.loading"))
         } finally {
             isLoading.value = false
         }
@@ -97,7 +107,7 @@ export function useLeads(workspaceId: string) {
             rawLeads.value.push(...resp.data.result)
             hasMore.value = resp.data.result.length >= LIMIT
         } catch {
-            notification.error('Ошибка', 'Не удалось загрузить ещё лиды')
+            notification.error(t("common.error"), t("leads.loadMoreError"))
         } finally {
             isLoadingMore.value = false
         }
@@ -113,7 +123,7 @@ export function useLeads(workspaceId: string) {
             )
             rawLeads.value = rawLeads.value.filter(l => l.id !== leadId)
         } catch {
-            notification.error('Ошибка', 'Не удалось отложить лид')
+            notification.error(t("common.error"), t("leads.postponeLeadError"))
         }
     }
 
@@ -127,7 +137,7 @@ export function useLeads(workspaceId: string) {
             const raw = rawLeads.value.find(l => l.id === leadId)
             if (raw) raw.stage_code = TenantLeadStage.InProgress
         } catch {
-            notification.error('Ошибка', 'Не удалось взять лид в работу')
+            notification.error(t("common.error"), t("leads.takeLeadError"))
         }
     }
 

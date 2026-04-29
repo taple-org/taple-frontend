@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { DatePicker, parseDate } from "@ark-ui/vue/date-picker";
+import { useI18n } from "vue-i18n";
 
 const modelValue = defineModel<string>({ default: "" });
 
@@ -9,6 +10,7 @@ const props = defineProps<{
   min?: string;
   max?: string;
 }>();
+const { t } = useI18n();
 
 const value = computed(() => (modelValue.value ? [parseDate(modelValue.value)] : []));
 const minValue = computed(() => (props.min ? parseDate(props.min) : undefined));
@@ -33,7 +35,10 @@ function handleValueChange(details: { value: Array<{ toString(): string }> }) {
   >
     <DatePicker.Control class="date-picker__control">
       <DatePicker.Trigger class="date-picker__trigger">
-        <DatePicker.ValueText class="date-picker__value" :placeholder="props.placeholder ?? 'Выберите дату'" />
+        <DatePicker.ValueText
+          class="date-picker__value"
+          :placeholder="props.placeholder ?? t('common.selectDate')"
+        />
         <span class="date-picker__icon" aria-hidden="true">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4.667 1.333V3M11.333 1.333V3M2 5.333H14M3.333 2.333H12.667C13.403 2.333 14 2.93 14 3.667V12.667C14 13.403 13.403 14 12.667 14H3.333C2.597 14 2 13.403 2 12.667V3.667C2 2.93 2.597 2.333 3.333 2.333Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />

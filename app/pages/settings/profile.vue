@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 const { t } = useI18n();
-definePageMeta({ layout: "settings" });
+definePageMeta({ layout: "settings", middleware: "auth", });
 </script>
 
 <style scoped>

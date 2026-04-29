@@ -1,13 +1,15 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 definePageMeta({
   layout: 'default'
 })
 
 useSeoMeta({
-  title: "API — Taple",
-  description: "Информация об API Taple для интеграции автопоиска лидов в ваши внутренние процессы и сервисы.",
-  ogTitle: "API — Taple",
-  ogDescription: "API Taple для интеграций, автоматизации и работы с данными лидов.",
+  title: t("seo.api.title"),
+  description: t("seo.api.description"),
+  ogTitle: t("seo.api.ogTitle"),
+  ogDescription: t("seo.api.ogDescription"),
 })
 </script>
 

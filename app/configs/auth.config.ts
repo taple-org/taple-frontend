@@ -11,8 +11,8 @@ import type {
 
 const config: AuthModalConfig = {
     "login": {
-        title: 'Вход',
-        description: 'Добро пожаловать в Taple.kz',
+        title: '',
+        description: '',
         component: AuthFormLogin,
         actions: {
             recovery: ({to}) => {
@@ -27,8 +27,8 @@ const config: AuthModalConfig = {
         }
     },
     "register": {
-        title: 'Регистрация',
-        description: 'Введите данный для регистрации',
+        title: '',
+        description: '',
         component: AuthFormRegister,
         actions: {
             success: ({to}) => {
@@ -40,8 +40,8 @@ const config: AuthModalConfig = {
         }
     },
     "recovery": {
-        title: 'Восстановление пароля',
-        description: 'Укажите вашу электронную почту',
+        title: '',
+        description: '',
         component: AuthFormPasswordRecovery,
         actions: {
             success: ({to}) => {
@@ -53,8 +53,8 @@ const config: AuthModalConfig = {
         } as const,
     },
     "new-password": {
-        title: 'Создание нового пароля',
-        description: 'Придумайте ваш новый пароль',
+        title: '',
+        description: '',
         component: AuthFormNewPassword,
         actions: {
             success: ({close}) => {
@@ -66,29 +66,24 @@ const config: AuthModalConfig = {
         }
     },
     "confirm-code": {
-        title: 'Подтверждение кода',
-        description: 'Введите 6-значный код подтверждения отправленный на ваш адрес электронной почты',
+        title: '',
+        description: '',
         component: AuthFormConfirmCode,
         actions: {
             success: (
                 {to, close},
                 {from}
             ) => {
-                console.log("from", from)
-
                 switch (from) {
                     case "recovery": {
-                        console.log("recovery")
                         to("new-password");
                         break;
                     }
                     case "register": {
-                        console.log("login")
                         to("login");
                         break;
                     }
                     default: {
-                        console.log("default")
                         close()
                     }
                 }
@@ -101,7 +96,6 @@ const config: AuthModalConfig = {
 } ;
 
 export default config;
-
 
 
 

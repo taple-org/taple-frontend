@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { TaskBucket } from "~/api/generated/api";
 import { useWorkspaceMemberOptions } from "~/composables/workspace/useWorkspaceMemberOptions";
-import { TASK_BUCKET_OPTIONS } from "./model";
+import { useI18n } from "vue-i18n";
+import { getTaskBucketOptions } from "./model";
 
 const { workspaceId } = defineProps<{
   workspaceId: string;
@@ -15,6 +16,8 @@ const assignedToMemberId = defineModel<string>("assignedToMemberId", { required:
 const { options: memberOptions, pending: membersPending } = useWorkspaceMemberOptions(
   computed(() => workspaceId),
 );
+const { t } = useI18n();
+const bucketOptions = computed(() => getTaskBucketOptions(t));
 </script>
 
 <template>
@@ -23,8 +26,8 @@ const { options: memberOptions, pending: membersPending } = useWorkspaceMemberOp
       class="filter__field filter__field--wide"
       type="text"
       v-model="search"
-      placeholder="Поиск по названию или описанию задачи"
-      label="Поиск"
+      :placeholder="t('tasks.searchPlaceholder')"
+      :label="t('common.search')"
       icon-left="my-icon-search"
     />
     <ui-form-field
@@ -33,7 +36,7 @@ const { options: memberOptions, pending: membersPending } = useWorkspaceMemberOp
       v-model="responsibleMemberId"
       :options="memberOptions"
       :disabled="membersPending"
-      label="Ответственный за лид"
+      :label="t('tasks.responsibleLead')"
     />
     <ui-form-field
       class="filter__field"
@@ -41,14 +44,14 @@ const { options: memberOptions, pending: membersPending } = useWorkspaceMemberOp
       v-model="assignedToMemberId"
       :options="memberOptions"
       :disabled="membersPending"
-      label="Исполнитель задачи"
+      :label="t('tasks.taskPerformer')"
     />
     <ui-form-field
       class="filter__field"
       type="multi-select"
       v-model="buckets"
-      :options="TASK_BUCKET_OPTIONS"
-      label="Таблицы"
+      :options="bucketOptions"
+      :label="t('tasks.columns')"
     />
   </div>
 </template>

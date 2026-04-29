@@ -1,6 +1,7 @@
 <script lang="ts" setup generic="T extends { id: string; label: string }">
 import { insert } from '@formkit/drag-and-drop'
 import { useDragAndDrop } from '@formkit/drag-and-drop/vue'
+import { useI18n } from 'vue-i18n'
 
 const props = withDefaults(defineProps<{
   disabled?: boolean
@@ -10,6 +11,7 @@ const props = withDefaults(defineProps<{
 
 const modelValue = defineModel<T[]>({ default: () => [] })
 const dragging = ref(false)
+const { t } = useI18n()
 
 function normalize(list: T[]): T[] {
   return list.map(item => ({ ...item }))
@@ -68,7 +70,7 @@ watch(
 <template>
   <div ref="itemsRef" class="sortable-list" :class="{ 'sortable-list--dragging': dragging }">
     <div v-for="(item, index) in items" :key="item.id" :data-id="item.id" class="sortable-item"
-      :aria-label="`${item.label} — позиция ${index + 1}`">
+      :aria-label="t('workspaceCreate.sortablePosition', { label: item.label, position: index + 1 })">
       <slot name="item" :item="item" :index="index" :dragging="dragging">
         <span class="sortable-item__handle" aria-hidden="true">⋮⋮</span>
         <span class="sortable-item__label">{{ item.label }}</span>

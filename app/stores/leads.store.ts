@@ -4,6 +4,7 @@ import type {
   TenantLeadDetail,
   CreateTaskRequest,
   TenantMemberBrief,
+  TenantMemberRead,
 } from "~/api/generated/api";
 import { TenantLeadStage } from "~/api/generated/api";
 import type {
@@ -11,99 +12,45 @@ import type {
   LeadFit,
   LeadBranch,
 } from "~/components/dashboard/leads/types";
+import { getLocalizedField, type LocalizedRecord } from "~/utils/localized";
 
 const LIMIT = 10;
 
-export const STAGE_LABELS: Record<TenantLeadStage, string> = {
-  [TenantLeadStage.New]: "Новый",
-  [TenantLeadStage.Snoozed]: "Отложен",
-  [TenantLeadStage.InProgress]: "В работе",
-  [TenantLeadStage.FirstContact]: "Первый контакт",
-  [TenantLeadStage.Negotiation]: "Переговоры",
-  [TenantLeadStage.Contract]: "Заключение Договора",
-  [TenantLeadStage.Monitoring]: "Мониторинг",
-  [TenantLeadStage.Won]: "Выигран",
-  [TenantLeadStage.Lost]: "Проигран",
-  [TenantLeadStage.Hidden]: "Скрыт",
+const STAGE_I18N_KEYS: Record<TenantLeadStage, string> = {
+  [TenantLeadStage.New]: "leads.new",
+  [TenantLeadStage.Snoozed]: "leads.snoozed",
+  [TenantLeadStage.InProgress]: "leads.inProgress",
+  [TenantLeadStage.FirstContact]: "leads.firstContact",
+  [TenantLeadStage.Negotiation]: "leads.negotiation",
+  [TenantLeadStage.Contract]: "leads.contract",
+  [TenantLeadStage.Monitoring]: "leads.monitoring",
+  [TenantLeadStage.Won]: "leads.won",
+  [TenantLeadStage.Lost]: "leads.lost",
+  [TenantLeadStage.Hidden]: "leads.hidden",
 };
 
-export const STAGE_OPTIONS = Object.entries(STAGE_LABELS).map(
-  ([value, label]) => ({ value: value as TenantLeadStage, label }),
-);
+export function getLeadStageLabel(
+  stage: TenantLeadStage,
+  t: (key: string) => string,
+) {
+  return t(STAGE_I18N_KEYS[stage]);
+}
 
-export const SORT_OPTIONS = [
-  { value: "priority_score", label: "Приоритет" },
-  { value: "fit_score", label: "Соответствие" },
-  { value: "freshness_score", label: "Свежесть" },
-  { value: "contactability_score", label: "Доступность" },
-  { value: "created_at", label: "Дата создания" },
-] as const;
+export function getLeadStageOptions(t: (key: string) => string) {
+  return Object.values(TenantLeadStage).map((value) => ({
+    value,
+    label: getLeadStageLabel(value, t),
+  }));
+}
 
-function mapToLead(item: TenantLeadListItem): Lead {
-  const contacts = item.contacts ?? [];
-
-  const phones = contacts
-    .filter((c) => c.type === "phone")
-    .map((c) => c.value ?? "")
-    .filter(Boolean);
-
-  const emails = contacts
-    .filter((c) => c.type === "email")
-    .map((c) => c.value ?? "")
-    .filter(Boolean);
-
-  const score = Math.round((item.priority_score ?? item.fit_score ?? 0) * 100);
-
-  const fitScores: LeadFit[] = [];
-  if (item.signals?.rating != null)
-    fitScores.push({ label: "Рейтинг", level: String(item.signals.rating) });
-  if (item.signals?.review_count != null)
-    fitScores.push({
-      label: "Отзывы",
-      level: String(item.signals.review_count),
-    });
-  if (item.signals?.branch_count != null)
-    fitScores.push({
-      label: "Филиалы",
-      level: String(item.signals.branch_count),
-    });
-
-  const locationParts = [
-    item.address_city_name_ru,
-    item.address_district_name_ru,
-  ].filter(Boolean);
-
-  const branches: LeadBranch[] = (item.branches ?? []).map(
-    (b: LeadBranchRead) => ({
-      id: b.id,
-      name: b.name,
-      fullAddress: b.full_address,
-      isActive: b.is_active,
-      rating: b.signals?.rating,
-      reviewCount: b.signals?.review_count,
-    }),
-  );
-
-  return {
-    id: item.id,
-    score,
-    title: item.lead_name,
-    subtitle: item.lead_business_category_name_ru,
-    tags: [item.lead_business_category_name_ru],
-    address: item.address_full ?? "",
-    phone: phones[0] ?? "",
-    openStatus: STAGE_LABELS[item.stage_code] ?? item.stage_code,
-    contacts: phones,
-    email: emails[0] ?? "",
-    locationShort: locationParts.join(", "),
-    fitScores,
-    reasons: [],
-    freshness:
-      item.freshness_score != null
-        ? `${Math.round(item.freshness_score * 100)}%`
-        : "",
-    branches,
-  };
+export function getLeadSortOptions(t: (key: string) => string) {
+  return [
+    { value: "priority_score", label: t("leads.priority") },
+    { value: "fit_score", label: t("leads.fit") },
+    { value: "freshness_score", label: t("leads.freshness") },
+    { value: "contactability_score", label: t("leads.contactability") },
+    { value: "created_at", label: t("leads.table.date") },
+  ] as const;
 }
 
 export interface LeadFilters {
@@ -116,6 +63,11 @@ export interface LeadFilters {
   max_priority_score?: number | null;
   responsible_member_id?: string | null;
 }
+
+type LeadListStateItem = TenantLeadListItem & {
+  snoozed_until?: string | null;
+  hidden_until?: string | null;
+};
 
 const buildLeadListParams = (
   filterValues: LeadFilters,
@@ -145,11 +97,104 @@ const buildLeadListParams = (
 
 export const useLeadsStore = defineStore("leads", () => {
   const notification = useNotification();
-  const { $apiClient } = useNuxtApp();
-  const { t } = useI18n();
+  const { $apiClient, $i18n } = useNuxtApp();
+  const t = (key: string, params?: Record<string, unknown>) => $i18n.t(key, params ?? {});
+  const locale = computed(() => $i18n.locale.value);
+
+  const stageLabels = computed<Record<TenantLeadStage, string>>(() => ({
+    [TenantLeadStage.New]: getLeadStageLabel(TenantLeadStage.New, t),
+    [TenantLeadStage.Snoozed]: getLeadStageLabel(TenantLeadStage.Snoozed, t),
+    [TenantLeadStage.InProgress]: getLeadStageLabel(TenantLeadStage.InProgress, t),
+    [TenantLeadStage.FirstContact]: getLeadStageLabel(TenantLeadStage.FirstContact, t),
+    [TenantLeadStage.Negotiation]: getLeadStageLabel(TenantLeadStage.Negotiation, t),
+    [TenantLeadStage.Contract]: getLeadStageLabel(TenantLeadStage.Contract, t),
+    [TenantLeadStage.Monitoring]: getLeadStageLabel(TenantLeadStage.Monitoring, t),
+    [TenantLeadStage.Won]: getLeadStageLabel(TenantLeadStage.Won, t),
+    [TenantLeadStage.Lost]: getLeadStageLabel(TenantLeadStage.Lost, t),
+    [TenantLeadStage.Hidden]: getLeadStageLabel(TenantLeadStage.Hidden, t),
+  }));
+
+  const getStageLabel = (stage: TenantLeadStage) =>
+    stageLabels.value[stage] ?? stage;
+
+  function mapToLead(item: TenantLeadListItem): Lead {
+    const contacts = item.contacts ?? [];
+
+    const phones = contacts
+      .filter((c) => c.type === "phone")
+      .map((c) => c.value ?? "")
+      .filter(Boolean);
+
+    const emails = contacts
+      .filter((c) => c.type === "email")
+      .map((c) => c.value ?? "")
+      .filter(Boolean);
+
+    const score = Math.round((item.priority_score ?? item.fit_score ?? 0) * 100);
+
+    const fitScores: LeadFit[] = [];
+    if (item.signals?.rating != null) {
+      fitScores.push({ label: t("leads.rating"), level: String(item.signals.rating) });
+    }
+    if (item.signals?.review_count != null) {
+      fitScores.push({
+        label: t("leads.reviews"),
+        level: String(item.signals.review_count),
+      });
+    }
+    if (item.signals?.branch_count != null) {
+      fitScores.push({
+        label: t("leads.branches"),
+        level: String(item.signals.branch_count),
+      });
+    }
+
+    const locationParts = [
+      getLocalizedField(item as unknown as LocalizedRecord, "address_city_name", locale.value),
+      getLocalizedField(item as unknown as LocalizedRecord, "address_district_name", locale.value),
+    ].filter(Boolean);
+
+    const categoryLabel = getLocalizedField(
+      item as unknown as LocalizedRecord,
+      "lead_business_category_name",
+      locale.value,
+    );
+
+    const branches: LeadBranch[] = (item.branches ?? []).map(
+      (b: LeadBranchRead) => ({
+        id: b.id,
+        name: b.name ?? "",
+        fullAddress: b.full_address ?? "",
+        isActive: b.is_active,
+        rating: b.signals?.rating ?? 0,
+        reviewCount: b.signals?.review_count ?? 0,
+      }),
+    );
+
+    return {
+      id: item.id,
+      score,
+      title: item.lead_name,
+      subtitle: categoryLabel,
+      tags: categoryLabel ? [categoryLabel] : [],
+      address: item.address_full ?? "",
+      phone: phones[0] ?? "",
+      openStatus: getStageLabel(item.stage_code),
+      contacts: phones,
+      email: emails[0] ?? "",
+      locationShort: locationParts.join(", "),
+      fitScores,
+      reasons: [],
+      freshness:
+        item.freshness_score != null
+          ? `${Math.round(item.freshness_score * 100)}%`
+          : "",
+      branches,
+    };
+  }
 
   // ─── List state ───────────────────────────────────────────────────────────
-  const rawLeads = ref<TenantLeadListItem[]>([]);
+  const rawLeads = ref<LeadListStateItem[]>([]);
   const isLoading = ref(false);
   const isLoadingMore = ref(false);
   const hasMore = ref(true);
@@ -182,7 +227,7 @@ export const useLeadsStore = defineStore("leads", () => {
   // ─── Computed ─────────────────────────────────────────────────────────────
   const leads = computed<Lead[]>(() => rawLeads.value.map(mapToLead));
 
-  const filteredRawLeads = computed<TenantLeadListItem[]>(() => {
+  const filteredRawLeads = computed<LeadListStateItem[]>(() => {
     const query = searchQuery.value.trim().toLowerCase();
     if (!query) return rawLeads.value;
 
@@ -200,10 +245,10 @@ export const useLeadsStore = defineStore("leads", () => {
 
       const searchableText = [
         lead.lead_name,
-        lead.lead_business_category_name_ru,
+        getLocalizedField(lead, "lead_business_category_name", locale.value),
         lead.address_full,
-        lead.address_city_name_ru,
-        lead.address_district_name_ru,
+        getLocalizedField(lead, "address_city_name", locale.value),
+        getLocalizedField(lead, "address_district_name", locale.value),
         phones,
         emails,
       ]
@@ -253,7 +298,7 @@ export const useLeadsStore = defineStore("leads", () => {
           buildLeadListParams(filters.value, 0),
         );
       rawLeads.value = resp.data.result;
-      totalCount.value = resp.data.meta?.total ?? resp.data.result.length;
+      totalCount.value = resp.data.meta?.pagination?.total ?? resp.data.result.length;
       hasMore.value = resp.data.result.length >= LIMIT;
     },
   );
@@ -322,7 +367,7 @@ export const useLeadsStore = defineStore("leads", () => {
         selectedLeadDetail.value.stage_code = toStage;
       notification.success(
         t("common.success"),
-        t("leads.moveLeadSuccess", { stage: STAGE_LABELS[toStage] }),
+        t("leads.moveLeadSuccess", { stage: getStageLabel(toStage) }),
       );
       return true;
     } catch {
@@ -472,7 +517,7 @@ export const useLeadsStore = defineStore("leads", () => {
         t("common.success"),
         t("leads.bulkMoveSuccess", {
           count: leadIds.length,
-          stage: STAGE_LABELS[toStage],
+          stage: getStageLabel(toStage),
         }),
       );
       return true;
@@ -511,7 +556,15 @@ export const useLeadsStore = defineStore("leads", () => {
         await $apiClient.api.listMembersApiV1TenantsTenantIdMembersGet(
           workspaceId,
         );
-      members.value = resp.data.result;
+      members.value = resp.data.result.map((member: TenantMemberRead) => ({
+        id: member.id,
+        user_id: member.user_id,
+        user_email: member.email ?? "",
+        user_full_name:
+          [member.first_name, member.last_name].filter(Boolean).join(" ").trim() ||
+          member.email ||
+          null,
+      }));
     } catch {
       // non-critical, silently fail
     }

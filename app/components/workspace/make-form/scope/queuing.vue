@@ -5,8 +5,11 @@ import {
   type ProductTrackWithCategories
 } from '~/composables/workspace/useWorkspaceFormScope';
 import {RecommendationCode} from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
+import { getLocalizedField } from "~/utils/localized";
 
 const { $apiClient } = useNuxtApp();
+const { t, locale } = useI18n();
 
 const { data: pts, error } = useAsyncData(() => $apiClient.api.listProductTracksApiV1CatalogProductTracksGet())
 
@@ -14,11 +17,14 @@ const productTracks = computed<WithLabel<ProductTrackWithCategories>[]>(() => {
   if(!pts.value?.data) return [];
   return pts.value.data.result.map((pt, index) => ({
         id: pt.id,
-        label: pt.name_ru,
+        label: getLocalizedField(pt as unknown as LocalizedRecord, "name", locale.value),
         priority_order: index,
         business_categories: (pt.business_categories ?? [])
             .filter((v) => v.recommendation_code === RecommendationCode.Recommended)
-            .map((category) => ({ label: category.name_ru, id: category.id }))
+            .map((category) => ({
+              label: getLocalizedField(category as unknown as LocalizedRecord, "name", locale.value),
+              id: category.id,
+            }))
       })
   )
 })
@@ -29,7 +35,7 @@ const { r$ } = useQueuingScope(computed(() => ({ productTracks: productTracks.va
 </script>
 <template>
     <div class="queuing-scope">
-        <ui-fields-sortable-field type="sortable" v-model="r$.$value.productTracks" label="Введите название очереди"
+        <ui-fields-sortable-field type="sortable" v-model="r$.$value.productTracks" :label="t('workspaceCreate.queueLabel')"
             class="field" />
     </div>
 </template>

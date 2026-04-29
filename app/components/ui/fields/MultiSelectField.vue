@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { Select } from '@ark-ui/vue/select'
 import { createListCollection } from '@ark-ui/vue'
+import { useI18n } from 'vue-i18n'
 import type { SelectOption } from './registry'
 
 const props = defineProps<{
@@ -12,6 +13,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ 'update:modelValue': [value: string[]] }>()
+const { t } = useI18n()
 
 const collection = computed(() =>
     createListCollection({
@@ -23,7 +25,9 @@ const collection = computed(() =>
 
 const displayText = computed(() => {
   if (!props.modelValue?.length) return null
-  if (props.modelValue.length === props.options.length) return 'Выбраны все'
+  if (props.modelValue.length === props.options.length) {
+    return t("common.allSelected")
+  }
 
   const labels = props.options
     .filter((o) => props.modelValue.includes(o.value))
@@ -47,7 +51,7 @@ const displayText = computed(() => {
     <Select.Control class="select__control">
       <Select.Trigger class="select__trigger">
         <span class="select__value" :data-placeholder-shown="!displayText || undefined">
-          {{ displayText ?? placeholder ?? 'Выберите...' }}
+          {{ displayText ?? placeholder ?? t("common.select") }}
         </span>
         <div class="select__meta">
           <span v-if="modelValue?.length" class="select__count">

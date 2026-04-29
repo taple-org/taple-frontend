@@ -3,7 +3,7 @@ import type { TaskBoardItem } from "~/api/generated/api";
 import { useWorkspaceMemberOptions } from "~/composables/workspace/useWorkspaceMemberOptions";
 import {
   fromDateOnly,
-  TASK_TYPE_OPTIONS,
+  getTaskTypeOptions,
   toDatePart,
   type TaskCompletePayload,
   type TaskUpdatePayload,
@@ -11,6 +11,7 @@ import {
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
+const taskTypeOptions = computed(() => getTaskTypeOptions(t));
 
 const emit = defineEmits<{
   close: [];
@@ -30,7 +31,7 @@ const description = ref("");
 const result = ref("");
 const dueDate = ref("");
 const assignedToMemberId = ref("");
-const taskType = ref(TASK_TYPE_OPTIONS[0]!.value);
+const taskType = ref(taskTypeOptions.value[0]!.value);
 
 const { options: memberOptions, pending: membersPending } =
   useWorkspaceMemberOptions(computed(() => workspaceId));
@@ -43,7 +44,7 @@ watch(
     result.value = value?.result ?? "";
     dueDate.value = toDatePart(value?.due_at);
     assignedToMemberId.value = value?.assigned_to_member_id ?? "";
-    taskType.value = value?.task_type ?? TASK_TYPE_OPTIONS[0]!.value;
+    taskType.value = value?.task_type ?? taskTypeOptions.value[0]!.value;
   },
   { immediate: true },
 );
@@ -101,7 +102,7 @@ function handleComplete() {
           <ui-form-field
             v-model="taskType"
             type="select"
-            :options="TASK_TYPE_OPTIONS"
+            :options="taskTypeOptions"
             :placeholder="t('tasks.taskType')"
           />
         </div>

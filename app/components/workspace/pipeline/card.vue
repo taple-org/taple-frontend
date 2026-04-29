@@ -1,11 +1,13 @@
 <script lang="ts" setup>
 import type { PipelineCardItem } from '~/api/generated/api';
+import { useI18n } from "vue-i18n";
 import {
   formatPipelineDate,
   getPipelineCardTone,
   getResponsibleLabel,
   getTaskBadgeItems,
 } from "./model";
+import {getLocalizedField, type LocalizedRecord} from "~/utils/localized";
 
 const emit = defineEmits<{
   dragStart: [card: PipelineCardItem];
@@ -16,11 +18,15 @@ const { card, dragging } = defineProps<{
   card: PipelineCardItem;
   dragging?: boolean;
 }>();
+const { t, locale } = useI18n();
 
-const createdAt = computed(() => formatPipelineDate(card.created_at));
-const responsible = computed(() => getResponsibleLabel(card.responsible_member));
-const taskBadges = computed(() => getTaskBadgeItems(card.task_badge));
+const createdAt = computed(() => formatPipelineDate(card.created_at, locale.value));
+const responsible = computed(() => getResponsibleLabel(card.responsible_member, t));
+const taskBadges = computed(() => getTaskBadgeItems(card.task_badge, t));
 const tone = computed(() => getPipelineCardTone(card));
+const categoryLabel = computed(() =>
+  getLocalizedField(card as unknown as LocalizedRecord, "business_category_name", locale.value),
+);
 
 function handleDragStart(event: DragEvent) {
   event.dataTransfer?.setData("text/plain", card.tenant_lead_id);
@@ -42,7 +48,7 @@ function handleDragStart(event: DragEvent) {
     <div class="card__head">
       <div class="card__title-wrap">
         <h4 class="title">{{ card.lead_name }}</h4>
-        <span class="category">{{ card.business_category_name_ru }}</span>
+        <span class="category">{{ categoryLabel }}</span>
       </div>
       <span v-if="createdAt" class="date">{{ createdAt }}</span>
     </div>
@@ -50,8 +56,10 @@ function handleDragStart(event: DragEvent) {
     <p v-if="card.address_short" class="address">{{ card.address_short }}</p>
 
     <div class="tags">
-      <ui-badge size="sm">{{ card.business_category_name_ru }}</ui-badge>
-      <ui-badge v-if="card.branch_count" size="sm">{{ card.branch_count }} филиалов</ui-badge>
+      <ui-badge size="sm">{{ categoryLabel }}</ui-badge>
+      <ui-badge v-if="card.branch_count" size="sm">
+        {{ t("pipeline.branchCount", { count: card.branch_count }) }}
+      </ui-badge>
     </div>
 
     <div class="task-tags">

@@ -1,16 +1,20 @@
 <script lang="ts" setup>
+import { useI18n } from "vue-i18n";
+
 defineProps<{
     retry: () => any,
     prev: () => void
 }>()
+
+const { t } = useI18n();
 </script>
 <template>
     <div class="actions">
         <ui-button variant="outline" @click="prev">
-            Назад
+            {{ t("common.back") }}
         </ui-button>
         <ui-button @click="retry">
-            Повторить
+            {{ t("common.retry") }}
         </ui-button>
     </div>
 </template>

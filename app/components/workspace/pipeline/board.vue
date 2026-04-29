@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { PipelineCardItem, StageColumn, TenantLeadStage } from "~/api/generated/api";
 import type { PipelineBoardActionId } from "./model";
+import { useI18n } from "vue-i18n";
 
 const emit = defineEmits<{
   changed: [];
@@ -13,6 +14,7 @@ const { columns, workspaceId } = defineProps<{
 
 const { $apiClient } = useNuxtApp();
 const notification = useNotification();
+const { t } = useI18n();
 
 const activeCard = ref<PipelineCardItem | null>(null);
 const isPending = ref(false);
@@ -32,7 +34,7 @@ async function handleMove(toStage: TenantLeadStage) {
     );
     emit("changed");
   } catch {
-    notification.error("Ошибка", "Не удалось переместить лид");
+    notification.error(t("common.error"), t("leads.moveLeadError"));
   } finally {
     isPending.value = false;
     clearDrag();

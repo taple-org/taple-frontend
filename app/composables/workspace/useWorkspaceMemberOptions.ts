@@ -2,11 +2,12 @@ import type { SelectOption } from "~/components/ui/fields/registry";
 
 function getMemberLabel(firstName?: string | null, lastName?: string | null, email?: string | null) {
   const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
-  return fullName || email || "Без имени";
+  return fullName || email;
 }
 
 export function useWorkspaceMemberOptions(workspaceId: MaybeRefOrGetter<string>) {
   const resolvedWorkspaceId = computed(() => toValue(workspaceId));
+  const { t } = useI18n();
 
   const asyncData = useAsyncData(
     computed(() => `workspace-members-${resolvedWorkspaceId.value}`),
@@ -17,7 +18,9 @@ export function useWorkspaceMemberOptions(workspaceId: MaybeRefOrGetter<string>)
           response.data.result.map(
             (member): SelectOption => ({
               value: member.id,
-              label: getMemberLabel(member.first_name, member.last_name, member.email),
+              label:
+                getMemberLabel(member.first_name, member.last_name, member.email) ||
+                t("common.noName"),
             }),
           ),
         ),
@@ -29,7 +32,7 @@ export function useWorkspaceMemberOptions(workspaceId: MaybeRefOrGetter<string>)
   );
 
   const options = computed<SelectOption[]>(() => [
-    { value: "", label: "Не назначено" },
+    { value: "", label: t("common.unassigned") },
     ...((asyncData.data.value ?? []) as SelectOption[]),
   ]);
 

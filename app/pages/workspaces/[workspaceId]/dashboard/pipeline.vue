@@ -2,15 +2,18 @@
 import type { PipelineResponse } from "~/api/generated/api";
 import { normalizePipelineColumns } from "~/components/workspace/pipeline/model";
 import { useWorkspacePipelineFilter } from "~/composables/workspace/useWorkspacePipelineFilter";
+import { useI18n } from "vue-i18n";
 
 definePageMeta({
   layout: 'dashboard',
   middleware: 'auth',
 })
 
+const { t } = useI18n();
+
 useSeoMeta({
-  title: "Воронка — Taple",
-  description: "Управление воронкой продаж и этапами обработки лидов в Taple.",
+  title: t("pipeline.pageTitle"),
+  description: t("pipeline.pageDescription"),
   robots: "noindex, nofollow",
 })
 
@@ -35,6 +38,8 @@ const { data: pipeline, pending, error, refresh } = useAsyncData(
     { server: false, default: () => ({ columns: [], total_leads: 0 }) as PipelineResponse }
 )
 
+const showLoadingState = computed(() => import.meta.server || pending.value);
+
 watch(state, () => refresh())
 
 watch(error, (err) => {
@@ -51,7 +56,7 @@ provide('workspaceId', workspaceId);
       <div class="pipeline-page__actions">
         <div class="pipeline-page__stat">
           <strong>{{ totalLeads }}</strong>
-          <span>лидов в воронке</span>
+          <span>{{ t("pipeline.totalLeads", { count: totalLeads }) }}</span>
         </div>
       </div>
     </section>
@@ -63,7 +68,7 @@ provide('workspaceId', workspaceId);
         @search="apply"
         @reset="reset"
     />
-    <div v-if="pending" class="pipeline-page__state">Загружаем воронку...</div>
+    <div v-if="showLoadingState" class="pipeline-page__state">{{ t("pipeline.loading") }}</div>
     <client-only v-else>
       <workspace-pipeline-board
         :columns="columns"
