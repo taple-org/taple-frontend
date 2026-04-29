@@ -49,6 +49,7 @@
     "shortSun": "Sun"
   },
   "leads": {
+    "selected": "Selected",
     "new": "New",
     "inProgress": "In progress",
     "won": "Won",
@@ -148,6 +149,7 @@
     "completeTaskError": "Failed to complete task",
     "selectStage": "Select stage",
     "selectAssignee": "Select assignee",
+    "clearSelection": "Clear selection",
     "move": "Move",
     "exportSuccess": "Export started",
     "exportError": "Failed to export leads",
