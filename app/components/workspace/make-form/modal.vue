@@ -2,18 +2,27 @@
 import { WorkspaceMakeFormCompletedError, WorkspaceMakeFormCompletedLoading, WorkspaceMakeFormCompletedSuccess, WorkspaceMakeFormCompletedIdle } from '#components';
 import { Steps } from '@ark-ui/vue';
 import { useWorkspaceMakeFlow } from '~/composables/workspace/useWorkspaceMakeFlow';
+import { useWorkspaceForm } from '~/composables/workspace/useWorkspaceFormScope';
 import { useI18n } from "vue-i18n";
 
-const { isOpen, current, steps, status } = storeToRefs(useWorkspaceMakeFlow())
-const { toNext, handleSubmit, items, close } = useWorkspaceMakeFlow()
+const controller = useWorkspaceMakeFlow();
+const { isOpen, current, currentKey, steps, status } = storeToRefs(controller);
+const { items, close, onSubmitStart, onSubmitError, onSubmitSuccess } = controller;
 const { t } = useI18n();
+const { toNext, handleSubmit } = useWorkspaceForm({
+  current: currentKey,
+  next: steps.value.goToNextStep,
+  beforeSubmit: onSubmitStart,
+  catchError: onSubmitError,
+  resolve: onSubmitSuccess,
+});
 
 const configs: Record<'idle' | 'success' | 'loading' | 'error', Component> = {
   'idle': WorkspaceMakeFormCompletedIdle,
   'success': WorkspaceMakeFormCompletedSuccess,
   'loading': WorkspaceMakeFormCompletedLoading,
   'error': WorkspaceMakeFormCompletedError
-}
+};
 
 </script>
 
@@ -25,8 +34,9 @@ const configs: Record<'idle' | 'success' | 'loading' | 'error', Component> = {
         goToPrevStep
       }">
 
-        <workspace-make-form-header :current :percent :steps="count" :title="t(items[current]?.[1]?.title!)"
-          :description="current < count && items[current]?.[1]?.description ? t(items[current]?.[1]?.description) : undefined"
+        <workspace-make-form-header :current :percent :steps="count"
+          :title="items[current]?.[1]?.title ? t(items[current][1].title) : undefined"
+          :description="items[current]?.[1]?.description ? t(items[current][1].description) : undefined"
           :has-previous="hasPrevStep && status === 'idle'" :prev="goToPrevStep" />
 
         <Steps.Content v-for="([key, modal], index) in items" :key="key" :index="index">

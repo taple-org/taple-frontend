@@ -35,9 +35,20 @@ export type CollectedScopes = {
   taging: TagingScopeState;
 };
 
+const namingState = reactive<NamingScopeState>({ name: "", city: "" });
+const queuingState = reactive<QueuingScopeState>({ productTracks: [] });
+const tagingState = reactive<TagingScopeState>({ productTracks: [] });
+
 const { useCollectScope, useScopedRegle } = createScopedUseRegle({
   asRecord: true,
 });
+
+export function resetWorkspaceFormState() {
+  namingState.name = "";
+  namingState.city = "";
+  queuingState.productTracks = [];
+  tagingState.productTracks = [];
+}
 
 type UseWorkspaceFormProps = {
     current: MaybeRefOrGetter<keyof CollectedScopes>
@@ -57,7 +68,10 @@ export const useWorkspaceForm = ({ current, next, beforeSubmit, catchError, reso
 
     switch (toValue(current)){
         case 'queuing': {
-            scope.taging.$value.productTracks = scope.queuing.$value.productTracks
+            tagingState.productTracks = scope.queuing.$value.productTracks.map((track) => ({
+              ...track,
+              business_categories: [...track.business_categories],
+            }));
             break;
         }
     }
@@ -102,10 +116,9 @@ export const useWorkspaceForm = ({ current, next, beforeSubmit, catchError, reso
 
 export const useNamingScope = () => {
   const { t } = useI18n();
-  const state = reactive<NamingScopeState>({ name: "", city: "" });
 
   const { r$ } = useScopedRegle(
-    state,
+    namingState,
     {
       name: {
         required: withMessage(required, t("validation.required")),
@@ -122,15 +135,18 @@ export const useNamingScope = () => {
 
 export const useQueuingScope = (initialValues: MaybeRef<QueuingScopeState>) => {
   const { t } = useI18n();
-  const state = reactive<QueuingScopeState>({ productTracks: [] });
   watch(
     () => toValue(initialValues).productTracks,
-    (val) => { state.productTracks = val },
+    (val) => {
+      if (queuingState.productTracks.length === 0) {
+        queuingState.productTracks = val;
+      }
+    },
     { immediate: true }
   );
 
   const { r$ } = useScopedRegle(
-    state,
+    queuingState,
     {
       productTracks: {
         required: withMessage(required, t("validation.required")),
@@ -151,11 +167,8 @@ export const useTagingScope = () => {
         message: t("validation.workspaceTrackTags")
     });
 
-    const state = reactive<TagingScopeState>({
-        productTracks: []
-    });
     const {r$} = useScopedRegle(
-        state,
+        tagingState,
         {
             productTracks: {
                 required: withMessage(required, t("validation.required")),
@@ -165,7 +178,7 @@ export const useTagingScope = () => {
         {id: "taging"},
     );
     const trackErrors = computed(() =>
-        state.productTracks.map(track =>
+        tagingState.productTracks.map(track =>
             track.business_categories.length === 0
               ? t("validation.workspaceTrackTag")
               : undefined
