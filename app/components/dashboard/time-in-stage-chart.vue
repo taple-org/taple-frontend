@@ -4,7 +4,7 @@ import type { AvgTimeInStage } from "~/api/generated/api";
 import { formatStageLabel } from "~/utils/formatStageLabel";
 import { useI18n } from "vue-i18n";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 interface Props {
   items: AvgTimeInStage[];
@@ -17,7 +17,7 @@ let chartInstance: Chart | null = null;
 
 const chartData = computed(() => ({
   labels: props.items.map((item) =>
-    formatStageLabel(item.stage, item.label_ru),
+    formatStageLabel(item.stage, item as unknown as LocalizedRecord, locale.value),
   ),
   datasets: [
     {

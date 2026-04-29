@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { useI18n } from 'vue-i18n';
 import type { Tag } from '~/interfaces/workspace.interfaces';
 
 const props = defineProps<{
@@ -7,6 +8,7 @@ const props = defineProps<{
   error?: string
 }>()
 const modelValue = defineModel<Tag[]>({ default: () => [] })
+const { t } = useI18n()
 
 const search = ref('')
 const isAdding = ref(false)
@@ -51,16 +53,22 @@ function removeTag(tagId: string) {
       <div v-for="tag in modelValue" :key="tag.id" class="tag-chip">
         <span class="tag-chip__label">{{ tag.label }}</span>
         <button class="tag-chip__remove" type="button" @click="removeTag(tag.id)">
-          Убрать
+          {{ t("common.remove") }}
         </button>
       </div>
 
       <div v-if="isAdding" class="tag-chip tag-chip--input-wrap">
-        <input ref="inputRef" v-model="search" class="tag-chip__input" placeholder="Тег..." @blur="stopAdding" />
+        <input
+          ref="inputRef"
+          v-model="search"
+          class="tag-chip__input"
+          :placeholder="t('common.tag')"
+          @blur="stopAdding"
+        />
       </div>
 
       <button v-else class="tag-field__add" type="button" @click="startAdding">
-        + Добавить
+        + {{ t("common.add") }}
       </button>
 
     </div>
@@ -75,7 +83,7 @@ function removeTag(tagId: string) {
           </button>
         </template>
         <div v-else class="tag-field__dropdown-empty">
-          Ничего не найдено
+          {{ t("common.nothingFound") }}
         </div>
       </div>
     </Transition>

@@ -1,17 +1,4 @@
-const STAGE_LABELS_RU: Record<string, string> = {
-  new: "Новые",
-  snoozed: "Отложенные",
-  in_progress: "В работе",
-  first_contact: "Первый контакт",
-  negotiation: "Переговоры",
-  contract: "Контракт",
-  monitoring: "Мониторинг",
-  won: "Успешно",
-  lost: "Потеряно",
-  hidden: "Скрыто",
-  qualified: "Квалифицирован",
-  proposal: "Предложение",
-};
+import { getLocalizedField } from "./localized";
 
 function normalizeStageCode(stage: string): string {
   return stage.trim().toLowerCase();
@@ -25,15 +12,28 @@ function prettifyStageCode(stage: string): string {
   return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
 }
 
-export function formatStageLabel(stage: string, label?: string | null): string {
+export function formatStageLabel(
+  stage: string,
+  labels: Record<string, unknown> | string | null | undefined,
+  locale = "ru",
+): string {
   const normalized = normalizeStageCode(stage);
-  if (!normalized) return label?.trim() || stage;
+  if (!normalized) {
+    if (typeof labels === "string") return labels.trim() || stage;
+    return getLocalizedField(labels, "label", locale) || stage;
+  }
 
-  const mapped = STAGE_LABELS_RU[normalized];
-  if (mapped) return mapped;
-
-  const trimmedLabel = label?.trim();
-  if (trimmedLabel && trimmedLabel.toLowerCase() !== normalized) return trimmedLabel;
+  if (typeof labels === "string") {
+    const trimmedLabel = labels.trim();
+    if (trimmedLabel && trimmedLabel.toLowerCase() !== normalized) {
+      return trimmedLabel;
+    }
+  } else {
+    const localizedLabel = getLocalizedField(labels, "label", locale);
+    if (localizedLabel && localizedLabel.toLowerCase() !== normalized) {
+      return localizedLabel;
+    }
+  }
 
   return prettifyStageCode(normalized);
 }

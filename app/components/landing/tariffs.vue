@@ -6,31 +6,43 @@ const { t } = useI18n();
 
 const cards: ITariffCard[] = [
   {
-    name: "Plan 1",
-    description: "For individuals",
+    name: t("landing.planStarterName"),
+    description: t("landing.planStarterDescription"),
     pricing: {
       price: 2,
-      time: "month",
+      time: t("landing.planBillingPeriod"),
     },
-    features: ["Feature 1", "Feature 2", "Feature 3"],
+    features: [
+      t("landing.planStarterFeature1"),
+      t("landing.planStarterFeature2"),
+      t("landing.planStarterFeature3"),
+    ],
   },
   {
-    name: "Plan 1",
-    description: "For individuals",
+    name: t("landing.planTeamName"),
+    description: t("landing.planTeamDescription"),
     pricing: {
       price: 2,
-      time: "month",
+      time: t("landing.planBillingPeriod"),
     },
-    features: ["Feature 1", "Feature 2", "Feature 3"],
+    features: [
+      t("landing.planTeamFeature1"),
+      t("landing.planTeamFeature2"),
+      t("landing.planTeamFeature3"),
+    ],
   },
   {
-    name: "Plan 1",
-    description: "For individuals",
+    name: t("landing.planBusinessName"),
+    description: t("landing.planBusinessDescription"),
     pricing: {
       price: 2,
-      time: "month",
+      time: t("landing.planBillingPeriod"),
     },
-    features: ["Feature 1", "Feature 2", "Feature 3"],
+    features: [
+      t("landing.planBusinessFeature1"),
+      t("landing.planBusinessFeature2"),
+      t("landing.planBusinessFeature3"),
+    ],
   },
 ];
 </script>

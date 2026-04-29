@@ -69,6 +69,7 @@ export default defineNuxtConfig({
         "@ark-ui/vue/file-upload",
         "@ark-ui/vue/switch",
         "@ark-ui/vue/date-picker",
+        'chart.js/auto',
       ],
     },
   },

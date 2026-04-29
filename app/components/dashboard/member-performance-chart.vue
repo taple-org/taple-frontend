@@ -27,7 +27,7 @@ const chartData = computed(() => ({
   labels: props.members.map((member) => member.full_name.split(" ")[0]),
   datasets: [
     {
-      label: "Задачи",
+      label: t("dashboard.charts.tasksLabel"),
       data: props.members.map((member) => member.tasks_completed || 0),
       backgroundColor: "rgba(108, 156, 255, 0.54)",
       borderColor: "rgba(108, 156, 255, 0.95)",
@@ -35,7 +35,7 @@ const chartData = computed(() => ({
       borderRadius: 8,
     },
     {
-      label: "Заметки",
+      label: t("dashboard.charts.notesLabel"),
       data: props.members.map((member) => member.notes_added || 0),
       backgroundColor: "rgba(58, 192, 160, 0.46)",
       borderColor: "rgba(58, 192, 160, 0.9)",
@@ -43,7 +43,7 @@ const chartData = computed(() => ({
       borderRadius: 8,
     },
     {
-      label: "Смены этапов",
+      label: t("dashboard.charts.stageChangesLabel"),
       data: props.members.map((member) => member.stage_changes || 0),
       backgroundColor: "rgba(247, 149, 120, 0.43)",
       borderColor: "rgba(247, 149, 120, 0.9)",

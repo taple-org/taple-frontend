@@ -12,6 +12,34 @@ function notifyRefreshQueue(token: string | null) {
   refreshQueue = [];
 }
 
+function getCookieValue(cookieHeader: string | null | undefined, key: string) {
+  if (!cookieHeader) return null;
+
+  const match = cookieHeader.match(
+    new RegExp(`(?:^|;\\s*)${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=([^;]*)`),
+  );
+
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setBrowserCookie(key: string, value: string | null) {
+  if (!import.meta.client) return;
+
+  const expires = value
+    ? `; Max-Age=${60 * 60 * 24 * 30}`
+    : "; Max-Age=0";
+  document.cookie = `${key}=${value ? encodeURIComponent(value) : ""}; Path=/; SameSite=Lax${expires}`;
+}
+
+function clearBrowserAuth() {
+  if (!import.meta.client) return;
+
+  localStorage.removeItem(TokenKey);
+  localStorage.removeItem(RefreshTokenKey);
+  setBrowserCookie(TokenKey, null);
+  setBrowserCookie(RefreshTokenKey, null);
+}
+
 async function tryRefreshToken(baseUrl: string, backendKey: string): Promise<string | null> {
   const refreshToken = localStorage.getItem(RefreshTokenKey);
   if (!refreshToken) return null;
@@ -36,13 +64,23 @@ async function tryRefreshToken(baseUrl: string, backendKey: string): Promise<str
 
   localStorage.setItem(TokenKey, newAccessToken);
   if (newRefreshToken) localStorage.setItem(RefreshTokenKey, newRefreshToken);
+  setBrowserCookie(TokenKey, newAccessToken);
+  if (newRefreshToken) {
+    setBrowserCookie(RefreshTokenKey, newRefreshToken);
+  }
 
   return newAccessToken;
 }
 
-export default function buildFetcher(baseUrl: string, backendKey: string) {
+export default function buildFetcher(
+  baseUrl: string,
+  backendKey: string,
+  serverCookieHeader?: string,
+) {
   return async (url: URL | RequestInfo, options?: RequestInit): Promise<Response> => {
-    const token = import.meta.client ? localStorage.getItem(TokenKey) : null;
+    const token = import.meta.client
+      ? (localStorage.getItem(TokenKey) || getCookieValue(document.cookie, TokenKey))
+      : getCookieValue(serverCookieHeader, TokenKey);
 
     const doFetch = (accessToken: string | null) =>
         fetch(url.toString(), {
@@ -77,10 +115,8 @@ export default function buildFetcher(baseUrl: string, backendKey: string) {
     notifyRefreshQueue(newToken);
 
     if (!newToken) {
-      const authStore = useAuthStore();
-      authStore.clearAuth();
-      const router = useRouter();
-      await router.push('/');
+      clearBrowserAuth();
+      window.location.href = "/";
       return response;
     }
 

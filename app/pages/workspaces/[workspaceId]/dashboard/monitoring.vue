@@ -2,15 +2,18 @@
 import type { MerchantListItem } from "~/api/generated/api";
 import { groupMonitoringColumns } from "~/components/workspace/monitoring/model";
 import { useWorkspaceMonitoringFilter } from "~/composables/workspace/useWorkspaceMonitoringFilter";
+import { useI18n } from "vue-i18n";
 
 definePageMeta({
   layout: 'dashboard',
   middleware: 'auth',
 })
 
+const { t } = useI18n();
+
 useSeoMeta({
-  title: "Мониторинг — Taple",
-  description: "Мониторинг рабочих процессов и активности в рабочем пространстве Taple.",
+  title: t("monitoring.pageTitle"),
+  description: t("monitoring.pageDescription"),
   robots: "noindex, nofollow",
 })
 
@@ -36,13 +39,15 @@ const { data: merchants, pending, error, refresh } = useAsyncData(
   { server: false, default: () => [] as MerchantListItem[] },
 );
 
+const showLoadingState = computed(() => import.meta.server || pending.value);
+
 watch(state, () => refresh());
 
 watch(error, (err) => {
   if (err) throw createError({ fatal: true, status: err.status, statusText: err.statusText });
 }, { immediate: true });
 
-const columns = computed(() => groupMonitoringColumns(merchants.value ?? []));
+const columns = computed(() => groupMonitoringColumns(merchants.value ?? [], t));
 const totalCount = computed(() => merchants.value?.length ?? 0);
 
 provide("workspaceId", workspaceId);
@@ -53,7 +58,7 @@ provide("workspaceId", workspaceId);
       <div class="monitoring-page__actions">
         <div class="monitoring-page__stat">
           <strong>{{ totalCount }}</strong>
-          <span>компаний на мониторинге</span>
+          <span>{{ t("monitoring.totalCompanies", { count: totalCount }) }}</span>
         </div>
       </div>
     </section>
@@ -65,7 +70,7 @@ provide("workspaceId", workspaceId);
       @apply="apply"
       @reset="reset"
     />
-    <div v-if="pending" class="monitoring-page__state">Загружаем мониторинг...</div>
+    <div v-if="showLoadingState" class="monitoring-page__state">{{ t("monitoring.loading") }}</div>
     <client-only v-else>
       <workspace-monitoring-board
         :columns="columns"

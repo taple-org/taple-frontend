@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useWorkspaceMemberOptions } from "~/composables/workspace/useWorkspaceMemberOptions";
-import { MONITORING_STATUS_OPTIONS } from "./model";
+import { useI18n } from "vue-i18n";
+import { getLocalizedField } from "~/utils/localized";
 
 const emit = defineEmits<{
   apply: [];
@@ -12,11 +13,15 @@ const category_code = defineModel<string>("category_code", { required: true });
 const responsible_id = defineModel<string>("responsible_id", { required: true });
 
 const workspaceId = inject("workspaceId") as string;
+const { t, locale } = useI18n();
 
 const { data: categories } = useAsyncData(
   (nuxtApp) => nuxtApp.$apiClient.api.listAllApiV1CatalogCategoriesGet()
     .then((response) => response.data.result)
-    .then((result) => result.map((category) => ({ value: category.code, label: category.name_ru }))),
+    .then((result) => result.map((category) => ({
+      value: category.code,
+      label: getLocalizedField(category as unknown as LocalizedRecord, "name", locale.value),
+    }))),
 );
 const { options: membersOptions } = useWorkspaceMemberOptions(workspaceId);
 
@@ -39,11 +44,11 @@ const onKeydown = (event: KeyboardEvent) => {
         type="text"
         v-model="search"
         icon-left="my-icon-search"
-        placeholder="Поиск по названию / адресу / телефону"
+        :placeholder="t('common.searchByNameAddressPhone')"
         @keydown="onKeydown"
       />
-      <ui-button variant="primary" icon-left="my-icon-search" @click="emit('apply')">Найти</ui-button>
-      <ui-button v-if="hasFilters" variant="outline" @click="emit('reset')">Сбросить</ui-button>
+      <ui-button variant="primary" icon-left="my-icon-search" @click="emit('apply')">{{ t("common.search") }}</ui-button>
+      <ui-button v-if="hasFilters" variant="outline" @click="emit('reset')">{{ t("common.reset") }}</ui-button>
     </div>
 
     <div class="filter__selectors">
@@ -51,13 +56,13 @@ const onKeydown = (event: KeyboardEvent) => {
         type="select"
         v-model="category_code"
         :options="categoriesOptions"
-        placeholder="Тип точки"
+        :placeholder="t('common.pointType')"
       />
       <ui-form-field
         type="select"
         v-model="responsible_id"
         :options="membersOptions"
-        placeholder="Ответственный"
+        :placeholder="t('tasks.assignee')"
       />
     </div>
   </div>

@@ -56,6 +56,8 @@ const {
   },
 );
 
+const showLoadingState = computed(() => import.meta.server || pending.value);
+
 watch(
   error,
   (err) => {
@@ -112,7 +114,7 @@ async function handleCreate(payload: TaskCreatePayload) {
       v-model:responsible-member-id="responsibleMemberId"
       v-model:assigned-to-member-id="assignedToMemberId"
     />
-    <div v-if="pending" class="tasks-page__state">
+    <div v-if="showLoadingState" class="tasks-page__state">
       {{ t("tasks.loadingBoard") }}
     </div>
     <client-only v-else>

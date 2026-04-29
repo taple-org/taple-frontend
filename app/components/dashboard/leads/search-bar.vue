@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 const props = defineProps<{
   modelValue: string;
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   "update:modelValue": [value: string];
@@ -14,13 +17,13 @@ const searchModel = computed({
 </script>
 
 <template>
-  <label class="leads-search" aria-label="Поиск лидов">
+  <label class="leads-search" :aria-label="t('leads.searchByNameAddress')">
     <Icon name="my-icon-search" mode="svg" :size="16" />
     <input
       v-model="searchModel"
       type="search"
       class="leads-search__input"
-      placeholder="Поиск по названию / адресу / телефону"
+      :placeholder="t('common.searchByNameAddressPhone')"
     />
   </label>
 </template>

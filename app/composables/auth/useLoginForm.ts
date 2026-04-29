@@ -14,6 +14,7 @@ interface ILoginFormProps {
 export const useLoginForm = ({
   initialValues = { email: "", password: "", rememberMe: false },
 }: ILoginFormProps = {}) => {
+  const { t } = useI18n();
   const state = reactive<ILoginFormState>(initialValues);
   const externalErrors = ref<RegleExternalErrorTree<ILoginFormState>>({})
 
@@ -21,11 +22,11 @@ export const useLoginForm = ({
     state,
     {
       email: {
-        required: withMessage(required, "Обязательное поле"),
-        email: withMessage(email, "Некорректный email"),
+        required: withMessage(required, t("validation.required")),
+        email: withMessage(email, t("validation.invalidEmail")),
       },
       password: {
-        required: withMessage(required, "Обязательное поле"),
+        required: withMessage(required, t("validation.required")),
       },
     },
     { id: "login", externalErrors },

@@ -3,8 +3,6 @@ import type {
   TenantLeadListItem,
   TenantMemberBrief,
 } from "~/api/generated/api";
-import { TenantLeadStage } from "~/api/generated/api";
-import { STAGE_LABELS, STAGE_OPTIONS } from "~/stores/leads.store";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
@@ -167,7 +165,7 @@ const handleSnoozePreset = (hours: number) => {
         </button>
         <div class="lead-actions__divider" />
         <div v-if="members.length === 0" class="lead-actions__empty">
-          Нет доступных участников
+          {{ t("settings.noMembers") }}
         </div>
         <button
           v-for="member in members"

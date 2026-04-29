@@ -1,11 +1,15 @@
 <script lang="ts" setup>
+import { useI18n } from "vue-i18n";
+
 definePageMeta({
   layout: "empty",
 });
 
+const { t, locale } = useI18n();
+
 useSeoMeta({
-  title: "Приглашение в рабочее пространство — Taple",
-  description: "Подтверждение приглашения в рабочее пространство Taple.",
+  title: t("invitations.seoTitle"),
+  description: t("invitations.seoDescription"),
   robots: "noindex, nofollow",
 })
 
@@ -16,18 +20,18 @@ const notification = useNotification();
 const authStore = useAuthStore();
 
 const invitationToken = computed(() => route.query.token as string | undefined);
-const statusMessage = ref("Обработка приглашения...");
+const statusMessage = ref(t("invitations.processing"));
 
 async function acceptInvitation() {
   if (!invitationToken.value) {
-    notification.error("Ошибка", "Недействительная ссылка приглашения");
+    notification.error(t("common.error"), t("invitations.invalidLink"));
     await router.push("/");
     return;
   }
 
   await authStore.initSession();
 
-  statusMessage.value = "Присоединение к рабочему пространству...";
+  statusMessage.value = t("invitations.joining");
 
   try {
     const token =
@@ -63,13 +67,14 @@ async function acceptInvitation() {
       const errorData = await response.json().catch(() => ({}));
       const action = errorData?.error?.meta?.error?.action;
       const message =
+        errorData?.error?.meta?.error?.message?.[locale.value] ||
         errorData?.error?.meta?.error?.message?.ru ||
         errorData?.error?.meta?.error?.message?.en ||
-        "Не удалось принять приглашение";
+        t("invitations.acceptError");
 
       // If login is required, show info notification instead of error
       if (action === "login_required") {
-        notification.info("Требуется авторизация", message);
+        notification.info(t("invitations.authRequiredTitle"), message);
         await router.push("/");
         return;
       }
@@ -82,21 +87,21 @@ async function acceptInvitation() {
 
     if (tenantId) {
       notification.success(
-        "Успех",
-        "Вы присоединились к рабочему пространству",
+        t("common.success"),
+        t("invitations.joinSuccess"),
       );
       await router.push(`/workspaces/${tenantId}/dashboard`);
     } else {
       notification.error(
-        "Ошибка",
-        "Не удалось получить ID рабочего пространства",
+        t("common.error"),
+        t("invitations.workspaceIdError"),
       );
       await router.push("/");
     }
   } catch (e: unknown) {
     const message =
-      e instanceof Error ? e.message : "Не удалось принять приглашение";
-    notification.error("Ошибка", message);
+      e instanceof Error ? e.message : t("invitations.acceptError");
+    notification.error(t("common.error"), message);
     await router.push("/");
   }
 }

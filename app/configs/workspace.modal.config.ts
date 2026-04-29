@@ -2,18 +2,18 @@ import { WorkspaceMakeFormScopeNaming, WorkspaceMakeFormScopeQueuing, WorkspaceM
 
 const config = {
   naming: {
-    title: 'Создание рабочего пространства',
+    title: 'workspaceCreate.steps.naming.title',
     description: undefined,
     component: markRaw(WorkspaceMakeFormScopeNaming),
   },
   queuing: {
-    title: 'Что продвигаем в первую очередь',
-    description: 'Выбирайте в интересующем вас порядке',
+    title: 'workspaceCreate.steps.queuing.title',
+    description: 'workspaceCreate.steps.queuing.description',
     component: markRaw(WorkspaceMakeFormScopeQueuing),
   },
   taging: {
-    title: 'Какие типы точек Вас интересуют?',
-    description: 'Вы не ограничены в удалении и редактировании',
+    title: 'workspaceCreate.steps.taging.title',
+    description: 'workspaceCreate.steps.taging.description',
     component: markRaw(WorkspaceMakeFormScopeTaging),
   },
 } as const;

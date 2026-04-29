@@ -151,7 +151,6 @@ async function handleSubmit() {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-width: 440px;
 }
 
 .field-with-strength {

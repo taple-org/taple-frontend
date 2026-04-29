@@ -20,10 +20,26 @@
     "close": "Закрыть",
     "delete": "Удалить",
     "add": "Добавить",
+    "apply": "Применить",
     "processing": "Обработка...",
     "or": "или",
     "search": "Поиск",
     "reset": "Сброс",
+    "retry": "Повторить",
+    "select": "Выберите...",
+    "selectDate": "Выберите дату",
+    "allSelected": "Выбраны все",
+    "unassigned": "Не назначено",
+    "noName": "Без имени",
+    "emptyHere": "Здесь пока пусто",
+    "pointType": "Тип точки",
+    "searchByNameAddressPhone": "Поиск по названию / адресу / телефону",
+    "showMore": "Показать ещё",
+    "unavailable": "Недоступно",
+    "unknownError": "Неизвестная ошибка",
+    "remove": "Убрать",
+    "tag": "Тег...",
+    "nothingFound": "Ничего не найдено",
     "shortMon": "Пн",
     "shortTue": "Вт",
     "shortWed": "Ср",
@@ -66,6 +82,7 @@
     "deliveryNo": "Нет",
     "active": "Активен",
     "inactive": "Неактивен",
+    "unassigned": "Не назначен",
     "addressNotSpecified": "Адрес не указан",
     "info": "Информация",
     "enterNote": "Введите заметку...",
@@ -114,6 +131,9 @@
     "createTaskError": "Не удалось создать задачу",
     "completeTaskSuccess": "Задача выполнена",
     "completeTaskError": "Не удалось выполнить задачу",
+    "selectStage": "Выбрать этап",
+    "selectAssignee": "Выбрать ответственного",
+    "move": "Переместить",
     "exportSuccess": "Экспорт запущен",
     "exportError": "Не удалось экспортировать лиды",
     "refreshSuccess": "Лиды обновляются",
@@ -187,6 +207,7 @@
     }
   },
   "footer": {
+    "brandDescription": "Автоматизация продаж и рабочих процессов для команд, работающих с лидами, воронкой и развитием клиентов.",
     "features": "Функции",
     "coreFeatures": "Основные функции",
     "proExperience": "Pro-опыт",
@@ -216,6 +237,7 @@
     "leadsShort": "лидов",
     "tasks": "Задачи",
     "settings": "Настройки",
+    "navigationAria": "Разделы дашборда",
     "statistics": {
       "title": "Статистика рабочего пространства",
       "metaTitle": "Дэшборд рабочего пространства — Taple",
@@ -282,7 +304,70 @@
     "createTaskBtn": "Создать задачу",
     "open": "Открытые",
     "completed": "Завершенные",
-    "overdue": "Просроченные"
+    "overdue": "Просроченные",
+    "noDeadline": "Без дедлайна",
+    "system": "Системная",
+    "searchPlaceholder": "Поиск по названию или описанию задачи",
+    "responsibleLead": "Ответственный за лид",
+    "taskPerformer": "Исполнитель задачи",
+    "columns": "Колонки",
+    "taskCountShort": "{count} задач",
+    "openCountShort": "{count} открыто",
+    "overdueCountShort": "{count} просрочено",
+    "completedCountShort": "{count} выполнено",
+    "moveError": "Не удалось переместить задачу",
+    "updateError": "Не удалось обновить задачу",
+    "deleteError": "Не удалось удалить задачу",
+    "actionError": "Не удалось выполнить действие над задачей",
+    "overdueManualMoveError": "Нельзя перетащить задачу в просроченные вручную",
+    "completeError": "Не удалось завершить задачу",
+    "completeTask": "Завершить задачу",
+    "taskNamePlaceholder": "Например, созвониться с клиентом",
+    "editTask": "Редактирование задачи",
+    "editTaskDesc": "Измените детали задачи, срок и исполнителя",
+    "unassigned": "Не назначено",
+    "result": "Результат",
+    "resultPlaceholder": "Что получилось по итогам задачи?",
+    "types": {
+      "followUp": "Follow-up",
+      "makeFirstContact": "Первый контакт",
+      "visitBranch": "Визит",
+      "makeNegotiation": "Переговоры",
+      "contract": "Контракт",
+      "monitorLead": "Мониторинг",
+      "winLead": "Успешно",
+      "loseLead": "Потерян",
+      "hideLead": "Скрыт",
+      "other": "Другое"
+    },
+    "actions": {
+      "statusTitle": "Статус",
+      "statusDescription": "Быстрые действия над выбранной задачей",
+      "rescheduleTitle": "Перенос",
+      "rescheduleDescription": "Быстрое изменение срока",
+      "tomorrow": "На завтра",
+      "inTwoDays": "Послезавтра",
+      "nextWeek": "На следующую неделю"
+    },
+    "groups": {
+      "urgentTitle": "Срочно",
+      "urgentDescription": "Просроченные задачи и задачи на сегодня.",
+      "upcomingTitle": "Ближайшие",
+      "upcomingDescription": "Задачи на ближайшие несколько дней.",
+      "laterTitle": "Позже",
+      "laterDescription": "Задачи, к которым можно вернуться позже без срочного дедлайна.",
+      "doneTitle": "Завершено",
+      "doneDescription": "Уже выполненные задачи."
+    },
+    "buckets": {
+      "overdue": "Просрочено",
+      "today": "Сегодня",
+      "tomorrow": "Завтра",
+      "inTwoDays": "Послезавтра",
+      "nextMonday": "Следующий понедельник",
+      "later": "Позже",
+      "done": "Выполнено"
+    }
   },
   "landing": {
     "heroTitle": "Находите клиентов",
@@ -427,7 +512,23 @@
     "copy": "Копировать",
     "apiCtaTitle": "Готовы начать?",
     "apiCtaDesc": "Зарегистрируйтесь и получите API-ключ бесплатно",
-    "apiCtaBtn": "Получить доступ"
+    "apiCtaBtn": "Получить доступ",
+    "planBillingPeriod": "месяц",
+    "planStarterName": "Старт",
+    "planStarterDescription": "Для самостоятельных специалистов",
+    "planStarterFeature1": "Поиск лидов по открытым источникам",
+    "planStarterFeature2": "Базовые фильтры и скоринг",
+    "planStarterFeature3": "Одно рабочее пространство для ежедневной работы",
+    "planTeamName": "Команда",
+    "planTeamDescription": "Для небольших отделов продаж",
+    "planTeamFeature1": "Совместная воронка лидов",
+    "planTeamFeature2": "Роли и доступ для участников",
+    "planTeamFeature3": "Задачи, заметки и контроль процесса",
+    "planBusinessName": "Бизнес",
+    "planBusinessDescription": "Для растущих компаний",
+    "planBusinessFeature1": "Расширенная автоматизация",
+    "planBusinessFeature2": "API-доступ и выгрузки",
+    "planBusinessFeature3": "Приоритетная поддержка"
   },
   "subscription": {
     "currentPlan": "Текущий план",
@@ -477,11 +578,21 @@
     "businessFeature3": "Неограниченные участники",
     "businessFeature4": "Выделенный менеджер",
     "cancelConfirm": "Отменить подписку? Доступ сохранится до конца оплаченного периода.",
-    "removeCardConfirm": "Удалить способ оплаты? Подписка будет отменена."
+    "removeCardConfirm": "Удалить способ оплаты? Подписка будет отменена.",
+    "cancelSubscription": "Отменить подписку",
+    "invoiceDescription": "{plan} — {month}"
   },
   "validation": {
     "required": "Обязательное поле",
-    "minLength": "Минимум {count} символа"
+    "minLength": "Минимум {count} символа",
+    "invalidEmail": "Некорректный email",
+    "passwordsMismatch": "Пароли не совпадают",
+    "passwordMinLength": "Длина должна быть не менее {count} символов",
+    "passwordUppercase": "Должно содержать хотя бы одну заглавную букву",
+    "passwordLowercase": "Должно содержать хотя бы одну строчную букву",
+    "passwordDigit": "Должно содержать хотя бы одну цифру",
+    "workspaceTrackTags": "Необходимо выбрать хотя бы один тег для каждого направления",
+    "workspaceTrackTag": "Необходимо выбрать хотя бы один тег"
   },
   "profile": {
     "personalInfo": "Личная информация",
@@ -535,7 +646,15 @@
     "setPassword": "Установить пароль",
     "seconds": "секунд",
     "resendCode": "Отправить код снова",
-    "close": "Закрыть"
+    "close": "Закрыть",
+    "validationError": "Ошибка валидации",
+    "loginSuccessTitle": "Авторизация",
+    "loginSuccessDescription": "Вы успешно вошли в аккаунт",
+    "verificationCodeSent": "Код подтверждения отправлен на почту",
+    "emailVerified": "Email подтверждён",
+    "codeResent": "Код отправлен повторно",
+    "passwordResetCodeSent": "Код для восстановления пароля отправлен на почту",
+    "passwordResetSuccess": "Пароль успешно сброшен"
   },
   "settings": {
     "account": "Аккаунт",
@@ -620,6 +739,9 @@
     "makePrimary": "Сделать основным",
     "addEmail": "Добавить email",
     "adding": "Добавление...",
+    "invalidEmail": "Введите корректный email",
+    "emailAlreadyAdded": "Этот email уже добавлен",
+    "codeSentEmail": "Код подтверждения отправлен на {email}",
     "phoneNumber": "Номер телефона",
     "phoneNumberDesc": "Используется для двухфакторной аутентификации и восстановления доступа",
     "codeSentTo": "Код отправлен на",
@@ -638,6 +760,10 @@
     "confirmPassword": "Подтвердите пароль",
     "confirmPasswordPlaceholder": "Подтвердите новый пароль",
     "changePasswordBtn": "Изменить пароль",
+    "passwordChangedSuccess": "Пароль успешно изменён",
+    "securityIntro": "Управляйте паролем, двухфакторной аутентификацией и активными сессиями",
+    "notificationsUnavailable": "Настройка уведомлений временно недоступна",
+    "subscriptionUnavailable": "Управление подпиской временно недоступно",
 
     "notifications": {
       "saved": "Настройки сохранены",
@@ -695,6 +821,114 @@
     "deactivateError": "Не удалось деактивировать аккаунт",
     "deleteSuccess": "Аккаунт удален",
     "deleteError": "Не удалось удалить аккаунт"
+  },
+  "seo": {
+    "home": {
+      "title": "Taple — автопоиск бизнес-лидов",
+      "description": "Taple помогает автоматически находить свежие бизнес-лиды из открытых источников и работать с ними в едином интерфейсе.",
+      "ogTitle": "Taple — автопоиск бизнес-лидов",
+      "ogDescription": "Автоматический сбор, фильтрация и обработка бизнес-лидов для команд продаж."
+    },
+    "contacts": {
+      "title": "Контакты — Taple",
+      "description": "Свяжитесь с командой Taple для консультации, поддержки или подключения продукта.",
+      "ogTitle": "Контакты — Taple",
+      "ogDescription": "Контакты команды Taple: поддержка, вопросы по продукту и сотрудничество."
+    },
+    "api": {
+      "title": "API — Taple",
+      "description": "Информация об API Taple для интеграции автопоиска лидов в ваши внутренние процессы и сервисы.",
+      "ogTitle": "API — Taple",
+      "ogDescription": "API Taple для интеграций, автоматизации и работы с данными лидов."
+    },
+    "pricing": {
+      "title": "Тарифы — Taple",
+      "description": "Выберите подходящий тариф Taple для автоматического поиска, фильтрации и обработки лидов.",
+      "ogTitle": "Тарифы — Taple",
+      "ogDescription": "Тарифные планы Taple для команд и бизнеса."
+    },
+    "leads": {
+      "description": "Рабочее пространство для поиска, фильтрации и детальной работы с лидами в Taple."
+    }
+  },
+  "invitations": {
+    "seoTitle": "Приглашение в рабочее пространство — Taple",
+    "seoDescription": "Подтверждение приглашения в рабочее пространство Taple.",
+    "processing": "Обработка приглашения...",
+    "joining": "Присоединение к рабочему пространству...",
+    "invalidLink": "Недействительная ссылка приглашения",
+    "acceptError": "Не удалось принять приглашение",
+    "authRequiredTitle": "Требуется авторизация",
+    "joinSuccess": "Вы присоединились к рабочему пространству",
+    "workspaceIdError": "Не удалось получить ID рабочего пространства"
+  },
+  "pipeline": {
+    "pageTitle": "Воронка — Taple",
+    "pageDescription": "Управление воронкой продаж и этапами обработки лидов в Taple.",
+    "totalLeads": "{count} лидов в воронке",
+    "loading": "Загружаем воронку...",
+    "branchCount": "{count} филиалов",
+    "actions": {
+      "moveTitle": "Перемещение",
+      "moveDescription": "Скрытые стадии вне основной доски"
+    }
+  },
+  "monitoring": {
+    "pageTitle": "Мониторинг — Taple",
+    "pageDescription": "Мониторинг рабочих процессов и активности в рабочем пространстве Taple.",
+    "totalCompanies": "{count} компаний на мониторинге",
+    "loading": "Загружаем мониторинг...",
+    "companyCount": "{count} компаний",
+    "dueAt": "Срок: {date}",
+    "updateError": "Не удалось обновить статус мониторинга",
+    "status": {
+      "all": "Все статусы",
+      "pending": "Ожидают",
+      "monitoring": "На мониторинге",
+      "attention": "Требуют внимания",
+      "success": "Успешно",
+      "recall": "Перезвонить",
+      "closed": "Отказ от лида",
+      "other": "Другое"
+    }
+  },
+  "password": {
+    "weak": "Слабый",
+    "medium": "Средний",
+    "good": "Хороший",
+    "strong": "Надёжный"
+  },
+  "workspace": {
+    "completed": "Завершено",
+    "step": "Шаг",
+    "addWorkspaceDesc": "Добавить новое рабочее пространство"
+  },
+  "workspaceCreate": {
+    "idleTitle": "Всё готово к созданию",
+    "idleDescription": "Проверьте введённые данные перед созданием рабочего пространства",
+    "loadingTitle": "Создание...",
+    "loadingDescription": "Пожалуйста, подождите",
+    "errorTitle": "Что-то пошло не так",
+    "errorDescription": "Попробуйте ещё раз или свяжитесь с поддержкой",
+    "successTitle": "Рабочее пространство создано",
+    "successDescription": "Вы можете начать работу прямо сейчас",
+    "namePlaceholder": "Введите название рабочего пространства",
+    "cityPlaceholder": "Выберите город",
+    "queueLabel": "Порядок очереди",
+    "sortablePosition": "{label} — позиция {position}",
+    "steps": {
+      "naming": {
+        "title": "Создание рабочего пространства"
+      },
+      "queuing": {
+        "title": "Что продвигаем в первую очередь",
+        "description": "Выбирайте в интересующем вас порядке"
+      },
+      "taging": {
+        "title": "Какие типы точек вас интересуют",
+        "description": "Вы не ограничены в удалении и редактировании"
+      }
+    }
   },
   "dangerZone": {
     "title": "Опасная зона",

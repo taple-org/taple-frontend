@@ -5,7 +5,16 @@ import type { RegleExternalErrorTree } from '@regle/core'
 export const useAuthStore = defineStore('auth', () => {
     const notification = useNotification()
     const router = useRouter()
-    const { $apiClient } = useNuxtApp()
+    const { $apiClient, $i18n } = useNuxtApp()
+    const t = (key: string) => $i18n.t(key)
+    const accessTokenCookie = useCookie<string | null>(TokenKey, {
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30,
+    })
+    const refreshTokenCookie = useCookie<string | null>(RefreshTokenKey, {
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30,
+    })
 
     const user = ref<AuthUser | null>(null)
     const isLoading = ref(false)
@@ -19,6 +28,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     function setAuth(authUser: AuthUser | null, accessToken?: string) {
         user.value = authUser
+        if (accessToken) {
+            accessTokenCookie.value = accessToken
+        } else if (!authUser) {
+            accessTokenCookie.value = null
+        }
         if (import.meta.client) {
             if (accessToken) {
                 localStorage.setItem(TokenKey, accessToken)
@@ -30,6 +44,8 @@ export const useAuthStore = defineStore('auth', () => {
 
     function clearAuth() {
         user.value = null
+        accessTokenCookie.value = null
+        refreshTokenCookie.value = null
         if (import.meta.client) {
             localStorage.removeItem(TokenKey)
             localStorage.removeItem(RefreshTokenKey)
@@ -51,7 +67,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (typeof resp.status !== 'number' || !('error' in resp)) return null
 
         const body = resp.error as Record<string, unknown> | null | undefined
-        if (!body) return { message: 'Неизвестная ошибка' }
+        if (!body) return { message: t('common.unknownError') }
 
         const meta = body.meta as Record<string, unknown> | undefined
         if (meta?.error) {
@@ -60,7 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
                 type?: string
                 fields?: Record<string, Record<string, string>>
             }
-            const message = apiError.message?.ru ?? apiError.message?.en ?? apiError.type ?? 'Ошибка'
+            const message = apiError.message?.ru ?? apiError.message?.en ?? apiError.type ?? t('common.error')
             const fieldErrors: Record<string, string[]> = {}
             if (apiError.fields) {
                 for (const [field, msgs] of Object.entries(apiError.fields)) {
@@ -80,11 +96,11 @@ export const useAuthStore = defineStore('auth', () => {
                     if (ve.msg) fieldErrors[field].push(ve.msg)
                 }
             }
-            const message = details[0]?.msg ?? 'Ошибка валидации'
+            const message = details[0]?.msg ?? t('auth.validationError')
             return { message, fieldErrors: Object.keys(fieldErrors).length ? fieldErrors : undefined }
         }
 
-        return { message: 'Неизвестная ошибка' }
+        return { message: t('common.unknownError') }
     }
 
     function withLoading<T extends unknown[]>(
@@ -105,13 +121,13 @@ export const useAuthStore = defineStore('auth', () => {
                     if (externalErrors && apiClientError.fieldErrors) {
                         externalErrors.value = apiClientError.fieldErrors as RegleExternalErrorTree<any>
                     }
-                    notification.error('Ошибка', apiClientError.message)
+                    notification.error(t('common.error'), apiClientError.message)
                 } else if (e instanceof Error) {
                     error.value = e.message
-                    notification.error('Ошибка', e.message)
+                    notification.error(t('common.error'), e.message)
                 } else {
-                    error.value = 'Неизвестная ошибка'
-                    notification.error('Ошибка', 'Неизвестная ошибка')
+                    error.value = t('common.unknownError')
+                    notification.error(t('common.error'), t('common.unknownError'))
                 }
                 return false
             } finally {
@@ -123,6 +139,8 @@ export const useAuthStore = defineStore('auth', () => {
     const login = async ({ email, password }: { email: string; password: string }) => {
         const tokenResp = await $apiClient.api.loginApiV1AuthLoginPost({ email, password })
         const tokens = tokenResp.data.result
+        accessTokenCookie.value = tokens.access_token
+        refreshTokenCookie.value = tokens.refresh_token ?? null
         if (import.meta.client) {
             localStorage.setItem(TokenKey, tokens.access_token)
             if (tokens.refresh_token) {
@@ -131,7 +149,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
         const meResp = await $apiClient.api.meApiV1AuthMeGet()
         setAuth(meResp.data.result, tokens.access_token)
-        notification.success('Авторизация', 'Вы успешно вошли в аккаунт')
+        notification.success(t('auth.loginSuccessTitle'), t('auth.loginSuccessDescription'))
         await router.push('/')
     }
 
@@ -151,13 +169,13 @@ export const useAuthStore = defineStore('auth', () => {
         setPendingEmail(email)
         otpType.value = 'signup'
         await $apiClient.api.signUpApiV1AuthSignUpPost({ first_name, last_name, email, password, password_confirm })
-        notification.success('Код подтверждения отправлен на почту!')
+        notification.success(t('common.success'), t('auth.verificationCodeSent'))
     }
 
     const verifyOtp = withLoading(async (email: string, token: string) => {
         if (otpType.value === 'signup') {
             await $apiClient.api.verifyEmailApiV1AuthVerifyEmailPost({ email, code: token })
-            notification.success('Email подтверждён!')
+            notification.success(t('common.success'), t('auth.emailVerified'))
             resetPendingEmail()
         } else if (otpType.value === 'recovery') {
             const result = await $apiClient.api.forgotPasswordVerifyApiV1AuthForgotPasswordVerifyPost({ email, code: token })
@@ -168,13 +186,20 @@ export const useAuthStore = defineStore('auth', () => {
     const resendOtp = withLoading(async (email: string) => {
         const purpose = otpType.value === 'signup' ? 'email_verification' : 'password_reset'
         await $apiClient.api.resendOtpApiV1AuthResendOtpPost({ email, purpose })
-        notification.success('Код отправлен повторно!')
+        notification.success(t('common.success'), t('auth.codeResent'))
     })
 
     const initSession = withLoading(async () => {
+        const cookieToken = accessTokenCookie.value
+
         if (import.meta.client) {
-            const token = localStorage.getItem(TokenKey)
+            const token = localStorage.getItem(TokenKey) || cookieToken
             if (!token) return
+            if (!localStorage.getItem(TokenKey) && token) {
+                localStorage.setItem(TokenKey, token)
+            }
+        } else if (!cookieToken) {
+            return
         }
         const meResp = await $apiClient.api.meApiV1AuthMeGet()
         setAuth(meResp.data.result)
@@ -189,7 +214,7 @@ export const useAuthStore = defineStore('auth', () => {
         setPendingEmail(email)
         otpType.value = 'recovery'
         await $apiClient.api.forgotPasswordApiV1AuthForgotPasswordPost({ email })
-        notification.success('Код для восстановления пароля отправлен на почту!')
+        notification.success(t('common.success'), t('auth.passwordResetCodeSent'))
     }
 
     const resetPassword = async ({ password, confirmPassword }: { password: string; confirmPassword: string }) => {
@@ -198,7 +223,7 @@ export const useAuthStore = defineStore('auth', () => {
             new_password: password,
             new_password_confirm: confirmPassword,
         })
-        notification.success('Успешно сбросили пароль')
+        notification.success(t('common.success'), t('auth.passwordResetSuccess'))
         resetPendingEmail()
     }
 

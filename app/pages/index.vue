@@ -1,13 +1,15 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 definePageMeta({
   layout: 'default'
 })
 
 useSeoMeta({
-  title: "Taple — автопоиск бизнес-лидов",
-  description: "Taple помогает автоматически находить свежие бизнес-лиды из открытых источников и работать с ними в едином интерфейсе.",
-  ogTitle: "Taple — автопоиск бизнес-лидов",
-  ogDescription: "Автоматический сбор, фильтрация и обработка бизнес-лидов для команд продаж.",
+  title: t("seo.home.title"),
+  description: t("seo.home.description"),
+  ogTitle: t("seo.home.ogTitle"),
+  ogDescription: t("seo.home.ogDescription"),
 })
 </script>
 

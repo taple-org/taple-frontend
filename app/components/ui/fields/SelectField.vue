@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { Select } from '@ark-ui/vue/select'
 import { createListCollection } from '@ark-ui/vue'
+import { useI18n } from 'vue-i18n'
 import type { SelectOption } from './registry'
 const { options = [], modelValue } = defineProps<{
   modelValue: string
@@ -11,6 +12,7 @@ const { options = [], modelValue } = defineProps<{
 }>()
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const { t } = useI18n()
 
 const collection = computed(() =>
   createListCollection({
@@ -42,7 +44,7 @@ function handleValueChange(details: { value: string[] }) {
     <Select.Control class="select__control">
       <Select.Trigger class="select__trigger">
         <span class="select__value" :data-placeholder-shown="!selectedLabel || undefined">
-          {{ selectedLabel || placeholder || 'Выберите...' }}
+          {{ selectedLabel || placeholder || t("common.select") }}
         </span>
         <Select.Indicator class="select__indicator">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

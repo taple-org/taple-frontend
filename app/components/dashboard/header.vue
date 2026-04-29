@@ -77,11 +77,11 @@ const isActive = (to: string) => {
     <div class="dashboard-header__brand">
       <h1 class="dashboard-header__logo" @click="$router.push('/')">TAPLE</h1>
       <span v-if="workspace?.name" class="dashboard-header__workspace">{{
-        workspace.name ?? "helloaasdfasd"
+        workspace.name
       }}</span>
     </div>
 
-    <nav class="dashboard-header__tabs" aria-label="Dashboard sections">
+    <nav class="dashboard-header__tabs" :aria-label="t('dashboard.navigationAria')">
       <NuxtLink
         v-for="tab in tabs"
         :key="tab.label"

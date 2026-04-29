@@ -3,7 +3,7 @@ export type ITariffCard = {
     description: string,
     pricing: {
         price: number,
-        time: 'month' | 'year' | 'hour'
+        time: string
     },
     features: string[]
 }

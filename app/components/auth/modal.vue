@@ -14,21 +14,21 @@ const { isOpen, current, direction, from } = storeToRefs(
   useAuthModalController(),
 );
 
-const titles: Record<AuthModalStepType, string> = {
+const titles = computed<Record<AuthModalStepType, string>>(() => ({
   login: t("auth.loginTitle"),
   register: t("auth.registerTitle"),
   recovery: t("auth.recoveryTitle"),
   "new-password": t("auth.newPasswordTitle"),
   "confirm-code": t("auth.confirmCodeTitle"),
-};
+}));
 
-const descriptions: Record<AuthModalStepType, string> = {
+const descriptions = computed<Record<AuthModalStepType, string>>(() => ({
   login: t("auth.loginDescription"),
   register: t("auth.registerDescription"),
   recovery: t("auth.recoveryDescription"),
   "new-password": t("auth.newPasswordDescription"),
   "confirm-code": t("auth.confirmCodeDescription"),
-};
+}));
 
 function onNavigate<T extends AuthModalStepType>(
   step: T,
@@ -36,7 +36,6 @@ function onNavigate<T extends AuthModalStepType>(
 ): void;
 function onNavigate(step: AuthModalStepType, action: string) {
   const fn = (config[step].actions as Record<string, ActionFn>)[action];
-  console.log("from", from.value);
   fn?.({ to, close }, { from: from.value });
 }
 </script>

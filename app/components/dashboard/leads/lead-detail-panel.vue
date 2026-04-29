@@ -2,9 +2,10 @@
 import { Dialog } from "@ark-ui/vue/dialog";
 import { TenantLeadStage, TenantLeadTaskType } from "~/api/generated/api";
 import type { CreateTaskRequest, TenantLeadDetail } from "~/api/generated/api";
-import { STAGE_LABELS } from "~/stores/leads.store";
+import { getLeadStageLabel } from "~/stores/leads.store";
 import type { ContentSwitcherItem } from "~/components/ui/ContentSwitcher.vue";
 import type { TaskCreatePayload } from "~/components/workspace/tasks/model";
+import {getLocalizedField, type LocalizedRecord} from "~/utils/localized";
 
 enum TaskModalStep {
   Confirm = "confirm",
@@ -43,7 +44,7 @@ const open = computed({
   },
 });
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const tabs = computed<ContentSwitcherItem[]>(() => [
   { value: "info", label: t("leads.info") },
@@ -82,7 +83,7 @@ watch(
 
 const formatDate = (d?: string | null) => {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("ru-RU", {
+  return new Date(d).toLocaleDateString(locale.value, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -158,6 +159,17 @@ const activityColor = (type: string) =>
     member_assigned: "#9B59B6",
   })[type] ?? "#71727A";
 
+const getCategoryLabel = (lead: TenantLeadDetail) =>
+  getLocalizedField(lead as unknown as LocalizedRecord, "business_category_name", locale.value);
+
+const getAddressLabel = (address: Record<string, unknown>) => {
+  if (typeof address.full_address === "string" && address.full_address.trim()) {
+    return address.full_address.trim();
+  }
+
+  return getLocalizedField(address, "city_name", locale.value);
+};
+
 // ── Activity history description formatter ────────────────────────────────
 const getActivityDescription = (item: any): string => {
   const actor = item.actor?.full_name ?? t("leads.activity.system");
@@ -166,8 +178,12 @@ const getActivityDescription = (item: any): string => {
     case "stage_change":
       return t("leads.activity.stageChange", {
         actor,
-        from: item.from_stage,
-        to: item.to_stage,
+        from: item.from_stage
+          ? getLeadStageLabel(item.from_stage, t)
+          : "—",
+        to: item.to_stage
+          ? getLeadStageLabel(item.to_stage, t)
+          : "—",
       });
     case "note_added":
       return t("leads.activity.noteAdded", {
@@ -281,7 +297,7 @@ const scores = computed(() => {
               <div class="ldp-header__top">
                 <div class="ldp-header__badges">
                   <span class="ldp-stage">{{
-                    STAGE_LABELS[lead.stage_code] ?? lead.stage_code
+                    getLeadStageLabel(lead.stage_code, t)
                   }}</span>
                   <div class="ldp-header__scores">
                     <span
@@ -308,7 +324,7 @@ const scores = computed(() => {
 
               <div class="ldp-header__meta">
                 <span class="ldp-category">{{
-                  lead.business_category_name_ru
+                  getCategoryLabel(lead)
                 }}</span>
                 <span v-if="lead.lead_bin_iin" class="ldp-bin"
                   >{{ t("leads.binIIN") }}: {{ lead.lead_bin_iin }}</span
@@ -319,7 +335,7 @@ const scores = computed(() => {
                     {{
                       lead.responsible_member?.user_full_name ??
                       lead.responsible_member?.user_email ??
-                      "-"
+                      t("common.unassigned")
                     }}
                   </strong>
                 </span>
@@ -388,9 +404,10 @@ const scores = computed(() => {
                           class="ldp-contact-item"
                         >
                           <Icon
-                            :name="contactIcon(c.type)"
-                            mode="svg"
-                            :size="13"
+                              v-if="c.type"
+                              :name="contactIcon(c.type)"
+                              mode="svg"
+                              :size="13"
                           />
                           <span class="ldp-contact-text">{{ c.value }}</span>
                         </li>
@@ -408,7 +425,7 @@ const scores = computed(() => {
                           class="ldp-address-item"
                         >
                           <span class="ldp-address-text">{{
-                            addr.full_address ?? addr.city_name_ru
+                            getAddressLabel(addr as unknown as LocalizedRecord)
                           }}</span>
                           <a
                             v-if="addr.full_address"

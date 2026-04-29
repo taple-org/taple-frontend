@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TaskBoardItem } from "~/api/generated/api";
-import { TASK_ACTION_SECTIONS, type TaskBoardActionId } from "./model";
+import { getTaskActionSections, type TaskBoardActionId } from "./model";
+import { useI18n } from "vue-i18n";
 
 const emit = defineEmits<{
   action: [actionId: TaskBoardActionId];
@@ -11,6 +12,8 @@ const { open, taskTitle, pending } = defineProps<{
   taskTitle?: string;
   pending?: boolean;
 }>();
+const { t } = useI18n();
+const actionSections = computed(() => getTaskActionSections(t));
 
 const activeActionId = ref<TaskBoardActionId | null>(null);
 
@@ -55,7 +58,7 @@ function handleDrop(actionId: TaskBoardActionId, event: DragEvent) {
     <aside v-if="open" class="task-bar">
       <div class="task-bar__sections">
         <section
-          v-for="section in TASK_ACTION_SECTIONS"
+          v-for="section in actionSections"
           :key="section.id"
           class="task-bar__section"
         >

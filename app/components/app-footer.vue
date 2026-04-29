@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import config from "~/configs/nav.config"
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 </script>
 <template>
   <footer class="app-footer">
     <ui-container>
       <div class="app-footer__content">
-        <app-footer-brand-section title="TAPLE" description="Descriptive line about what your company does."
+        <app-footer-brand-section title="TAPLE" :description="t('footer.brandDescription')"
           :links="config.footer.Brand" />
         <app-footer-nav-section aria-label="Footer navigation" :nav-links="config.footer.Nav" />
       </div>

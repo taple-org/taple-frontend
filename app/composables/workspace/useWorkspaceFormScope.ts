@@ -101,16 +101,17 @@ export const useWorkspaceForm = ({ current, next, beforeSubmit, catchError, reso
 };
 
 export const useNamingScope = () => {
+  const { t } = useI18n();
   const state = reactive<NamingScopeState>({ name: "", city: "" });
 
   const { r$ } = useScopedRegle(
     state,
     {
       name: {
-        required: withMessage(required, "Это поле обязательно для заполнения"),
+        required: withMessage(required, t("validation.required")),
       },
       city: {
-        required: withMessage(required, "Это поле обязательно для заполнения"),
+        required: withMessage(required, t("validation.required")),
       },
     },
     { id: "naming" },
@@ -120,6 +121,7 @@ export const useNamingScope = () => {
 };
 
 export const useQueuingScope = (initialValues: MaybeRef<QueuingScopeState>) => {
+  const { t } = useI18n();
   const state = reactive<QueuingScopeState>({ productTracks: [] });
   watch(
     () => toValue(initialValues).productTracks,
@@ -131,7 +133,7 @@ export const useQueuingScope = (initialValues: MaybeRef<QueuingScopeState>) => {
     state,
     {
       productTracks: {
-        required: withMessage(required, "Это поле обязательно для заполнения"),
+        required: withMessage(required, t("validation.required")),
       },
     },
     { id: "queuing" },
@@ -140,15 +142,15 @@ export const useQueuingScope = (initialValues: MaybeRef<QueuingScopeState>) => {
   return { r$ };
 };
 
-const allTracksHaveCategories = createRule({
-    validator(value: Maybe<WithLabel<ProductTrackWithCategories>[]>) {
-        return (value ?? []).every(track => track.business_categories.length > 0);
-    },
-    message: "Необходимо выбрать хотя бы один тэг для каждого направления"
-});
-
-
 export const useTagingScope = () => {
+    const { t } = useI18n();
+    const allTracksHaveCategories = createRule({
+        validator(value: Maybe<WithLabel<ProductTrackWithCategories>[]>) {
+            return (value ?? []).every(track => track.business_categories.length > 0);
+        },
+        message: t("validation.workspaceTrackTags")
+    });
+
     const state = reactive<TagingScopeState>({
         productTracks: []
     });
@@ -156,7 +158,7 @@ export const useTagingScope = () => {
         state,
         {
             productTracks: {
-                required: withMessage(required, "Это поле обязательно для заполнения"),
+                required: withMessage(required, t("validation.required")),
                 allTracksHaveCategories
             },
         },
@@ -164,7 +166,9 @@ export const useTagingScope = () => {
     );
     const trackErrors = computed(() =>
         state.productTracks.map(track =>
-            track.business_categories.length === 0 ? "Необходимо выбрать хотя бы один тэг" : undefined
+            track.business_categories.length === 0
+              ? t("validation.workspaceTrackTag")
+              : undefined
         )
     );
 

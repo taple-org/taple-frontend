@@ -16,8 +16,12 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
 definePageMeta({
-  title: "Leads",
   layout: "dashboard",
+});
+
+useSeoMeta({
+  title: t("dashboard.leads"),
+  description: t("seo.leads.description"),
 });
 
 const route = useRoute();

@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import type { PipelineCardItem, StageColumn, TenantLeadStage } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
+import { getPipelineStageLabel } from "./model";
 
 const emit = defineEmits<{
   dragStart: [card: PipelineCardItem];
@@ -11,6 +13,8 @@ const { column, activeLeadId } = defineProps<{
   column: StageColumn;
   activeLeadId?: string | null;
 }>();
+const { t } = useI18n();
+const columnTitle = computed(() => getPipelineStageLabel(column.stage_code, t));
 
 const isOver = ref(false);
 
@@ -29,7 +33,7 @@ function handleCardDragStart(card: PipelineCardItem) {
   <article class="column">
     <header class="header">
       <div class="content">
-        <h3 class="column__title">{{ column.stage_name_ru }}</h3>
+        <h3 class="column__title">{{ columnTitle }}</h3>
         <span class="column__lead-count">{{ column.total_count }}</span>
       </div>
     </header>
@@ -50,7 +54,7 @@ function handleCardDragStart(card: PipelineCardItem) {
       />
 
       <div v-if="!column.cards.length" class="cards__empty">
-        Здесь пока пусто
+        {{ t("common.emptyHere") }}
       </div>
     </div>
   </article>

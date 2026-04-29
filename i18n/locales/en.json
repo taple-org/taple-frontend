@@ -20,10 +20,26 @@
     "close": "Close",
     "delete": "Delete",
     "add": "Add",
+    "apply": "Apply",
     "processing": "Processing...",
     "or": "or",
     "search": "Search",
     "reset": "Reset",
+    "retry": "Retry",
+    "select": "Select...",
+    "selectDate": "Select date",
+    "allSelected": "All selected",
+    "unassigned": "Unassigned",
+    "noName": "No name",
+    "emptyHere": "Nothing here yet",
+    "pointType": "Point type",
+    "searchByNameAddressPhone": "Search by name / address / phone",
+    "showMore": "Show more",
+    "unavailable": "Unavailable",
+    "unknownError": "Unknown error",
+    "remove": "Remove",
+    "tag": "Tag...",
+    "nothingFound": "Nothing found",
     "shortMon": "Mon",
     "shortTue": "Tue",
     "shortWed": "Wed",
@@ -66,6 +82,7 @@
     "deliveryNo": "No",
     "active": "Active",
     "inactive": "Inactive",
+    "unassigned": "Unassigned",
     "addressNotSpecified": "Address not specified",
     "info": "Information",
     "enterNote": "Enter note...",
@@ -129,6 +146,9 @@
     "createTaskError": "Failed to create task",
     "completeTaskSuccess": "Task completed",
     "completeTaskError": "Failed to complete task",
+    "selectStage": "Select stage",
+    "selectAssignee": "Select assignee",
+    "move": "Move",
     "exportSuccess": "Export started",
     "exportError": "Failed to export leads",
     "refreshSuccess": "Leads updating",
@@ -196,6 +216,7 @@
     }
   },
   "footer": {
+    "brandDescription": "Sales workflow automation for teams working with leads, pipeline, and customer development.",
     "features": "Features",
     "coreFeatures": "Core features",
     "proExperience": "Pro experience",
@@ -225,6 +246,7 @@
     "leadsShort": "leads",
     "tasks": "Tasks",
     "settings": "Settings",
+    "navigationAria": "Dashboard sections",
     "statistics": {
       "title": "Workspace Statistics",
       "metaTitle": "Workspace Dashboard — Taple",
@@ -291,7 +313,71 @@
     "createTaskBtn": "Create task",
     "open": "Open",
     "completed": "Completed",
-    "overdue": "Overdue"
+    "overdue": "Overdue",
+    "noDeadline": "No deadline",
+    "system": "System",
+    "searchPlaceholder": "Search by task title or description",
+    "responsibleLead": "Lead owner",
+    "taskPerformer": "Task assignee",
+    "columns": "Columns",
+    "noTasks": "No tasks",
+    "taskCountShort": "{count} tasks",
+    "openCountShort": "{count} open",
+    "overdueCountShort": "{count} overdue",
+    "completedCountShort": "{count} done",
+    "moveError": "Failed to move task",
+    "updateError": "Failed to update task",
+    "deleteError": "Failed to delete task",
+    "actionError": "Failed to apply task action",
+    "overdueManualMoveError": "You cannot drag a task to Overdue manually",
+    "completeError": "Failed to complete task",
+    "completeTask": "Complete task",
+    "taskNamePlaceholder": "E.g., call the client",
+    "editTask": "Edit task",
+    "editTaskDesc": "Update the task details, due date and assignee",
+    "unassigned": "Unassigned",
+    "result": "Result",
+    "resultPlaceholder": "What happened after completing the task?",
+    "types": {
+      "followUp": "Follow-up",
+      "makeFirstContact": "First contact",
+      "visitBranch": "Visit",
+      "makeNegotiation": "Negotiation",
+      "contract": "Contract",
+      "monitorLead": "Monitoring",
+      "winLead": "Won",
+      "loseLead": "Lost",
+      "hideLead": "Hidden",
+      "other": "Other"
+    },
+    "actions": {
+      "statusTitle": "Status",
+      "statusDescription": "Quick actions for the selected task",
+      "rescheduleTitle": "Reschedule",
+      "rescheduleDescription": "Quick due date changes",
+      "tomorrow": "Tomorrow",
+      "inTwoDays": "In two days",
+      "nextWeek": "Next week"
+    },
+    "groups": {
+      "urgentTitle": "Urgent",
+      "urgentDescription": "Overdue tasks and tasks due today.",
+      "upcomingTitle": "Upcoming",
+      "upcomingDescription": "Tasks due within the next few days.",
+      "laterTitle": "Later",
+      "laterDescription": "Tasks that can wait without an urgent deadline.",
+      "doneTitle": "Completed",
+      "doneDescription": "Tasks that are already done."
+    },
+    "buckets": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "inTwoDays": "In two days",
+      "nextMonday": "Next Monday",
+      "later": "Later",
+      "done": "Done"
+    }
   },
   "landing": {
     "heroTitle": "Find clients",
@@ -438,7 +524,23 @@
     "copy": "Copy",
     "apiCtaTitle": "Ready to start?",
     "apiCtaDesc": "Sign up and get an API key for free",
-    "apiCtaBtn": "Get access"
+    "apiCtaBtn": "Get access",
+    "planBillingPeriod": "month",
+    "planStarterName": "Starter",
+    "planStarterDescription": "For solo specialists",
+    "planStarterFeature1": "Lead search from open sources",
+    "planStarterFeature2": "Basic filtering and scoring",
+    "planStarterFeature3": "One workspace for daily outreach",
+    "planTeamName": "Team",
+    "planTeamDescription": "For small sales teams",
+    "planTeamFeature1": "Shared lead pipeline",
+    "planTeamFeature2": "Roles and member access",
+    "planTeamFeature3": "Task management and notes",
+    "planBusinessName": "Business",
+    "planBusinessDescription": "For growing companies",
+    "planBusinessFeature1": "Advanced automation",
+    "planBusinessFeature2": "API access and exports",
+    "planBusinessFeature3": "Priority support"
   },
   "subscription": {
     "currentPlan": "Current plan",
@@ -482,11 +584,21 @@
     "download": "Download",
     "cancelConfirm": "Cancel subscription? Access will remain until the end of the paid period.",
     "removeCardConfirm": "Remove payment method? Subscription will be cancelled.",
-    "status": "Status"
+    "status": "Status",
+    "cancelSubscription": "Cancel subscription",
+    "invoiceDescription": "{plan} — {month}"
   },
   "validation": {
     "required": "Required field",
-    "minLength": "Minimum {count} characters"
+    "minLength": "Minimum {count} characters",
+    "invalidEmail": "Invalid email",
+    "passwordsMismatch": "Passwords do not match",
+    "passwordMinLength": "Must be at least {count} characters long",
+    "passwordUppercase": "Must contain at least one uppercase letter",
+    "passwordLowercase": "Must contain at least one lowercase letter",
+    "passwordDigit": "Must contain at least one digit",
+    "workspaceTrackTags": "Select at least one tag for each track",
+    "workspaceTrackTag": "Select at least one tag"
   },
   "profile": {
     "personalInfo": "Personal information",
@@ -535,11 +647,20 @@
     "agreeTerms": "I have read and agree to the terms of service",
     "continue": "Continue",
     "alreadyHaveAccount": "Already have an account?",
+    "logout": "Log out",
     "restore": "Restore",
     "setPassword": "Set password",
     "seconds": "seconds",
     "resendCode": "Resend code",
-    "close": "Close"
+    "close": "Close",
+    "validationError": "Validation error",
+    "loginSuccessTitle": "Authorization",
+    "loginSuccessDescription": "You have successfully signed in",
+    "verificationCodeSent": "Verification code has been sent to your email",
+    "emailVerified": "Email has been verified",
+    "codeResent": "Code has been sent again",
+    "passwordResetCodeSent": "Password reset code has been sent to your email",
+    "passwordResetSuccess": "Password has been reset successfully"
   },
   "settings": {
     "account": "Account",
@@ -623,6 +744,9 @@
     "makePrimary": "Make primary",
     "addEmail": "Add email",
     "adding": "Adding...",
+    "invalidEmail": "Enter a valid email address",
+    "emailAlreadyAdded": "This email has already been added",
+    "codeSentEmail": "A verification code was sent to {email}",
     "phoneNumber": "Phone number",
     "phoneNumberDesc": "Used for two-factor authentication and account recovery",
     "codeSentTo": "Code sent to",
@@ -641,6 +765,10 @@
     "confirmPassword": "Confirm Password",
     "confirmPasswordPlaceholder": "Confirm new password",
     "changePasswordBtn": "Change Password",
+    "passwordChangedSuccess": "Password changed successfully",
+    "securityIntro": "Manage your password, two-factor authentication and active sessions",
+    "notificationsUnavailable": "Notification settings are temporarily unavailable",
+    "subscriptionUnavailable": "Subscription management is temporarily unavailable",
     "profilePhoto": "Profile Photo",
     "profilePhotoDesc": "Your photo is displayed in your profile and comments. JPG, PNG — no more than 5 MB",
     "uploadPhoto": "Upload photo",
@@ -703,6 +831,114 @@
     "deactivateError": "Failed to deactivate account",
     "deleteSuccess": "Account deleted",
     "deleteError": "Failed to delete account"
+  },
+  "seo": {
+    "home": {
+      "title": "Taple — automated business lead search",
+      "description": "Taple helps teams find fresh business leads from open sources and work with them in one interface.",
+      "ogTitle": "Taple — automated business lead search",
+      "ogDescription": "Automated collection, filtering and processing of business leads for sales teams."
+    },
+    "contacts": {
+      "title": "Contacts — Taple",
+      "description": "Get in touch with the Taple team for consulting, support or product onboarding.",
+      "ogTitle": "Contacts — Taple",
+      "ogDescription": "Taple team contacts: support, product questions and partnerships."
+    },
+    "api": {
+      "title": "API — Taple",
+      "description": "Taple API information for integrating lead search automation into your internal products and services.",
+      "ogTitle": "API — Taple",
+      "ogDescription": "Taple API for integrations, automation and lead data workflows."
+    },
+    "pricing": {
+      "title": "Pricing — Taple",
+      "description": "Choose the Taple plan that fits your team for automated lead search, filtering and processing.",
+      "ogTitle": "Pricing — Taple",
+      "ogDescription": "Taple pricing plans for teams and businesses."
+    },
+    "leads": {
+      "description": "Lead workspace with search, filtering and detailed lead management in Taple."
+    }
+  },
+  "invitations": {
+    "seoTitle": "Workspace invitation — Taple",
+    "seoDescription": "Confirm your invitation to a Taple workspace.",
+    "processing": "Processing invitation...",
+    "joining": "Joining workspace...",
+    "invalidLink": "Invalid invitation link",
+    "acceptError": "Failed to accept invitation",
+    "authRequiredTitle": "Authorization required",
+    "joinSuccess": "You joined the workspace",
+    "workspaceIdError": "Failed to get workspace ID"
+  },
+  "pipeline": {
+    "pageTitle": "Pipeline — Taple",
+    "pageDescription": "Manage the sales pipeline and lead stages in Taple.",
+    "totalLeads": "{count} leads in pipeline",
+    "loading": "Loading pipeline...",
+    "branchCount": "{count} branches",
+    "actions": {
+      "moveTitle": "Move lead",
+      "moveDescription": "Hidden stages outside the main board"
+    }
+  },
+  "monitoring": {
+    "pageTitle": "Monitoring — Taple",
+    "pageDescription": "Track workflow activity and monitored companies inside the workspace.",
+    "totalCompanies": "{count} companies under monitoring",
+    "loading": "Loading monitoring...",
+    "companyCount": "{count} companies",
+    "dueAt": "Due: {date}",
+    "updateError": "Failed to update monitoring status",
+    "status": {
+      "all": "All statuses",
+      "pending": "Pending",
+      "monitoring": "Monitoring",
+      "attention": "Needs attention",
+      "success": "Successful",
+      "recall": "Call back",
+      "closed": "Lead declined",
+      "other": "Other"
+    }
+  },
+  "password": {
+    "weak": "Weak",
+    "medium": "Medium",
+    "good": "Good",
+    "strong": "Strong"
+  },
+  "workspace": {
+    "completed": "Completed",
+    "step": "Step",
+    "addWorkspaceDesc": "Add a new workspace"
+  },
+  "workspaceCreate": {
+    "idleTitle": "Everything is ready",
+    "idleDescription": "Review the entered data before creating the workspace",
+    "loadingTitle": "Creating...",
+    "loadingDescription": "Please wait",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "Try again or contact support",
+    "successTitle": "Workspace created",
+    "successDescription": "You can start working right away",
+    "namePlaceholder": "Enter workspace name",
+    "cityPlaceholder": "Select city",
+    "queueLabel": "Queue order",
+    "sortablePosition": "{label} — position {position}",
+    "steps": {
+      "naming": {
+        "title": "Create workspace"
+      },
+      "queuing": {
+        "title": "What to prioritize first",
+        "description": "Choose the order that matches your goals"
+      },
+      "taging": {
+        "title": "Which business point types are relevant",
+        "description": "You can remove and edit selected tags freely"
+      }
+    }
   },
   "dangerZone": {
     "title": "Danger Zone",
