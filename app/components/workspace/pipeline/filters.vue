@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import { useWorkspaceMemberOptions } from "~/composables/workspace/useWorkspaceMemberOptions";
+import { useI18n } from "vue-i18n";
+import { getLocalizedField } from "~/utils/localized";
 
 const emit = defineEmits<{
   search: [],
@@ -11,11 +13,15 @@ const category_code = defineModel<string>("category_code", { required: true });
 const responsible_id = defineModel<string>("responsible_id", { required: true });
 
 const workspaceId = inject("workspaceId") as string;
+const { t, locale } = useI18n();
 
 const { data: categories } = useAsyncData(
     (nuxtApp) => nuxtApp.$apiClient.api.listAllApiV1CatalogCategoriesGet()
         .then(cs => cs.data.result)
-        .then(r => r.map((category) => ({ value: category.code, label: category.name_ru })))
+        .then(r => r.map((category) => ({
+          value: category.code,
+          label: getLocalizedField(category as unknown as LocalizedRecord, "name", locale.value),
+        })))
 )
 const { options: membersOptions } = useWorkspaceMemberOptions(workspaceId);
 
@@ -37,14 +43,14 @@ const onKeydown = (e: KeyboardEvent) => {
           type="text"
           v-model="search"
           icon-left="my-icon-search"
-          placeholder="Поиск по названию / адресу / телефону"
+          :placeholder="t('common.searchByNameAddressPhone')"
           @keydown="onKeydown"
       />
       <ui-button variant="primary" icon-left="my-icon-search" @click="$emit('search')">
-        Найти
+        {{ t("common.search") }}
       </ui-button>
       <ui-button v-if="hasFilters" variant="outline" @click="$emit('reset')">
-        Сбросить
+        {{ t("common.reset") }}
       </ui-button>
     </div>
 
@@ -53,13 +59,13 @@ const onKeydown = (e: KeyboardEvent) => {
           type="select"
           v-model="category_code"
           :options="categoriesOptions"
-          placeholder="Тип точки"
+          :placeholder="t('common.pointType')"
       />
       <ui-form-field
           type="select"
           v-model="responsible_id"
           :options="membersOptions"
-          placeholder="Ответственный"
+          :placeholder="t('tasks.assignee')"
       />
     </div>
   </div>

@@ -3,6 +3,8 @@ import {extractApiClientError} from "~/utils/extractApiClientError";
 
 export const useWithLoadingStore = defineStore('with-loading', () => {
     const notification = useNotification()
+    const { $i18n } = useNuxtApp()
+    const t = (key: string) => $i18n.t(key)
     const isLoading = ref(false)
     const error = ref<string | null>(null)
 
@@ -24,13 +26,13 @@ export const useWithLoadingStore = defineStore('with-loading', () => {
                     if (externalErrors && apiClientError.fieldErrors) {
                         externalErrors.value = apiClientError.fieldErrors as RegleExternalErrorTree<any>
                     }
-                    notification.error('Ошибка', apiClientError.message)
+                    notification.error(t('common.error'), apiClientError.message)
                 } else if (e instanceof Error) {
                     error.value = e.message
-                    notification.error('Ошибка', e.message)
+                    notification.error(t('common.error'), e.message)
                 } else {
-                    error.value = 'Неизвестная ошибка'
-                    notification.error('Ошибка', 'Неизвестная ошибка')
+                    error.value = t('common.unknownError')
+                    notification.error(t('common.error'), t('common.unknownError'))
                 }
                 return false
             } finally {

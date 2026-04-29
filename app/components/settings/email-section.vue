@@ -102,12 +102,12 @@ async function addEmail() {
   newEmailError.value = "";
 
   if (!validateEmail(newEmail.value)) {
-    newEmailError.value = "Введите корректный email";
+    newEmailError.value = t("settings.invalidEmail");
     return;
   }
 
   if (emails.value.some((e) => e.email === newEmail.value)) {
-    newEmailError.value = "Этот email уже добавлен";
+    newEmailError.value = t("settings.emailAlreadyAdded");
     return;
   }
 
@@ -128,7 +128,7 @@ async function addEmail() {
 
 async function resendVerification(email: string) {
   // TODO: await $fetch('/api/user/emails/verify', { method: 'POST', body: { email } })
-  alert(`Код подтверждения отправлен на ${email}`);
+  alert(t("settings.codeSentEmail", { email }));
 }
 
 function makePrimary(index: number) {

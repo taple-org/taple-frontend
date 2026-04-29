@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import {
-  PIPELINE_ACTION_SECTIONS,
+  getPipelineActionSections,
   type PipelineBoardActionId,
 } from "./model";
+import { useI18n } from "vue-i18n";
 
 const emit = defineEmits<{
   action: [actionId: PipelineBoardActionId];
@@ -12,6 +13,8 @@ const { open, pending } = defineProps<{
   open: boolean;
   pending?: boolean;
 }>();
+const { t } = useI18n();
+const actionSections = computed(() => getPipelineActionSections(t));
 
 const activeActionId = ref<PipelineBoardActionId | null>(null);
 
@@ -56,7 +59,7 @@ function handleDrop(actionId: PipelineBoardActionId, event: DragEvent) {
     <aside v-if="open" class="pipeline-bar">
       <div class="pipeline-bar__sections">
         <section
-          v-for="section in PIPELINE_ACTION_SECTIONS"
+          v-for="section in actionSections"
           :key="section.id"
           class="pipeline-bar__section"
         >

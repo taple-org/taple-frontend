@@ -30,7 +30,7 @@ const grid = computed(() => {
       if (dayIdx === -1) continue;
       for (const hour of hours ?? []) {
         if (!Number.isInteger(hour) || hour < 0 || hour > 23) continue;
-        g[dayIdx][hour] = levelObj.level;
+        g[dayIdx]![hour] = levelObj.level;
       }
     }
   }
@@ -106,8 +106,8 @@ const peakLabel = computed(() => {
             v-for="hour in 24"
             :key="hour - 1"
             class="cong__cell"
-            :style="{ background: getColor(grid[dIdx][hour - 1]) }"
-            :title="`${dayLabel} ${hour - 1}:00 — ${t('congestion.level')} ${grid[dIdx][hour - 1] || '–'}`"
+            :style="{ background: getColor(grid[dIdx]![hour - 1]!) }"
+            :title="`${dayLabel} ${hour - 1}:00 — ${t('congestion.level')} ${grid[dIdx]![hour - 1] || '–'}`"
           />
         </div>
       </div>

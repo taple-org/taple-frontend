@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { TaskBucket, type TaskBoardColumn, type TaskBoardItem } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
+import { getTaskBucketLabel } from "./model";
 
 const emit = defineEmits<{
   open: [task: TaskBoardItem];
@@ -12,6 +14,8 @@ const { column, activeTaskId } = defineProps<{
   column: TaskBoardColumn;
   activeTaskId?: string | null;
 }>();
+const { t } = useI18n();
+const columnTitle = computed(() => getTaskBucketLabel(column.bucket, t));
 
 const isOver = ref(false);
 const isDropEnabled = computed(() => column.bucket !== TaskBucket.Overdue);
@@ -31,8 +35,8 @@ function handleCardDragStart(task: TaskBoardItem) {
   <section class="task-column">
     <header class="task-column__header">
       <div>
-        <h3 class="task-column__title">{{ column.label_ru }}</h3>
-        <p class="task-column__count">{{ column.count }} задач</p>
+        <h3 class="task-column__title">{{ columnTitle }}</h3>
+        <p class="task-column__count">{{ t("tasks.taskCountShort", { count: column.count }) }}</p>
       </div>
     </header>
 
@@ -54,7 +58,7 @@ function handleCardDragStart(task: TaskBoardItem) {
       />
 
       <div v-if="!column.tasks.length" class="task-column__empty">
-        Здесь пока пусто
+        {{ t("common.emptyHere") }}
       </div>
     </div>
   </section>

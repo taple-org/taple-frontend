@@ -3,11 +3,12 @@ import Chart from "chart.js/auto";
 import { formatStageLabel } from "~/utils/formatStageLabel";
 import { useI18n } from "vue-i18n";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 interface FunnelItem {
   stage: string;
-  label_ru: string;
+  label_en?: string;
+  label_ru?: string;
   count: number;
 }
 
@@ -29,7 +30,9 @@ const palette = [
 ];
 
 const chartData = computed(() => ({
-  labels: props.data.map((item) => formatStageLabel(item.stage, item.label_ru)),
+  labels: props.data.map((item) =>
+    formatStageLabel(item.stage, item as unknown as LocalizedRecord, locale.value),
+  ),
   datasets: [
     {
       label: t("dashboard.leadsCount"),

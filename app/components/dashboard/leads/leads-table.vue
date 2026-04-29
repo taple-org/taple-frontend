@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { TenantLeadListItem } from "~/api/generated/api";
-import { STAGE_LABELS } from "~/stores/leads.store";
+import { getLeadStageLabel } from "~/stores/leads.store";
+import { getLocalizedField } from "~/utils/localized";
 import { useI18n } from "vue-i18n";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps<{
   leads: TenantLeadListItem[];
@@ -59,6 +60,12 @@ const stageColor = (stage: string) => {
   };
   return colors[stage] ?? "#71727A";
 };
+
+const getCityLabel = (lead: TenantLeadListItem) =>
+  getLocalizedField(lead as unknown as LocalizedRecord, "address_city_name", locale.value);
+
+const getCategoryLabel = (lead: TenantLeadListItem) =>
+  getLocalizedField(lead as unknown as LocalizedRecord, "lead_business_category_name", locale.value);
 </script>
 
 <template>
@@ -128,23 +135,23 @@ const stageColor = (stage: string) => {
             <div class="leads-table__name">
               <span class="leads-table__title">{{ lead.lead_name }}</span>
               <span
-                v-if="lead.address_city_name_ru"
+                v-if="getCityLabel(lead)"
                 class="leads-table__city-inline leads-table__city-inline--hide-md"
               >
-                {{ lead.address_city_name_ru }}
+                {{ getCityLabel(lead) }}
               </span>
             </div>
           </td>
 
           <td class="leads-table__td leads-table__td--hide-sm">
             <span class="leads-table__category">
-              {{ lead.lead_business_category_name_ru }}
+              {{ getCategoryLabel(lead) || "—" }}
             </span>
           </td>
 
           <td class="leads-table__td leads-table__td--hide-md">
             <span class="leads-table__text">
-              {{ lead.address_city_name_ru ?? "—" }}
+              {{ getCityLabel(lead) || "—" }}
             </span>
           </td>
 
@@ -156,7 +163,7 @@ const stageColor = (stage: string) => {
                 borderColor: stageColor(lead.stage_code) + '33',
               }"
             >
-              {{ STAGE_LABELS[lead.stage_code] ?? lead.stage_code }}
+              {{ getLeadStageLabel(lead.stage_code, t) }}
             </span>
           </td>
 
@@ -193,7 +200,7 @@ const stageColor = (stage: string) => {
 
     <div v-if="hasMore && leads.length > 0" class="leads-table__footer">
       <button class="leads-table__show-more" @click="emit('showMore')">
-        Показать ещё
+        {{ t("common.showMore") }}
         <Icon name="my-icon-arrow-down" mode="svg" :size="10" />
       </button>
     </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { MerchantListItem, TenantMerchantMonitoringStatus } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
 import type { MonitoringColumn } from "./model";
 
 const emit = defineEmits<{
@@ -12,6 +13,7 @@ const { column, activeLeadId } = defineProps<{
   column: MonitoringColumn;
   activeLeadId?: string | null;
 }>();
+const { t } = useI18n();
 
 const isOver = ref(false);
 
@@ -27,7 +29,7 @@ function handleDrop() {
     <header class="header">
       <div class="content">
         <h3 class="column__title">{{ column.label }}</h3>
-        <span class="column__count">{{ column.count }} компаний</span>
+        <span class="column__count">{{ t("monitoring.companyCount", { count: column.count }) }}</span>
       </div>
     </header>
 
@@ -48,7 +50,7 @@ function handleDrop() {
       />
 
       <div v-if="!column.cards.length" class="cards__empty">
-        Здесь пока пусто
+        {{ t("common.emptyHere") }}
       </div>
     </div>
   </article>

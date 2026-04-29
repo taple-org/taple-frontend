@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TaskBoardItem } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
 import { formatTaskDueAt, getTaskTone, getTaskTypeLabel } from "./model";
 
 const emit = defineEmits<{
@@ -12,10 +13,11 @@ const { task, dragging } = defineProps<{
   task: TaskBoardItem;
   dragging?: boolean;
 }>();
+const { t, locale } = useI18n();
 
 const tone = computed(() => getTaskTone(task));
 const assignee = computed(
-  () => task.assigned_to_full_name || task.assigned_to_email || "Не назначено",
+  () => task.assigned_to_full_name || task.assigned_to_email || t("common.unassigned"),
 );
 
 function handleDragStart(event: DragEvent) {
@@ -39,10 +41,10 @@ function handleDragStart(event: DragEvent) {
     <div class="task-card__top">
       <div class="task-card__meta">
         <span class="task-card__lead">{{ task.lead_name }}</span>
-        <span class="task-card__due">{{ formatTaskDueAt(task.due_at) }}</span>
+        <span class="task-card__due">{{ formatTaskDueAt(task.due_at, locale, t) }}</span>
       </div>
       <ui-badge class="task-card__type" size="sm">
-        {{ getTaskTypeLabel(task.task_type) }}
+        {{ getTaskTypeLabel(task.task_type, t) }}
       </ui-badge>
     </div>
 
@@ -55,7 +57,7 @@ function handleDragStart(event: DragEvent) {
 
     <div class="task-card__footer">
       <span class="task-card__assignee">{{ assignee }}</span>
-      <span v-if="task.is_system_task" class="task-card__system">system</span>
+      <span v-if="task.is_system_task" class="task-card__system">{{ t("tasks.system") }}</span>
     </div>
   </article>
 </template>

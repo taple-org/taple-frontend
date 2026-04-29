@@ -3,12 +3,13 @@ import { TenantLeadTaskType, type LeadSearchItem } from "~/api/generated/api";
 import { useWorkspaceMemberOptions } from "~/composables/workspace/useWorkspaceMemberOptions";
 import {
   fromDateOnly,
-  TASK_TYPE_OPTIONS,
+  getTaskTypeOptions,
   type TaskCreatePayload,
 } from "./model";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
+const taskTypeOptions = computed(() => getTaskTypeOptions(t));
 
 const emit = defineEmits<{
   close: [];
@@ -187,7 +188,7 @@ function handleSubmit() {
           <ui-form-field
             v-model="taskType"
             type="select"
-            :options="TASK_TYPE_OPTIONS"
+            :options="taskTypeOptions"
             :placeholder="t('tasks.taskType')"
           />
         </div>

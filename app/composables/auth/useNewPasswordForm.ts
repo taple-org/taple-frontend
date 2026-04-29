@@ -1,5 +1,6 @@
 import type { RegleExternalErrorTree } from "@regle/core";
-import { required, sameAs } from "@regle/rules";
+import { sameAs } from "@regle/rules";
+import { createPasswordRules } from "~/rules/password";
 
 export interface INewPasswordFormState {
   password: string;
@@ -12,15 +13,17 @@ interface INewPasswordFormProps {
 export const useNewPasswordForm = ({
   initialValues = { password: "", confirmPassword: "" },
 }: INewPasswordFormProps = {}) => {
+  const { t } = useI18n();
   const state = reactive<INewPasswordFormState>(initialValues);
   const externalErrors = ref<RegleExternalErrorTree<INewPasswordFormState>>({})
+  const passwordRules = createPasswordRules(t);
 
   const { r$ } = useRegle(
     state,
     {
-      password: { required: withMessage(required, "Обязательное поле") },
+      password: { ...passwordRules },
       confirmPassword: {
-        required: withMessage(required, "Обязательное поле"),
+        ...passwordRules,
         sameAs: sameAs(() => state.password),
       },
       $self: {
@@ -28,7 +31,7 @@ export const useNewPasswordForm = ({
           (value) =>
             (value as INewPasswordFormState).password ===
             (value as INewPasswordFormState).confirmPassword,
-          "Пароли не совпадают",
+          t("validation.passwordsMismatch"),
         ),
       },
     },

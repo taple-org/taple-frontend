@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TenantLeadStage } from "~/api/generated/api";
-import { STAGE_OPTIONS, SORT_OPTIONS } from "~/stores/leads.store";
+import { getLeadSortOptions, getLeadStageOptions } from "~/stores/leads.store";
 import type { LeadFilters } from "~/stores/leads.store";
 import { useI18n } from "vue-i18n";
 
@@ -42,12 +42,12 @@ const hasActiveFilters = computed(() =>
 
 const stageOptions = computed(() => [
   { value: "", label: t("leads.allStages") },
-  ...STAGE_OPTIONS,
+  ...getLeadStageOptions(t),
 ]);
 
 const sortByOptions = computed(() => [
   { value: "", label: t("leads.defaultSort") },
-  ...SORT_OPTIONS,
+  ...getLeadSortOptions(t),
 ]);
 
 const sortDirOptions = computed(() => [

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { MerchantListItem } from "~/api/generated/api";
+import { useI18n } from "vue-i18n";
 import { formatMonitoringDate, getResponsibleLabel } from "./model";
 
 const emit = defineEmits<{
@@ -11,9 +12,10 @@ const { card, dragging } = defineProps<{
   card: MerchantListItem;
   dragging?: boolean;
 }>();
+const { t, locale } = useI18n();
 
-const dueAt = computed(() => formatMonitoringDate(card.monitoring_due_at));
-const responsible = computed(() => getResponsibleLabel(card.responsible_member));
+const dueAt = computed(() => formatMonitoringDate(card.monitoring_due_at, locale.value, t));
+const responsible = computed(() => getResponsibleLabel(card.responsible_member, t));
 
 function handleDragStart(event: DragEvent) {
   event.dataTransfer?.setData("text/plain", card.tenant_lead_id);
@@ -42,7 +44,7 @@ function handleDragStart(event: DragEvent) {
     </p>
 
     <div class="card__tags">
-      <ui-badge size="sm">due: {{ dueAt }}</ui-badge>
+      <ui-badge size="sm">{{ t("monitoring.dueAt", { date: dueAt }) }}</ui-badge>
       <ui-badge size="sm">{{ responsible }}</ui-badge>
     </div>
   </article>

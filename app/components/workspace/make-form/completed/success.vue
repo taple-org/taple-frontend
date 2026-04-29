@@ -1,7 +1,7 @@
 <template>
     <workspace-make-form-completed 
-    title="Рабочее пространство создано!" 
-    description="Вы можете начать работу прямо сейчас"
+    :title="$t('workspaceCreate.successTitle')" 
+    :description="$t('workspaceCreate.successDescription')"
     class="completed__icon-ring--success"
     >
         <Icon size="36" name="my-icon-check" />

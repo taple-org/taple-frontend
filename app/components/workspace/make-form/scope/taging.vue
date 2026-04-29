@@ -1,12 +1,18 @@
 <script lang="ts" setup>
 import { useTagingScope } from '~/composables/workspace/useWorkspaceFormScope';
+import { useI18n } from "vue-i18n";
+import { getLocalizedField } from "~/utils/localized";
 
 const { $apiClient } = useNuxtApp();
+const { locale } = useI18n();
 const {data: categories} = useAsyncData(() => $apiClient.api.listAllApiV1CatalogCategoriesGet())
 
 const businessCategories = computed(() => {
     if(!categories.value?.data) return [];
-    return categories.value.data.result.map((category) => ({ label: category.name_ru, id: category.id }))
+    return categories.value.data.result.map((category) => ({
+        label: getLocalizedField(category as unknown as LocalizedRecord, "name", locale.value),
+        id: category.id,
+    }))
 })
 
 const { r$, trackErrors } = useTagingScope();

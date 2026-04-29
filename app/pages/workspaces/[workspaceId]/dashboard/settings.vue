@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type {
-  ChangeMemberRoleRequest,
-  TenantRead,
-  TenantMemberRead,
+import {
+  type ChangeMemberRoleRequest,
+  type InviteMemberRequest,
+  type TenantMemberRead,
+  type TenantRead,
   TenantUserRole,
-  InviteMemberRequest,
 } from "~/api/generated/api";
-import { useNotification } from "~/composables/useNotification";
-import { useAuthStore } from "~/stores/auth.store";
+import {useNotification} from "~/composables/useNotification";
+import {useAuthStore} from "~/stores/auth.store";
 
 definePageMeta({
   layout: "dashboard",
@@ -192,12 +192,12 @@ function mapApiRole(role: TenantUserRole): MemberRole {
 function mapLocalRole(role: MemberRole): TenantUserRole {
   switch (role) {
     case "Owner":
-      return "owner";
+      return TenantUserRole.Owner;
     case "Admin":
-      return "admin";
+      return TenantUserRole.Admin;
     case "Member":
     default:
-      return "member";
+      return TenantUserRole.Member;
   }
 }
 
@@ -238,7 +238,7 @@ async function inviteMember() {
   try {
     const request: InviteMemberRequest = {
       email: inviteEmail.value.trim(),
-      role_code: "member",
+      role_code: TenantUserRole.Member,
     };
     await $apiClient.api.inviteMemberApiV1TenantsTenantIdMembersInvitePost(
       workspaceId.value,
@@ -461,7 +461,7 @@ const roleLabel: Record<MemberRole, string> = {
               "
               class="role-select"
               @update:model-value="
-                (newRole: string) =>
+                (newRole) =>
                   updateMemberRole(member.userId, newRole as TenantUserRole)
               "
             />
@@ -554,7 +554,6 @@ const roleLabel: Record<MemberRole, string> = {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-width: 440px;
 }
 
 /* ── Invite row ──────────────────────────── */

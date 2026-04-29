@@ -11,6 +11,7 @@ interface IRecoveryPasswordFormProps {
 export const useRecoveryPasswordForm = ({
   initialValues = { email: "" },
 }: IRecoveryPasswordFormProps = {}) => {
+  const { t } = useI18n();
   const state = reactive<IRecoveryPasswordForm>(initialValues);
   const externalErrors = ref<RegleExternalErrorTree<IRecoveryPasswordForm>>({})
   
@@ -18,8 +19,8 @@ export const useRecoveryPasswordForm = ({
     state,
     {
       email: {
-        required: withMessage(required, "Обязательное поле"),
-        email: withMessage(email, "Некорректный email"),
+        required: withMessage(required, t("validation.required")),
+        email: withMessage(email, t("validation.invalidEmail")),
       },
     },
     { id: "recovery-password", externalErrors },

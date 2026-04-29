@@ -10,6 +10,8 @@ import {
   type UpdateTaskRequest,
 } from "~/api/generated/api";
 
+type Translate = (key: string, params?: Record<string, unknown>) => string;
+
 export type TaskBoardActionId =
   | "delete"
   | "reschedule_tomorrow"
@@ -49,47 +51,53 @@ export type TaskBoardGroup = {
   buckets: TaskBucket[];
 };
 
-export const TASK_TYPE_LABELS: Record<TenantLeadTaskType, string> = {
-  [TenantLeadTaskType.FollowUp]: "Follow-up",
-  [TenantLeadTaskType.MakeFirstContact]: "Первый контакт",
-  [TenantLeadTaskType.VisitBranch]: "Визит",
-  [TenantLeadTaskType.MakeNegotiation]: "Переговоры",
-  [TenantLeadTaskType.Contract]: "Контракт",
-  [TenantLeadTaskType.MonitorLead]: "Мониторинг",
-  [TenantLeadTaskType.WinLead]: "Успешно",
-  [TenantLeadTaskType.LoseLead]: "Потерян",
-  [TenantLeadTaskType.HideLead]: "Скрыт",
-  [TenantLeadTaskType.Other]: "Другое",
+const TASK_TYPE_KEYS: Record<TenantLeadTaskType, string> = {
+  [TenantLeadTaskType.FollowUp]: "tasks.types.followUp",
+  [TenantLeadTaskType.MakeFirstContact]: "tasks.types.makeFirstContact",
+  [TenantLeadTaskType.VisitBranch]: "tasks.types.visitBranch",
+  [TenantLeadTaskType.MakeNegotiation]: "tasks.types.makeNegotiation",
+  [TenantLeadTaskType.Contract]: "tasks.types.contract",
+  [TenantLeadTaskType.MonitorLead]: "tasks.types.monitorLead",
+  [TenantLeadTaskType.WinLead]: "tasks.types.winLead",
+  [TenantLeadTaskType.LoseLead]: "tasks.types.loseLead",
+  [TenantLeadTaskType.HideLead]: "tasks.types.hideLead",
+  [TenantLeadTaskType.Other]: "tasks.types.other",
 };
 
-export const TASK_TYPE_OPTIONS = Object.values(TenantLeadTaskType).map(
-  (value) => ({
-    value,
-    label: TASK_TYPE_LABELS[value],
-  }),
-);
+export function getTaskTypeLabel(taskType: TenantLeadTaskType, t: Translate) {
+  return t(TASK_TYPE_KEYS[taskType]);
+}
 
-export const TASK_ACTION_SECTIONS: TaskBoardActionSection[] = [
-  {
-    id: "status",
-    title: "Статус",
-    description: "Быстрые действия над задачей",
-    actions: [
-      { id: "delete", label: "Удалить", tone: "danger" },
-      { id: "done", label: "Завершить", tone: "success" },
-    ],
-  },
-  {
-    id: "reschedule",
-    title: "Перенос",
-    description: "Быстрый перенос срока",
-    actions: [
-      { id: "reschedule_tomorrow", label: "На завтра", tone: "default" },
-      { id: "reschedule_in_two_days", label: "Послезавтра", tone: "default" },
-      { id: "reschedule_next_week", label: "На след. неделю", tone: "warning" },
-    ],
-  },
-];
+export function getTaskTypeOptions(t: Translate) {
+  return Object.values(TenantLeadTaskType).map((value) => ({
+    value,
+    label: getTaskTypeLabel(value, t),
+  }));
+}
+
+export function getTaskActionSections(t: Translate): TaskBoardActionSection[] {
+  return [
+    {
+      id: "status",
+      title: t("tasks.actions.statusTitle"),
+      description: t("tasks.actions.statusDescription"),
+      actions: [
+        { id: "delete", label: t("common.delete"), tone: "danger" },
+        { id: "done", label: t("tasks.completeTask"), tone: "success" },
+      ],
+    },
+    {
+      id: "reschedule",
+      title: t("tasks.actions.rescheduleTitle"),
+      description: t("tasks.actions.rescheduleDescription"),
+      actions: [
+        { id: "reschedule_tomorrow", label: t("tasks.actions.tomorrow"), tone: "default" },
+        { id: "reschedule_in_two_days", label: t("tasks.actions.inTwoDays"), tone: "default" },
+        { id: "reschedule_next_week", label: t("tasks.actions.nextWeek"), tone: "warning" },
+      ],
+    },
+  ];
+}
 
 export const TASK_BUCKET_ORDER: TaskBucket[] = [
   TaskBucket.Overdue,
@@ -107,55 +115,64 @@ export const DEFAULT_TASK_BUCKETS: TaskBucket[] = [
   TaskBucket.Tomorrow,
 ];
 
-export const TASK_BOARD_GROUPS: TaskBoardGroup[] = [
-  {
-    id: "urgent",
-    title: "Срочно",
-    description: "Просроченные задачи и задачи на сегодня.",
-    buckets: [TaskBucket.Overdue, TaskBucket.Today],
-  },
-  {
-    id: "upcoming",
-    title: "Ближайшие",
-    description: "Ближайшие задачи на следующие несколько дней.",
-    buckets: [TaskBucket.Tomorrow, TaskBucket.InTwoDays, TaskBucket.NextMonday],
-  },
-  {
-    id: "later",
-    title: "Позже",
-    description: "Можно вернуться позже без срочного дедлайна.",
-    buckets: [TaskBucket.Later],
-  },
-  {
-    id: "done",
-    title: "Завершено",
-    description: "Уже выполненные задачи.",
-    buckets: [TaskBucket.Done],
-  },
-];
+export function getTaskBoardGroups(t: Translate): TaskBoardGroup[] {
+  return [
+    {
+      id: "urgent",
+      title: t("tasks.groups.urgentTitle"),
+      description: t("tasks.groups.urgentDescription"),
+      buckets: [TaskBucket.Overdue, TaskBucket.Today],
+    },
+    {
+      id: "upcoming",
+      title: t("tasks.groups.upcomingTitle"),
+      description: t("tasks.groups.upcomingDescription"),
+      buckets: [TaskBucket.Tomorrow, TaskBucket.InTwoDays, TaskBucket.NextMonday],
+    },
+    {
+      id: "later",
+      title: t("tasks.groups.laterTitle"),
+      description: t("tasks.groups.laterDescription"),
+      buckets: [TaskBucket.Later],
+    },
+    {
+      id: "done",
+      title: t("tasks.groups.doneTitle"),
+      description: t("tasks.groups.doneDescription"),
+      buckets: [TaskBucket.Done],
+    },
+  ];
+}
 
-export const TASK_BUCKET_LABELS: Record<
-  TaskBucket,
-  { en: string; ru: string }
-> = {
-  [TaskBucket.Overdue]: { en: "Overdue", ru: "Просрочено" },
-  [TaskBucket.Today]: { en: "Today", ru: "Сегодня" },
-  [TaskBucket.Tomorrow]: { en: "Tomorrow", ru: "Завтра" },
-  [TaskBucket.InTwoDays]: { en: "In Two Days", ru: "Послезавтра" },
-  [TaskBucket.NextMonday]: { en: "Next Monday", ru: "Следующий понедельник" },
-  [TaskBucket.Later]: { en: "Later", ru: "Позже" },
-  [TaskBucket.Done]: { en: "Done", ru: "Выполнено" },
+const TASK_BUCKET_KEYS: Record<TaskBucket, string> = {
+  [TaskBucket.Overdue]: "tasks.buckets.overdue",
+  [TaskBucket.Today]: "tasks.buckets.today",
+  [TaskBucket.Tomorrow]: "tasks.buckets.tomorrow",
+  [TaskBucket.InTwoDays]: "tasks.buckets.inTwoDays",
+  [TaskBucket.NextMonday]: "tasks.buckets.nextMonday",
+  [TaskBucket.Later]: "tasks.buckets.later",
+  [TaskBucket.Done]: "tasks.buckets.done",
 };
 
-export const TASK_BUCKET_OPTIONS = TASK_BUCKET_ORDER.map((bucket) => ({
-  value: bucket,
-  label: TASK_BUCKET_LABELS[bucket].ru,
-}));
+export function getTaskBucketLabel(bucket: TaskBucket, t: Translate) {
+  return t(TASK_BUCKET_KEYS[bucket]);
+}
 
-export function formatTaskDueAt(value?: string | null) {
-  if (!value) return "Без дедлайна";
+export function getTaskBucketOptions(t: Translate) {
+  return TASK_BUCKET_ORDER.map((bucket) => ({
+    value: bucket,
+    label: getTaskBucketLabel(bucket, t),
+  }));
+}
 
-  return new Date(value).toLocaleString("ru-RU", {
+export function formatTaskDueAt(
+  value: string | null | undefined,
+  locale: string,
+  t: Translate,
+) {
+  if (!value) return t("tasks.noDeadline");
+
+  return new Date(value).toLocaleString(locale, {
     day: "2-digit",
     month: "short",
   });
@@ -182,10 +199,6 @@ export function fromDateAndTime(datePart: string, timePart: string) {
 
   const time = timePart || "12:00";
   return new Date(`${datePart}T${time}:00`).toISOString();
-}
-
-export function getTaskTypeLabel(taskType: TenantLeadTaskType) {
-  return TASK_TYPE_LABELS[taskType];
 }
 
 export function getTaskTone(task: TaskBoardItem) {
@@ -246,8 +259,8 @@ export function normalizeTaskBoardColumns(columns: TaskBoardColumn[]) {
 
     return {
       bucket,
-      label_en: TASK_BUCKET_LABELS[bucket].en,
-      label_ru: TASK_BUCKET_LABELS[bucket].ru,
+      label_en: bucket,
+      label_ru: bucket,
       count: 0,
       tasks: [],
     };

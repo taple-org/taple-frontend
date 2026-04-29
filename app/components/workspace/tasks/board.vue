@@ -9,11 +9,12 @@ import {
 import {
   buildActionPayload,
   buildMovePayloadForBucket,
-  TASK_BOARD_GROUPS,
+  getTaskBoardGroups,
   type TaskBoardActionId,
   type TaskCompletePayload,
   type TaskUpdatePayload,
 } from "./model";
+import { useI18n } from "vue-i18n";
 
 const emit = defineEmits<{
   changed: [];
@@ -26,6 +27,7 @@ const { columns, workspaceId } = defineProps<{
 
 const { $apiClient } = useNuxtApp();
 const notification = useNotification();
+const { t } = useI18n();
 
 const activeTask = ref<TaskBoardItem | null>(null);
 const selectedTask = ref<TaskBoardItem | null>(null);
@@ -38,7 +40,7 @@ async function handleMove(bucket: TaskBucket) {
   }
 
   if (bucket === TaskBucket.Overdue) {
-    notification.warning("Недоступно", "Нельзя перетащить задачу в overdue вручную");
+    notification.warning(t("common.unavailable"), t("tasks.overdueManualMoveError"));
     clearDrag();
     return;
   }
@@ -70,7 +72,7 @@ async function handleMove(bucket: TaskBucket) {
 
     emit("changed");
   } catch {
-    notification.error("Ошибка", "Не удалось переместить задачу");
+    notification.error(t("common.error"), t("tasks.moveError"));
   } finally {
     isPending.value = false;
     clearDrag();
@@ -113,7 +115,10 @@ async function handleAction(actionId: TaskBoardActionId) {
 
     emit("changed");
   } catch {
-    notification.error("Ошибка", actionId === "delete" ? "Не удалось удалить задачу" : "Не удалось выполнить действие над задачей");
+    notification.error(
+      t("common.error"),
+      actionId === "delete" ? t("tasks.deleteError") : t("tasks.actionError"),
+    );
   } finally {
     isPending.value = false;
     clearDrag();
@@ -134,7 +139,7 @@ async function handleSave(payload: TaskUpdatePayload) {
     selectedTask.value = null;
     emit("changed");
   } catch {
-    notification.error("Ошибка", "Не удалось обновить задачу");
+    notification.error(t("common.error"), t("tasks.updateError"));
   } finally {
     isPending.value = false;
   }
@@ -154,7 +159,7 @@ async function handleComplete(payload: TaskCompletePayload) {
     selectedTask.value = null;
     emit("changed");
   } catch {
-    notification.error("Ошибка", "Не удалось завершить задачу");
+    notification.error(t("common.error"), t("tasks.completeError"));
   } finally {
     isPending.value = false;
   }
@@ -169,7 +174,7 @@ function clearDrag() {
 }
 
 const columnGroups = computed(() =>
-  TASK_BOARD_GROUPS.map((group) => ({
+  getTaskBoardGroups(t).map((group) => ({
     ...group,
     columns: columns.filter((column) => group.buckets.includes(column.bucket)),
   })).filter((group) => group.columns.length),

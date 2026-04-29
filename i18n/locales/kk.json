@@ -24,6 +24,21 @@
     "or": "немесе",
     "search": "Іздеу",
     "reset": "Қалпына келтіру",
+    "retry": "Қайталау",
+    "select": "Таңдаңыз...",
+    "selectDate": "Күнді таңдаңыз",
+    "allSelected": "Барлығы таңдалды",
+    "unassigned": "Тағайындалмаған",
+    "noName": "Атаусыз",
+    "emptyHere": "Мұнда әзірге бос",
+    "pointType": "Нүкте түрі",
+    "searchByNameAddressPhone": "Атауы / мекенжайы / телефоны бойынша іздеу",
+    "showMore": "Көбірек көрсету",
+    "unavailable": "Қолжетімсіз",
+    "unknownError": "Белгісіз қате",
+    "remove": "Алып тастау",
+    "tag": "Тег...",
+    "nothingFound": "Ештеңе табылмады",
     "shortMon": "Дс",
     "shortTue": "Сс",
     "shortWed": "Ср",
@@ -187,6 +202,7 @@
     }
   },
   "footer": {
+    "brandDescription": "Лидтермен, воронкамен және клиенттерді дамытумен жұмыс істейтін командаларға арналған сату мен жұмыс процестерін автоматтандыру.",
     "features": "Мүмкіндіктер",
     "coreFeatures": "Негізгі мүмкіндіктер",
     "proExperience": "Pro-тәжірибе",
@@ -216,6 +232,7 @@
     "leadsShort": "лид",
     "tasks": "Тапсырмалар",
     "settings": "Параметрлер",
+    "navigationAria": "Дэшборд бөлімдері",
     "statistics": {
       "title": "Жұмыс кеңістігінің статистикасы",
       "metaTitle": "Жұмыс кеңістігінің дэшборды — Taple",
@@ -282,7 +299,70 @@
     "createTaskBtn": "Тапсырма жасау",
     "open": "Ашық",
     "completed": "Орындалған",
-    "overdue": "Мерзімі өткен"
+    "overdue": "Мерзімі өткен",
+    "noDeadline": "Мерзімі жоқ",
+    "system": "Жүйелік",
+    "searchPlaceholder": "Тапсырма атауы немесе сипаттамасы бойынша іздеу",
+    "responsibleLead": "Лидке жауапты",
+    "taskPerformer": "Тапсырма орындаушысы",
+    "columns": "Бағандар",
+    "taskCountShort": "{count} тапсырма",
+    "openCountShort": "{count} ашық",
+    "overdueCountShort": "{count} мерзімі өткен",
+    "completedCountShort": "{count} орындалды",
+    "moveError": "Тапсырманы жылжыту сәтсіз болды",
+    "updateError": "Тапсырманы жаңарту сәтсіз болды",
+    "deleteError": "Тапсырманы жою сәтсіз болды",
+    "actionError": "Тапсырмаға әрекет қолдану сәтсіз болды",
+    "overdueManualMoveError": "Тапсырманы мерзімі өткен санатына қолмен апару мүмкін емес",
+    "completeError": "Тапсырманы аяқтау сәтсіз болды",
+    "completeTask": "Тапсырманы аяқтау",
+    "taskNamePlaceholder": "Мысалы, клиентке қоңырау шалу",
+    "editTask": "Тапсырманы өңдеу",
+    "editTaskDesc": "Тапсырманың мәліметтерін, мерзімін және орындаушысын өзгертіңіз",
+    "unassigned": "Тағайындалмаған",
+    "result": "Нәтиже",
+    "resultPlaceholder": "Тапсырма аяқталған соң не болды?",
+    "types": {
+      "followUp": "Follow-up",
+      "makeFirstContact": "Алғашқы байланыс",
+      "visitBranch": "Сапар",
+      "makeNegotiation": "Келіссөз",
+      "contract": "Келісімшарт",
+      "monitorLead": "Мониторинг",
+      "winLead": "Сәтті",
+      "loseLead": "Жоғалды",
+      "hideLead": "Жасырылды",
+      "other": "Басқа"
+    },
+    "actions": {
+      "statusTitle": "Күйі",
+      "statusDescription": "Таңдалған тапсырмаға арналған жедел әрекеттер",
+      "rescheduleTitle": "Мерзімді ауыстыру",
+      "rescheduleDescription": "Мерзімді жылдам өзгерту",
+      "tomorrow": "Ертеңге",
+      "inTwoDays": "Арғы күнге",
+      "nextWeek": "Келесі аптаға"
+    },
+    "groups": {
+      "urgentTitle": "Шұғыл",
+      "urgentDescription": "Мерзімі өтіп кеткен және бүгінге арналған тапсырмалар.",
+      "upcomingTitle": "Жақын арада",
+      "upcomingDescription": "Алдағы бірнеше күнге жоспарланған тапсырмалар.",
+      "laterTitle": "Кейінірек",
+      "laterDescription": "Шұғыл мерзімі жоқ, кейінірек оралуға болатын тапсырмалар.",
+      "doneTitle": "Аяқталған",
+      "doneDescription": "Орындалып қойған тапсырмалар."
+    },
+    "buckets": {
+      "overdue": "Мерзімі өткен",
+      "today": "Бүгін",
+      "tomorrow": "Ертең",
+      "inTwoDays": "Арғы күн",
+      "nextMonday": "Келесі дүйсенбі",
+      "later": "Кейінірек",
+      "done": "Орындалған"
+    }
   },
   "landing": {
     "contactUs": "Бізбен байланысыңыз",
@@ -427,7 +507,23 @@
     "copy": "Көшіру",
     "apiCtaTitle": "Бастауға дайынсыз ба?",
     "apiCtaDesc": "Тіркеліп, API кілтін тегін алыңыз",
-    "apiCtaBtn": "Қатынасу"
+    "apiCtaBtn": "Қатынасу",
+    "planBillingPeriod": "ай",
+    "planStarterName": "Бастау",
+    "planStarterDescription": "Жеке мамандарға арналған",
+    "planStarterFeature1": "Ашық дереккөздерден лид іздеу",
+    "planStarterFeature2": "Негізгі сүзгілер мен скоринг",
+    "planStarterFeature3": "Күнделікті жұмысқа арналған бір кеңістік",
+    "planTeamName": "Команда",
+    "planTeamDescription": "Шағын сату топтарына арналған",
+    "planTeamFeature1": "Ортақ лид воронкасы",
+    "planTeamFeature2": "Қатысушыларға рөлдер мен рұқсаттар",
+    "planTeamFeature3": "Тапсырмалар, жазбалар және процесс бақылауы",
+    "planBusinessName": "Бизнес",
+    "planBusinessDescription": "Өсіп келе жатқан компанияларға арналған",
+    "planBusinessFeature1": "Кеңейтілген автоматтандыру",
+    "planBusinessFeature2": "API қолжетімділігі және экспорттар",
+    "planBusinessFeature3": "Басым қолдау"
   },
   "subscription": {
     "currentPlan": "Ағымдағы жоспар",
@@ -476,12 +572,22 @@
     "businessFeature2": "Шексіз кеңістіктер",
     "businessFeature3": "Шексіз қатысушылар",
     "businessFeature4": "Бөлімшен менеджері",
-    "cancelConfirm": "Жазылудан бас тарту? Қолжетімділік төленген кезеңнің соңына дейін сақталады.",
-    "removeCardConfirm": "Төлем әділін жою? Жазылу тоқтатылатын болады."
+    "cancelConfirm": "Жазылымнан бас тартасыз ба? Қолжетімділік төленген кезеңнің соңына дейін сақталады.",
+    "removeCardConfirm": "Төлем әдісін жоясыз ба? Жазылым тоқтатылады.",
+    "cancelSubscription": "Жазылымды тоқтату",
+    "invoiceDescription": "{plan} — {month}"
   },
   "validation": {
     "required": "Міндетті өріс",
-    "minLength": "Кемінде {count} таңба"
+    "minLength": "Кемінде {count} таңба",
+    "invalidEmail": "Email қате енгізілген",
+    "passwordsMismatch": "Құпиясөздер сәйкес келмейді",
+    "passwordMinLength": "Кемінде {count} таңба болуы керек",
+    "passwordUppercase": "Кемінде бір бас әріп болуы керек",
+    "passwordLowercase": "Кемінде бір кіші әріп болуы керек",
+    "passwordDigit": "Кемінде бір сан болуы керек",
+    "workspaceTrackTags": "Әр бағыт үшін кемінде бір тег таңдаңыз",
+    "workspaceTrackTag": "Кемінде бір тег таңдаңыз"
   },
   "profile": {
     "personalInfo": "Жеке ақпарат",
@@ -535,7 +641,15 @@
     "setPassword": "Құпия сөзді орнату",
     "seconds": "секунд",
     "resendCode": "Кодты қайта жіберу",
-    "close": "Жабу"
+    "close": "Жабу",
+    "validationError": "Валидация қатесі",
+    "loginSuccessTitle": "Авторизация",
+    "loginSuccessDescription": "Сіз аккаунтқа сәтті кірдіңіз",
+    "verificationCodeSent": "Растау коды электрондық поштаға жіберілді",
+    "emailVerified": "Email расталды",
+    "codeResent": "Код қайта жіберілді",
+    "passwordResetCodeSent": "Құпия сөзді қалпына келтіру коды электрондық поштаға жіберілді",
+    "passwordResetSuccess": "Құпия сөз сәтті қалпына келтірілді"
   },
   "settings": {
     "account": "Аккаунт",
@@ -616,6 +730,9 @@
     "makePrimary": "Негізгі ету",
     "addEmail": "Email қосу",
     "adding": "Қосу...",
+    "invalidEmail": "Дұрыс email енгізіңіз",
+    "emailAlreadyAdded": "Бұл email бұрыннан қосылған",
+    "codeSentEmail": "Растау коды {email} мекенжайына жіберілді",
     "phoneNumber": "Телефон нөмірі",
     "phoneNumberDesc": "Екі факторлы аутентификация және қатынасты қалпына келтіру үшін қолданылады",
     "codeSentTo": "Код жіберілді",
@@ -634,6 +751,10 @@
     "confirmPassword": "Құпиясөзді растаңыз",
     "confirmPasswordPlaceholder": "Жаңа құпиясөзді растаңыз",
     "changePasswordBtn": "Құпиясөзді өзгерту",
+    "passwordChangedSuccess": "Құпиясөз сәтті өзгертілді",
+    "securityIntro": "Құпиясөзді, екі факторлы аутентификацияны және белсенді сессияларды басқарыңыз",
+    "notificationsUnavailable": "Хабарландыру параметрлері уақытша қолжетімсіз",
+    "subscriptionUnavailable": "Жазылымды басқару уақытша қолжетімсіз",
 
     "notifications": {
       "saved": "Параметрлер сақталды",
@@ -691,6 +812,114 @@
     "deactivateError": "Аккаунтты деактивтеу сәтсіз болды",
     "deleteSuccess": "Аккаунт жойылды",
     "deleteError": "Аккаунтты жою сәтсіз болды"
+  },
+  "seo": {
+    "home": {
+      "title": "Taple — бизнес-лидтерді автоматты іздеу",
+      "description": "Taple ашық дереккөздерден жаңа бизнес-лидтерді автоматты түрде тауып, олармен бір интерфейсте жұмыс істеуге көмектеседі.",
+      "ogTitle": "Taple — бизнес-лидтерді автоматты іздеу",
+      "ogDescription": "Сату командаларына арналған бизнес-лидтерді автоматты жинау, сүзу және өңдеу."
+    },
+    "contacts": {
+      "title": "Байланыс — Taple",
+      "description": "Кеңес, қолдау немесе өнімді қосу үшін Taple командасына хабарласыңыз.",
+      "ogTitle": "Байланыс — Taple",
+      "ogDescription": "Taple командасының байланыстары: қолдау, өнім бойынша сұрақтар және серіктестік."
+    },
+    "api": {
+      "title": "API — Taple",
+      "description": "Лидтерді автоматты іздеуді ішкі сервистеріңізге біріктіруге арналған Taple API туралы ақпарат.",
+      "ogTitle": "API — Taple",
+      "ogDescription": "Интеграциялар, автоматтандыру және лид деректерімен жұмысқа арналған Taple API."
+    },
+    "pricing": {
+      "title": "Тарифтер — Taple",
+      "description": "Лидтерді автоматты іздеу, сүзу және өңдеу үшін командаңызға сай Taple тарифін таңдаңыз.",
+      "ogTitle": "Тарифтер — Taple",
+      "ogDescription": "Командалар мен бизнеске арналған Taple тарифтік жоспарлары."
+    },
+    "leads": {
+      "description": "Taple ішіндегі іздеу, сүзу және лидтермен егжей-тегжейлі жұмыс істеуге арналған жұмыс кеңістігі."
+    }
+  },
+  "invitations": {
+    "seoTitle": "Жұмыс кеңістігіне шақыру — Taple",
+    "seoDescription": "Taple жұмыс кеңістігіне шақыруды растау.",
+    "processing": "Шақыру өңделуде...",
+    "joining": "Жұмыс кеңістігіне қосылу...",
+    "invalidLink": "Жарамсыз шақыру сілтемесі",
+    "acceptError": "Шақыруды қабылдау сәтсіз болды",
+    "authRequiredTitle": "Авторизация қажет",
+    "joinSuccess": "Сіз жұмыс кеңістігіне қосылдыңыз",
+    "workspaceIdError": "Жұмыс кеңістігінің ID-сін алу сәтсіз болды"
+  },
+  "pipeline": {
+    "pageTitle": "Воронка — Taple",
+    "pageDescription": "Taple ішінде сату воронкасын және лид кезеңдерін басқарыңыз.",
+    "totalLeads": "Воронкада {count} лид бар",
+    "loading": "Воронка жүктелуде...",
+    "branchCount": "{count} филиал",
+    "actions": {
+      "moveTitle": "Жылжыту",
+      "moveDescription": "Негізгі тақтадан тыс жасырын кезеңдер"
+    }
+  },
+  "monitoring": {
+    "pageTitle": "Мониторинг — Taple",
+    "pageDescription": "Жұмыс кеңістігіндегі процестер мен бақылаудағы компаниялардың белсенділігін қадағалаңыз.",
+    "totalCompanies": "Мониторингте {count} компания бар",
+    "loading": "Мониторинг жүктелуде...",
+    "companyCount": "{count} компания",
+    "dueAt": "Мерзімі: {date}",
+    "updateError": "Мониторинг күйін жаңарту сәтсіз болды",
+    "status": {
+      "all": "Барлық мәртебелер",
+      "pending": "Күтілуде",
+      "monitoring": "Мониторингте",
+      "attention": "Назар аудару қажет",
+      "success": "Сәтті",
+      "recall": "Қайта қоңырау шалу",
+      "closed": "Лидтен бас тартылды",
+      "other": "Басқа"
+    }
+  },
+  "password": {
+    "weak": "Әлсіз",
+    "medium": "Орташа",
+    "good": "Жақсы",
+    "strong": "Мықты"
+  },
+  "workspace": {
+    "completed": "Орындалды",
+    "step": "Қадам",
+    "addWorkspaceDesc": "Жаңа жұмыс кеңістігін қосу"
+  },
+  "workspaceCreate": {
+    "idleTitle": "Жасауға бәрі дайын",
+    "idleDescription": "Жұмыс кеңістігін жасамас бұрын енгізілген деректерді тексеріңіз",
+    "loadingTitle": "Жасалуда...",
+    "loadingDescription": "Күте тұрыңыз",
+    "errorTitle": "Бірдеңе дұрыс болмады",
+    "errorDescription": "Қайтадан көріңіз немесе қолдау қызметіне хабарласыңыз",
+    "successTitle": "Жұмыс кеңістігі құрылды",
+    "successDescription": "Жұмысты бірден бастауға болады",
+    "namePlaceholder": "Жұмыс кеңістігінің атауын енгізіңіз",
+    "cityPlaceholder": "Қаланы таңдаңыз",
+    "queueLabel": "Кезек ретін орнату",
+    "sortablePosition": "{label} — {position}-орын",
+    "steps": {
+      "naming": {
+        "title": "Жұмыс кеңістігін құру"
+      },
+      "queuing": {
+        "title": "Алдымен нені ілгерілетеміз",
+        "description": "Өзіңізге ыңғайлы ретті таңдаңыз"
+      },
+      "taging": {
+        "title": "Қандай нүкте түрлері сізді қызықтырады",
+        "description": "Таңдалған тегтерді еркін өшіріп, өңдей аласыз"
+      }
+    }
   },
   "dangerZone": {
     "title": "Қауіпті аймақ",

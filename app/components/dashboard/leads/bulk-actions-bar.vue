@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TenantMemberBrief } from "~/api/generated/api";
 import { TenantLeadStage } from "~/api/generated/api";
-import { STAGE_OPTIONS } from "~/stores/leads.store";
+import { getLeadStageOptions } from "~/stores/leads.store";
 import type { SelectOption } from "~/components/ui/fields/registry";
 import { useI18n } from "vue-i18n";
 
@@ -25,7 +25,7 @@ const selectedMemberId = ref<string>("");
 const hasSelectedMember = ref(false);
 
 const stageOptions = computed<SelectOption[]>(() =>
-  STAGE_OPTIONS.map((s) => ({ value: s.value, label: s.label })),
+  getLeadStageOptions(t).map((s) => ({ value: s.value, label: s.label })),
 );
 
 const memberOptions = computed<SelectOption[]>(() => [

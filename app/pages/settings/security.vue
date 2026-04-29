@@ -1,8 +1,8 @@
 <template>
   <div class="security-page">
     <div class="page-header">
-      <h1 class="page-title">Безопасность</h1>
-      <p class="page-desc">Управляйте паролем, двухфакторной аутентификацией и активными сессиями</p>
+      <h1 class="page-title">{{ t("security.pageTitle") }}</h1>
+      <p class="page-desc">{{ t("settings.securityIntro") }}</p>
     </div>
 
     <settings-password-form />
@@ -11,7 +11,9 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'settings' })
+const { t } = useI18n();
+
+definePageMeta({ layout: 'settings', middleware: "auth", })
 </script>
 
 <style scoped>

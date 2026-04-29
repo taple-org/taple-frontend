@@ -2,9 +2,11 @@
 import { WorkspaceMakeFormCompletedError, WorkspaceMakeFormCompletedLoading, WorkspaceMakeFormCompletedSuccess, WorkspaceMakeFormCompletedIdle } from '#components';
 import { Steps } from '@ark-ui/vue';
 import { useWorkspaceMakeFlow } from '~/composables/workspace/useWorkspaceMakeFlow';
+import { useI18n } from "vue-i18n";
 
 const { isOpen, current, steps, status } = storeToRefs(useWorkspaceMakeFlow())
 const { toNext, handleSubmit, items, close } = useWorkspaceMakeFlow()
+const { t } = useI18n();
 
 const configs: Record<'idle' | 'success' | 'loading' | 'error', Component> = {
   'idle': WorkspaceMakeFormCompletedIdle,
@@ -23,8 +25,8 @@ const configs: Record<'idle' | 'success' | 'loading' | 'error', Component> = {
         goToPrevStep
       }">
 
-        <workspace-make-form-header :current :percent :steps="count" :title="items[current]?.[1]?.title!"
-          :description="current < count ? items[current]?.[1]?.description : undefined"
+        <workspace-make-form-header :current :percent :steps="count" :title="t(items[current]?.[1]?.title!)"
+          :description="current < count && items[current]?.[1]?.description ? t(items[current]?.[1]?.description) : undefined"
           :has-previous="hasPrevStep && status === 'idle'" :prev="goToPrevStep" />
 
         <Steps.Content v-for="([key, modal], index) in items" :key="key" :index="index">

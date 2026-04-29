@@ -1,6 +1,6 @@
-import { required, minLength, sameAs, string } from "@regle/rules";
+import { sameAs } from "@regle/rules";
 import type {RegleExternalErrorTree} from "@regle/core";
-import {password} from "~/rules/password";
+import { createPasswordRules } from "~/rules/password";
 
 export interface IPasswordFormState {
   currentPassword: string;
@@ -9,24 +9,26 @@ export interface IPasswordFormState {
 }
 
 export const usePasswordForm = () => {
+    const { t } = useI18n();
     const state = reactive<IPasswordFormState>({
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
     });
     const externalErrors = ref<RegleExternalErrorTree<IPasswordFormState>>({})
+    const passwordRules = createPasswordRules(t);
 
 
     const {r$} = useRegle(state, {
         currentPassword: {
-            ...password
+            ...passwordRules
         },
         newPassword: {
-            ...password
+            ...passwordRules
         },
         confirmPassword: {
-            ...password,
-            sameAs: withMessage(sameAs(() => state.newPassword), "Пароли не совпадают"),
+            ...passwordRules,
+            sameAs: withMessage(sameAs(() => state.newPassword), t("validation.passwordsMismatch")),
         },
     }, {
         id: 'password-form',

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MerchantListItem, TenantMerchantMonitoringStatus } from "~/api/generated/api";
 import type { MonitoringColumn } from "./model";
+import { useI18n } from "vue-i18n";
 
 const emit = defineEmits<{
   changed: [];
@@ -13,6 +14,7 @@ const { columns, workspaceId } = defineProps<{
 
 const { $apiClient } = useNuxtApp();
 const notification = useNotification();
+const { t } = useI18n();
 
 const activeCard = ref<MerchantListItem | null>(null);
 const isPending = ref(false);
@@ -32,7 +34,7 @@ async function handleMove(status: TenantMerchantMonitoringStatus) {
     );
     emit("changed");
   } catch {
-    notification.error("Ошибка", "Не удалось обновить статус мониторинга");
+    notification.error(t("common.error"), t("monitoring.updateError"));
   } finally {
     isPending.value = false;
     clearDrag();
