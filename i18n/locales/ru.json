@@ -49,6 +49,7 @@
     "shortSun": "Вс"
   },
   "leads": {
+    "selected": "Выбрано",
     "new": "Новый",
     "inProgress": "В работе",
     "won": "Выигран",
@@ -133,6 +134,7 @@
     "completeTaskError": "Не удалось выполнить задачу",
     "selectStage": "Выбрать этап",
     "selectAssignee": "Выбрать ответственного",
+    "clearSelection": "Снять выделение",
     "move": "Переместить",
     "exportSuccess": "Экспорт запущен",
     "exportError": "Не удалось экспортировать лиды",
@@ -290,7 +292,7 @@
     "findLeadAndAdd": "Найдите лид и добавьте новую задачу в глобальную task board",
     "lead": "Лид",
     "startTypingLead": "Начните вводить название лида",
-    "selected": "Выбран",
+    "selected": "Выбрано",
     "searchingLeads": "Ищем лиды...",
     "title": "Заголовок",
     "titlePlaceholder": "Например, созвониться с клиентом",
